@@ -11,6 +11,7 @@ final class CreatorFramePolicy
         if($request->isMethod('GET')&&user()&&($request->routeIs('filament.server.*')||$request->routeIs(
             'filament.app.pages.simple-server-creator',
             'filament.app.pages.simplify',
+            'filament.app.auth.profile',
             'filament.app.pages.pelican-simplify-settings',
             'filament.admin.pages.pelican-simplify-settings',
             'filament.admin.resources.servers.create',

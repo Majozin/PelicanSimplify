@@ -1,5 +1,13 @@
 # Changes
 
+## 0.2.0-alpha.12
+
+- Stop popup iframe height feedback loops; resize when content grows or shrinks.
+- Fix mobile navigation stacking, touch targets and menu overflow.
+- Replace the account settings icon with a Profile button; allow authenticated same-origin profile embedding and retain save actions.
+- Move Server banners into a dedicated header menu button and popup.
+
+
 ## 0.2.0-alpha.11
 
 - Wait for dashboard initialization, styles, fonts and visible images before showing the page, preventing refresh flashes.

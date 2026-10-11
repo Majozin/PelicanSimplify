@@ -927,7 +927,7 @@ body:has(.ps:not(.server-active)) .fi-main-ctn { height:auto!important;overflow:
 .ps .ps-nav-items { display:none;position:absolute;top:52px;right:0;width:240px;max-width:calc(100vw - 28px);padding:8px;border:1px solid var(--line);border-radius:12px;background:var(--surface);box-shadow:0 8px 28px #0003;z-index:50;flex-direction:column;align-items:stretch;gap:4px; }
 .ps .nav-open .ps-nav-items { display:flex; }
 .ps .ps-mobile-label { display:block;font-size:14px;text-align:left; }
-.ps .ps-nav-items>a,.ps .ps-nav-items .ps-account-button { display:flex;align-items:center;justify-content:flex-start;gap:12px;width:100%;height:auto;min-height:44px;padding:8px 12px; }
+.ps .ps-nav-items>.ps-icon-button,.ps .ps-nav-items .ps-account-button { display:flex;align-items:center;justify-content:flex-start;gap:12px;width:100%;height:auto;min-height:44px;padding:8px 12px; }
 .ps .ps-nav-items svg,.ps .ps-card-icons>span { flex:none; }
 .ps .ps-nav-items .ps-account-avatar,.ps .ps-nav-items .ps-account-button.has-avatar .ps-account-avatar { width:24px;height:24px;flex:none; }
 .ps .ps-nav-items .ps-account-menu { position:static;width:100%;max-width:none;margin-top:4px;box-shadow:none; }
@@ -1079,3 +1079,14 @@ body:has(.ps:not(.server-active)) .fi-main-ctn { height:auto!important;overflow:
 @media(max-width:600px){.ps .ps-modal,.ps .ps-modal.is-create,.ps .ps-modal.is-native{max-height:calc(100dvh - 16px)!important}.ps .ps-modal>header{padding:14px}.ps .ps-modal .ps-modal-content{padding:14px}}
 
 .ps .ps-server-info{border-color:var(--accent)}
+
+/* Navigation remains above overview cards, with touch-sized buttons and a bounded mobile menu. */
+.ps .ps-top { position:relative;z-index:30; }
+.ps .ps-account-menu { box-sizing:border-box;min-width:200px; }
+.ps .ps-account-menu .ps-profile-button { display:flex;align-items:center;gap:10px;width:100%;height:auto;min-height:44px;padding:8px 12px; }
+.ps .ps-profile-button svg { width:20px;height:20px;flex:none; }
+@media(max-width:600px){
+ .ps .ps-nav-items { box-sizing:border-box;max-height:calc(100dvh - 100px);overflow-y:auto;overscroll-behavior:contain; }
+ .ps .ps-nav-items>.ps-icon-button,.ps .ps-nav-items .ps-account-button { box-sizing:border-box; }
+ .ps .ps-nav-items .ps-account-menu { min-width:0; }
+}

@@ -45,8 +45,32 @@ const html=`<!doctype html><html><head><link rel="stylesheet" href="/global.css"
   await embedded.evaluate(()=>{document.querySelector('.ps-settings-page').style.height='1600px';});await popup.waitForTimeout(150);
   assert.equal((await geometry()).scroll,true);assert.equal((await geometry()).innerScroll,false);
   await popup.setViewportSize({width:390,height:844});await popup.waitForTimeout(150);const mobile=await geometry();assert(mobile.width<=390&&mobile.height<=828);assert.equal(mobile.innerScroll,false);
+  // A viewport-dependent body used to gain two pixels on every observer callback.
+  await embedded.evaluate(()=>{document.body.innerHTML='<div style="min-height:100vh;padding:16px;box-sizing:border-box"><section id="intrinsic" style="height:180px">Profile content</section></div>';});
+  await popup.waitForTimeout(250);
+  const stableHeight=await popup.locator('iframe').evaluate(el=>el.clientHeight);
+  await popup.waitForTimeout(800);
+  assert.equal(await popup.locator('iframe').evaluate(el=>el.clientHeight),stableHeight);
+  assert(stableHeight<250,'Viewport-dependent body should fit intrinsic content');
+  await embedded.evaluate(()=>document.querySelector('#intrinsic').style.height='1400px');await popup.waitForTimeout(200);
+  assert.equal((await geometry()).scroll,true);assert.equal((await geometry()).innerScroll,false);
+  await embedded.evaluate(()=>document.querySelector('#intrinsic').style.height='120px');await popup.waitForTimeout(200);
+  assert.equal((await geometry()).scroll,false);assert(await popup.locator('iframe').evaluate(el=>el.clientHeight)<200);
   await popup.evaluate(()=>testWorkspace.releaseCreatorFrame());await popup.close();
   const markup=fs.readFileSync(root+'dashboard.blade.php','utf8');assert(!markup.includes('keydown.escape.window="close()"'));assert(!markup.includes('click.self='));assert.equal((markup.match(/x-on:click="close\(\)"/g)||[]).length,1);
+  const menuPage=await browser.newPage({viewport:{width:390,height:844}});
+  await menuPage.goto('http://127.0.0.1:'+server.address().port);
+  await menuPage.addStyleTag({content:fs.readFileSync(root+'dashboard.css','utf8')});
+  // Render the actual navigation markup with the mobile and account menus open.
+  const navigation=markup.match(/<header class="ps-top">[\s\S]*?<\/nav><\/header>/)[0].replace(/@if[\s\S]*?@endif/g,'').replace(/@csrf/g,'').replace(/x-cloak/g,'');
+  await menuPage.evaluate(html=>{document.body.innerHTML='<main class="ps">'+html+'<article class="ps-server-card" style="height:500px">Server</article></main>';document.querySelector('.ps-panel-name').textContent='Panel';document.querySelector('.ps-top-actions').classList.add('nav-open');document.querySelector('.ps-back-overview').style.display='none';},navigation);
+  const menu=menuPage.locator('.ps-nav-items');assert(await menu.isVisible());
+  for(const label of ['Simplify settings','Server banners']){
+   const button=menuPage.getByRole('button',{name:label,exact:true});const box=await button.boundingBox();assert(box.height>=44&&box.width>200,'Mobile actions need full touch-sized rows');
+   assert(await button.evaluate(el=>{const r=el.getBoundingClientRect();return el.contains(document.elementFromPoint(r.x+r.width/2,r.y+r.height/2));}),'Menu action was covered by server content');
+  }
+  const profileButton=menuPage.getByRole('button',{name:'Profile',exact:true});assert(await profileButton.isVisible());assert.equal(await profileButton.locator('use').getAttribute('href'),'#ps-account');
+  assert(await menuPage.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),'Mobile menu overflowed horizontally');await menuPage.close();
   const loadingPage=await browser.newPage();
   let releaseStyle;const styleGate=new Promise(resolve=>{releaseStyle=resolve;});
   await loadingPage.route('**/delayed.css',async route=>{await styleGate;await route.fulfill({contentType:'text/css',body:'.fi-layout{display:block}'});});

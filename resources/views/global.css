@@ -131,3 +131,6 @@ html.ps-frame,html.ps-frame body{overflow:hidden!important;min-height:0!importan
 .ps-banner-library-grid strong{font-size:13px;overflow-wrap:anywhere}
 .ps-banner-library-grid small,.ps-banner-empty{font-size:12px;color:var(--ps-muted)}
 .ps-banner-library-grid button{justify-self:start;margin-top:6px;color:#dc6b35;font-size:12px;font-weight:600;cursor:pointer}
+
+/* The native profile saves through its header actions; keep them reachable in the popup. */
+.ps-frame[data-ps-frame="account"] .fi-header { display:flex!important;gap:12px;flex-wrap:wrap; }

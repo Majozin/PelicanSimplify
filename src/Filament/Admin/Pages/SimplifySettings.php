@@ -41,6 +41,7 @@ class SimplifySettings extends Page implements HasForms
     public bool $setupStarted = false;
     public bool $showDiagnostics = false;
     #[\Livewire\Attributes\Locked] public bool $embedded = false;
+    #[\Livewire\Attributes\Locked] public bool $bannerOnly = false;
     public function bannerLibrary(): array
     {
         abort_unless(static::canAccess(),403);
@@ -95,6 +96,7 @@ class SimplifySettings extends Page implements HasForms
     {
         abort_unless(static::canAccess(), 403);
         $this->embedded = request()->boolean('simplify_embed');
+        $this->bannerOnly = request()->query('section') === 'banners' && !$this->needsSetup();
         $this->form->fill([...CreatorAccess::settings(),'creation_defaults'=>\Simplify\Panel\Services\CreationDefaults::all(),'appearance'=>AppearanceSettings::all(),'features'=>\Simplify\Panel\Services\FeatureSettings::all(),'web'=>\Simplify\Panel\Services\Extensions::webInstalled()?app('simplify.web')->options():[]]);
     }
     public function form(Schema $schema): Schema

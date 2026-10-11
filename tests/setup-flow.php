@@ -13,7 +13,7 @@ namespace Simplify\Panel\Services {
  class Extensions {public static function webInstalled(){return false;}}
 }
 namespace {
- function request(){return new class{function boolean($key){return false;}};}
+ function request(){return new class{function boolean($key){return false;}function query($key){return $GLOBALS['requestedSection']??null;}};}
  require __DIR__.'/../src/Filament/Admin/Pages/SimplifySettings.php';
  function user(){return new class {function isRootAdmin(){return true;}};}
  function abort_unless($ok,$code){if(!$ok)throw new \RuntimeException((string)$code);}
@@ -21,13 +21,17 @@ namespace {
  use Simplify\Panel\Services\DependencyCheck as D;
  use Simplify\Panel\Services\FeatureSettings as F;
  $make=function(){ $p=new \Simplify\Panel\Filament\Admin\Pages\SimplifySettings;$p->form=new class{public array $data=[];public function fill($data){$this->data=$data;}public function getState(){throw new \RuntimeException('form cannot be saved when checks fail');}};return $p;};
+ $requestedSection='banners';
  $page=$make();$page->mount();
  if(D::$calls!==0||$page->requirements!==[]||$page->setupStarted)throw new \RuntimeException('setup skipped its initial check stage');
+ if($page->bannerOnly)throw new \RuntimeException('banner shortcut bypassed first setup');
  $page->refreshRequirements();if(!$page->requirementsReady()||$page->setupStarted)throw new \RuntimeException('passing checks started setup without button');
  $page->beginSetup();if(!$page->setupStarted||D::$calls!==2)throw new \RuntimeException('first setup did not recheck');
  D::$pass=false;$page->save();if($page->setupStarted||!$page->showDiagnostics)throw new \RuntimeException('changed dependencies did not return setup to checks');
  F::$completed=true;D::$calls=0;$settings=$make();$settings->mount();
  if(D::$calls!==0||$settings->showDiagnostics||$settings->requirements!==[])throw new \RuntimeException('ordinary settings visit ran or exposed checks');
+ if(!$settings->bannerOnly)throw new \RuntimeException('banner shortcut did not select its own view');
+ $requestedSection=null;$ordinary=$make();$ordinary->mount();if($ordinary->bannerOnly)throw new \RuntimeException('normal settings included banner view');
  $settings->toggleDiagnostics();if(!$settings->showDiagnostics||D::$calls!==1)throw new \RuntimeException('optional diagnostics did not run');
  $settings->toggleDiagnostics();if($settings->showDiagnostics||D::$calls!==1)throw new \RuntimeException('hiding diagnostics reran checks');
  echo "PASS separate check/first-setup stages, fresh-save gate, quiet settings visits and optional diagnostics\n";
