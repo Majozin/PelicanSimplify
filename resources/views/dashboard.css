@@ -1537,3 +1537,37 @@ body:has(.ps:not(.server-active)) :is(.fi-main,.fi-page,.fi-page-content,.fi-pag
 @media(prefers-reduced-motion:reduce){.ps .ps-nav-items .ps-account-menu{transition:none}}
 
 .ps .ps-nav-items>.ps-account{display:flex;align-items:center;flex:none}
+
+/* Global accents remain inherited by creation tiles and aggregate health. */
+.ps .ps-health-panel>.ps-host-health{--accent:inherit}
+.ps .ps-create-card.is-other{--accent:inherit}
+.ps .ps-server-entry .ps-card-title-row h3,.ps .ps-game-title h2{background-image:linear-gradient(115deg,color-mix(in srgb,var(--accent) 75%,var(--ink)),var(--accent))}
+body:has(.ps) [data-ps-footer]{background:var(--ps-bg,#f4f4f5)!important}
+body:has(.ps.dark) [data-ps-footer]{background:var(--ps-bg,#101012)!important}
+.ps .ps-overview-power button{background:#1d1d24;border-color:#383841}
+.ps .ps-overview-power button:hover:not(:disabled){background:#303039}
+/* Desktop list identities use one line and bring the player footer closer. */
+@media(min-width:701px){
+.ps .ps-server-grid.is-list .ps-card-title-row{flex-direction:row;align-items:center;gap:8px;height:30px}
+.ps .ps-server-grid.is-list .ps-card-title-row h3{flex:0 1 auto;width:auto;max-width:100%}
+.ps .ps-server-grid.is-list .ps-card-real-name{flex:0 1 auto;max-width:45%;height:auto;line-height:20px}
+.ps .ps-server-grid.is-list .ps-card-real-name.no-alias{display:none}
+.ps .ps-server-grid.is-list .ps-server-open{padding:10px 16px;gap:10px}
+.ps .ps-server-grid.is-list .has-power:is(:hover,:focus-within,.confirming-power) .ps-server-open{padding:10px 130px 10px 16px}
+.ps .ps-server-grid.is-list .ps-list-player-count{padding:5px 16px}
+}
+@media(min-width:1051px){
+.ps .ps-server-grid.is-list .ps-server-open{height:76px}
+.ps .ps-server-grid.is-list.has-motd .ps-server-open{height:116px}
+}
+
+/* The health card alone paints a surface; footer hooks stay transparent. */
+body:has(.ps) :is(footer,.fi-footer,[data-ps-footer],[data-ps-footer-wrapper],[data-ps-footer-surface]){background:transparent!important;background-image:none!important;box-shadow:none!important}
+.ps .ps-health-panel>.ps-host-health .ps-host-state>div{display:grid;grid-template-rows:auto auto auto;align-content:center;gap:5px}
+.ps .ps-health-panel>.ps-host-health .ps-host-state .ps-host-heading,.ps .ps-health-panel>.ps-host-health .ps-host-state small{margin:0}
+.ps .ps-health-panel>.ps-host-health .ps-health-status,.ps .ps-health-panel>.ps-host-health .ps-health-status strong{font-size:17px;line-height:22px}
+.ps .ps-health-panel>.ps-host-health .ps-host-emblem{width:64px;height:64px}
+.ps .ps-health-panel>.ps-host-health .ps-host-emblem .ps-host-heart{width:60px;height:60px}
+.ps .ps-health-panel>.ps-host-health .ps-host-server-badge{width:21px;height:21px;border-radius:6px}
+.ps .ps-health-panel>.ps-host-health .ps-host-server-badge svg{width:14px;height:14px}
+@media(max-width:600px){.ps .ps-health-panel>.ps-host-health .ps-host-emblem{width:58px;height:58px}.ps .ps-health-panel>.ps-host-health .ps-host-emblem .ps-host-heart{width:54px;height:54px}}

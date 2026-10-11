@@ -1,5 +1,13 @@
 # Changes
 
+## 0.2.0-alpha.26
+- Center health status between its heading and reporting count, enlarge the heart and clear footer-hook backgrounds.
+- Add accent swatches, custom colors and editable hex values to Appearance settings.
+- Carry global accent colors through Other game creation and aggregate health; tint server-name gradients with their accent.
+- Add a personal switch to keep Minecraft creation green or use the global accent.
+- Match copyright background to the page and darken quick-action buttons.
+- Compact desktop list rows and show original names beside aliases, preserving two-line MOTDs and nearby resource widgets.
+
 ## 0.2.0-alpha.25
 - Match solid quick-action bars to the page background in both themes.
 - Show avatar and username in a wider profile button; reveal inline profile-settings and logout icons instead of an account dropdown.

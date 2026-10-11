@@ -9,3 +9,5 @@ assert.equal(state.boot.servers[0].color,'#aa2233');
 state.boot.appearance.individual_colors=true;assert.equal(state.accentStyle('a')['--accent'],'#aa2233');
 state.boot.appearance.accent_color='invalid';state.boot.appearance.individual_colors=false;assert.equal(state.accentStyle('b')['--accent'],'#44bb66');
 console.log('PASS common overview accent, individual server accents, uniform mode, retained colors and malformed accent fallback');
+
+state.boot.appearance.accent_color='#446688';assert.equal(state.creationAccent('other')['--accent'],'#446688');assert.equal(state.creationAccent('minecraft')['--accent'],'#16803d');state.overviewPreferences.minecraftAlwaysGreen=false;assert.equal(state.creationAccent('minecraft')['--accent'],'#446688');state.overviewPreferences.minecraftAlwaysGreen=true;state.themeDark=true;assert.equal(state.creationAccent('minecraft')['--accent'],'#74d69a');

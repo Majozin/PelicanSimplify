@@ -155,3 +155,7 @@
 @media(max-width:700px){.ssc-wizard .ssc-cards--ram{grid-template-columns:repeat(2,minmax(0,1fr))}}
 
 .ssc-delete-concept{width:40px;transition:width .2s;overflow:hidden}.ssc-delete-concept.is-confirming{width:96px}.ssc-delete-confirm{display:flex;align-items:center;justify-content:flex-end;gap:8px;white-space:nowrap;font-size:12px}.ssc-wizard .ssc-delete-button:hover{color:#ef7676!important;border-color:#ef7676!important}.ssc-delete-confirm .ssc-delete-button{color:#ef7676!important}@media(prefers-reduced-motion:reduce){.ssc-delete-concept{transition:none}}
+
+.ssc-wizard .ssc-settings-custom-color{display:flex;align-items:center;gap:8px;min-height:38px;padding:4px 8px;border:1px solid var(--ssc-border);border-radius:9px;background:var(--ssc-raised);color:var(--ssc-ink);font-size:12px}
+.ssc-settings-custom-color input[type=color]{width:32px;height:30px;padding:0;border:0;background:transparent;cursor:pointer}
+.ssc-wizard .ssc-settings-color-hex{width:100px;min-height:38px;padding:6px 8px;border:1px solid var(--ssc-border);border-radius:9px;background:var(--ssc-surface);color:var(--ssc-ink);font:13px ui-monospace,monospace}
