@@ -1,5 +1,14 @@
 # Changes
 
+## 0.2.0-alpha.24
+- Align health edges with the server cards and confine footer background to the copyright row.
+- Health details grow to their content height up to a viewport-aware cap, scroll internally and close on outside clicks.
+- Add a quick-action visibility preference; solid action bars join the card edges and shift artwork aside.
+- Give the aggregate health row slightly more height.
+- Add a personal overview dropdown with layout, MOTD, primary icon and CPU/RAM tile preferences saved per user in the browser.
+- Move grid/list controls into the header dropdown and use a gear for panel settings.
+
+
 ## 0.2.0-alpha.23
 - Reduce collapsed Host health padding, typography and icons to keep the dock compact.
 - Remove the empty strip above Host health; its soft shadow overlays the scrolling server region.

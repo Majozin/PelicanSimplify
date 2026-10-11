@@ -1413,3 +1413,74 @@ body:has(.ps) [data-ps-footer]{flex-direction:row!important}body:has(.ps) [data-
 .ps .ps-health-panel>.ps-host-health .ps-host-metric>small{font-size:9px;line-height:1.3;margin-top:3px}
 .ps .ps-health-panel>.ps-host-health .ps-host-metric .ps-card-meter{margin-top:4px;height:3px}
 @media(max-width:600px){.ps .ps-health-panel>.ps-host-health{padding:8px 10px;gap:8px}.ps .ps-health-panel>.ps-host-health .ps-host-metric{padding:2px}}
+
+/* Personal overview controls. */
+.ps .ps-overview-appearance{position:relative}
+.ps .ps-overview-appearance-menu{position:absolute;right:0;top:calc(100% + 10px);z-index:100;width:290px;max-width:calc(100vw - 28px);max-height:calc(100dvh - 110px);overflow-y:auto;padding:16px;border:1px solid var(--line);border-radius:14px;background:var(--surface);box-shadow:0 12px 36px #0004;color:var(--ink);text-align:left}
+.ps .ps-overview-appearance-menu>strong{font-size:14px}
+.ps .ps-appearance-section{margin-top:14px;padding-top:12px;border-top:1px solid var(--line)}
+.ps .ps-appearance-section>span{display:block;font-size:11px;color:var(--muted);margin-bottom:8px}
+.ps .ps-appearance-choice{display:flex;gap:6px}
+.ps .ps-appearance-choice button{display:flex;align-items:center;justify-content:center;gap:6px;flex:1;padding:8px;border:1px solid var(--line);border-radius:8px;background:var(--raised);color:var(--ink);font-size:12px;cursor:pointer}
+.ps .ps-appearance-choice button.selected{border-color:var(--accent);color:var(--accent)}
+.ps .ps-appearance-choice svg{width:16px;height:16px}
+.ps .ps-appearance-toggle{display:flex;align-items:center;justify-content:space-between;gap:12px;width:100%;padding:8px 0;color:var(--ink);background:transparent;font-size:12px;cursor:pointer}
+.ps .ps-appearance-switch{width:30px;height:18px;padding:3px;border-radius:20px;background:var(--line);transition:background .2s}
+.ps .ps-appearance-switch i{display:block;width:12px;height:12px;background:var(--surface);border-radius:50%;transition:transform .2s}
+.ps .ps-appearance-switch.on{background:var(--accent)}
+.ps .ps-appearance-switch.on i{transform:translateX(12px)}
+.ps .ps-appearance-choice button:focus-visible,.ps .ps-appearance-toggle:focus-visible{outline:2px solid var(--accent);outline-offset:3px}
+.ps .ps-server-stage{padding-inline:0;max-width:calc(var(--grid-columns,4)*260px + (var(--grid-columns,4) - 1)*16px)}
+.ps .ps-server-stage.is-list{max-width:1088px}
+.ps .ps-card-icons.egg-primary .ps-card-icon{width:28px;height:28px}
+.ps .ps-card-icons.egg-primary .ps-card-egg-icon{width:48px;height:48px;order:-1}
+.ps .ps-server-grid.is-list .ps-card-icons.egg-primary .ps-card-icon{width:24px;height:24px}
+.ps .ps-server-grid.is-list .ps-card-icons.egg-primary .ps-card-egg-icon{width:48px;height:48px}
+.ps .ps-card-icons.egg-primary .ps-card-icon svg{width:20px;height:20px}
+.ps .ps-card-usage.single-metric{grid-template-columns:1fr}
+.ps .ps-card-mini-metric{padding:6px;border:1px solid var(--line);border-radius:8px;background:var(--raised)}
+.ps .ps-card-metric-name{display:flex;align-items:center;gap:4px}
+.ps .ps-card-metric-name svg{width:12px;height:12px}
+.ps .ps-server-grid .ps-card-motd{width:100%;min-height:47px;height:47px;max-height:47px;padding:8px;margin:8px 0 0;font-size:11px;line-height:1.4;overflow-y:auto;white-space:pre-wrap}
+.ps .ps-server-grid:not(.is-list).has-motd .ps-server-entry .ps-server-open{height:380px}
+@media(min-width:1051px){.ps .ps-server-grid.is-list.has-motd .ps-server-open{height:142px}.ps .ps-server-grid.is-list .ps-card-mini-metric{padding:4px}}
+@media(max-width:700px){.ps .ps-overview-appearance-menu{right:0}.ps .ps-card-mini-metric{padding:4px}}
+@media(prefers-reduced-motion:reduce){.ps .ps-appearance-switch,.ps .ps-appearance-switch i{transition:none}}
+
+/* Solid controls occupy the card edge while its artwork slides clear. */
+.ps .ps-overview-power-wrap{bottom:0;left:0;right:0;opacity:1;transform:translateY(100%);transition:transform .25s,visibility .25s}
+.ps .ps-overview-power{border:0;border-top:1px solid #50505a;border-radius:0;background:#3d3d46}
+.ps .ps-server-grid.is-list .ps-overview-power-wrap{top:0;bottom:0;left:auto;right:0;width:104px;transform:translateX(100%)}
+.ps .ps-server-grid.is-list .ps-overview-power{border-top:0;border-left:1px solid #50505a;border-radius:0}
+.ps .ps-server-entry.confirming-power .ps-overview-power-wrap{transform:none}
+.ps .ps-card-background,.ps .ps-offline-artwork{transition:transform .25s}
+.ps .ps-server-grid:not(.is-list) .has-power:is(:hover,:focus-within,.confirming-power) :is(.ps-card-background,.ps-offline-artwork){transform:translateY(-54px)}
+.ps .ps-server-grid.is-list .has-power:is(:hover,:focus-within,.confirming-power) :is(.ps-card-background,.ps-offline-artwork){transform:translateX(-104px)}
+@media(hover:none){.ps .ps-server-grid .has-power .ps-overview-power-wrap{transform:none}.ps .ps-server-grid:not(.is-list) .has-power :is(.ps-card-background,.ps-offline-artwork){transform:translateY(-54px)}.ps .ps-server-grid.is-list .has-power :is(.ps-card-background,.ps-offline-artwork){transform:translateX(-104px)}}
+@media(max-width:700px){.ps .ps-server-grid.is-list .ps-overview-power-wrap{top:auto;bottom:0;left:0;right:0;width:auto;transform:none}.ps .ps-server-grid.is-list .ps-overview-power{border-left:0;border-top:1px solid #50505a}.ps .ps-server-grid.is-list .has-power :is(.ps-card-background,.ps-offline-artwork){transform:translateY(-54px)}}
+/* Restore a little breathing room to the aggregate health row. */
+.ps .ps-health-panel>.ps-host-health{padding:12px 14px;gap:14px}
+.ps .ps-health-panel>.ps-host-health .ps-host-heading{font-size:12px;margin-bottom:4px}
+.ps .ps-health-panel>.ps-host-health .ps-host-state small,.ps .ps-health-panel>.ps-host-health .ps-host-metric>small{font-size:10px}
+.ps .ps-health-panel>.ps-host-health .ps-host-emblem{width:36px;height:42px}
+.ps .ps-health-panel>.ps-host-health .ps-host-emblem .ps-host-heart{width:34px;height:34px}
+.ps .ps-health-panel>.ps-host-health .ps-host-metric>strong{font-size:15px}
+.ps .ps-health-panel>.ps-host-health .ps-host-metric>.ps-network-value{font-size:13px}
+@media(max-width:600px){.ps .ps-health-panel>.ps-host-health{padding:10px;gap:10px}}
+@media(prefers-reduced-motion:reduce){.ps .ps-card-background,.ps .ps-offline-artwork{transition:none}}
+
+/* Health details grow naturally up to a viewport-aware cap. */
+.ps .ps-health-drawer{height:auto;max-height:0;transition:max-height .3s ease,grid-template-rows .3s ease,opacity .25s ease}
+.ps .ps-health-panel.expanded .ps-health-drawer{height:auto;max-height:var(--ps-health-details-height)}
+.ps .ps-health-drawer>div{height:auto;max-height:var(--ps-health-details-height)}
+.ps .ps-health-drawer .ps-node-health-list{flex:0 1 auto;height:auto;max-height:calc(var(--ps-health-details-height) - 42px)!important}
+@media(prefers-reduced-motion:reduce){.ps .ps-health-drawer{transition:none}}
+
+/* Match the health dock to the server stage; keep footer color within its own row. */
+.ps .ps-health-panel{width:calc(100% - 8px)}
+.ps .ps-overview:not(.is-list) .ps-health-panel{max-width:calc(var(--grid-columns,4)*260px + (var(--grid-columns,4) - 1)*16px)}
+.ps .ps-overview.is-list .ps-health-panel{max-width:1088px}
+body:has(.ps) [data-ps-footer]{background:var(--ps-surface,#fff)!important}
+body:has(.ps.dark) [data-ps-footer]{background:var(--ps-surface,#1a1a1f)!important}
+
+@media(min-width:701px){.ps .ps-server-grid.is-list .has-power:is(:hover,:focus-within,.confirming-power) .ps-server-open{padding:12px 130px 12px 18px}.ps .ps-server-grid.is-list .has-power:is(:hover,:focus-within,.confirming-power) :is(.ps-card-head,.ps-card-title){transform:none}}
