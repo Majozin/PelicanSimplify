@@ -1,6 +1,6 @@
 # PelicanSimplify
 
-![This plugin is thought of, designed and tested by me, but used AI for coding. May contain bugs or errors.](docs/ai-disclaimer.svg)
+![This plugin is imagined, designed and tested by me, but used an AI for coding. Create backups before installing and expect bugs and/or errors, especially in the alpha builds. Plugin is made to work on top of your panel so it won't interfere with the running servers. It runs fine for me, but that's no guarantee.](docs/ai-disclaimer.svg)
 
 A fresh interface for Pelican, with simpler server management and guided server creation.
 
