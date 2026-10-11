@@ -410,10 +410,16 @@ html:has(.ps-modal-layer[data-open="true"]), html.ps-ui-locked { overflow: hidde
 .ps-notify-item > svg { grid-row: span 2; width: 18px; height: 18px; margin-top: 1px; color: var(--ps-tone); }
 .ps-notify-item strong { font-size: 13px; font-weight: 650; }
 .ps-notify-item small { color: var(--ps-muted); font-size: 12px; line-height: 1.45; }
-.ps-admin-menu { width: min(460px, calc(100vw - 24px)); max-height: min(70vh, 560px); overflow-y: auto; }
-.ps-admin-groups { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px 12px; margin-top: 10px; }
-.ps-admin-group { display: grid; align-content: start; gap: 2px; }
-.ps-admin-group .ps-label { margin: 0 0 4px 10px; }
+.ps-admin-menu { width: min(520px, calc(100vw - 24px)); max-height: min(78vh, 640px); overflow-y: auto; }
+.ps-admin-groups { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; margin-top: 12px; }
+.ps-admin-group { display: grid; align-content: start; gap: 1px; padding: 8px; border: 1px solid color-mix(in srgb, var(--ps-tone) 22%, var(--ps-line)); border-radius: var(--ps-radius-lg); background: color-mix(in srgb, var(--ps-tone) 5%, var(--ps-surface)); }
+.ps-admin-group-head { display: flex; align-items: center; gap: 9px; margin: 0 0 4px; color: var(--ps-ink); font: 700 13px/1.2 var(--ps-font); }
+.ps-admin-group-head .ps-host-rail-icon { width: 28px; height: 28px; border-radius: 8px; }
+.ps-admin-group-head .ps-host-rail-icon svg { width: 15px; height: 15px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+.ps-admin-group .ps-admin-item { min-height: 32px; padding: 4px 8px; font-size: 12.5px; }
+.ps-admin-group .ps-admin-item svg { width: 15px; height: 15px; stroke: var(--ps-tone); }
+.ps-admin-legacy { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 6px; margin-top: 10px; padding-top: 10px; border-top: 1px dashed var(--ps-line); }
+.ps-admin-legacy .ps-label { margin-right: 4px; }
 .ps-admin-health { display: grid; gap: 8px; margin-top: 12px; padding-top: 10px; border-top: 1px solid var(--ps-line); }
 .ps-admin-health-title { display: inline-flex; align-items: center; gap: 8px; padding: 4px 6px; border: 0; border-radius: var(--ps-radius); background: none; color: var(--ps-ink); font: 600 13px/1.2 var(--ps-font); cursor: pointer; }
 .ps-admin-health-title:hover, .ps-admin-health-title:focus-visible { background: var(--ps-raised); }

@@ -58,4 +58,18 @@ final class AdminPages
         }
         return $menu;
     }
+
+    /** Extra pages for host mode: the easy creator next to Eggs and Mounts, and Pelican's own plugin page under Legacy. */
+    public static function hostExtras(): array
+    {
+        if (!user()?->isAdmin()) return [];
+        $items = [];
+        try {
+            if (FeatureSettings::enabled('easy_creator') && Extensions::canCreate()) $items[] = ['key' => 'easycreator', 'label' => 'Easy server creator', 'url' => Extensions::createUrl(), 'icon' => 'plus'];
+            $plugins = \App\Filament\Admin\Resources\Plugins\PluginResource::class;
+            if ($plugins::canViewAny()) $items[] = ['key' => 'legacyplugins', 'label' => 'Plugin manager (legacy)', 'url' => $plugins::getUrl('index', ['simplify_legacy' => 1], panel: 'admin'), 'icon' => 'plugins'];
+        } catch (\Throwable) {
+        }
+        return $items;
+    }
 }

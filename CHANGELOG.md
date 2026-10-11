@@ -1,5 +1,10 @@
 # Changes
 
+## 0.3.0-beta.15
+- Host mode: Servers holds the easy server creator (when on), Eggs and Mounts; the pages of a section are larger tabs centred at the top.
+- Host mode: new Legacy item at the bottom of the menu with Pelican's own create-server form and plugin manager.
+- Admin tools in simple mode use the same sections as host mode, as coloured cards, with health checks and Legacy at the bottom.
+
 ## 0.3.0-beta.14
 - New notifications drop down from the bell with a pointer to it and slide back up after a few seconds (hover keeps them open). Checked with one small query every 30 seconds while the tab is visible.
 - After a plugin update, install or uninstall the dashboard and the Plugins page reload by themselves once the change is done.

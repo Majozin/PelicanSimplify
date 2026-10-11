@@ -361,16 +361,17 @@
       /** Admin pages merged into a few colour-coded sections; pages from other plugins go to Extensions. */
       hostSections() {
         const plan = [
-          { key: 'servers', label: 'Servers', icon: 'host', color: '#5fb87a', pages: ['serverresource', 'eggresource', 'mountresource'] },
+          { key: 'servers', label: 'Servers', icon: 'host', color: '#5fb87a', pages: ['easycreator', 'eggresource', 'mountresource'] },
           { key: 'nodes', label: 'Nodes', icon: 'monitor', color: '#5b9cf0', pages: ['noderesource', 'backuphostresource'] },
           { key: 'people', label: 'People', icon: 'players', color: '#a78bfa', pages: ['userresource', 'roleresource'] },
           { key: 'integrations', label: 'Integrations', icon: 'database', color: '#f0a35b', pages: ['databasehostresource', 'apikeyresource', 'webhookresource'] },
           { key: 'plugins', label: 'Plugins', icon: 'plugins', color: '#f472b6', pages: ['pluginresource'] },
           { key: 'panel', label: 'Panel', icon: 'gear', color: '#94a3b8', pages: ['settings', 'listlogs'] },
-          { key: 'extensions', label: 'Extensions', icon: 'legacy', color: '#2dd4bf', pages: [] },
+          { key: 'extensions', label: 'Extensions', icon: 'grid', color: '#2dd4bf', pages: [] },
           { key: 'health', label: 'Health', icon: 'heart', color: '#f87171', pages: ['health'] },
+          { key: 'legacy', label: 'Legacy', icon: 'legacy', color: '#a8a29e', pages: ['serverresource', 'legacyplugins'] },
         ];
-        const items = this.adminPages().flatMap((group) => group.items);
+        const items = [...this.adminPages().flatMap((group) => group.items), ...(this.boot.host_extras || [])];
         const known = new Set(plan.flatMap((section) => section.pages));
         return plan.map((section) => ({
           ...section,

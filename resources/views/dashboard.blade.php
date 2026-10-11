@@ -46,11 +46,12 @@
                         </button>
                         <div id="ps-admin-menu" class="ps-dropdown is-end ps-admin-menu" x-show="adminMenu" x-cloak x-transition.opacity>
                             <strong class="ps-dropdown-title">Admin tools</strong>
+                            {{-- Same sections as host mode: coloured cards, Health with its checks and Legacy at the bottom. --}}
                             <div class="ps-admin-groups">
-                                <template x-for="group in adminPages()" :key="group.label">
-                                    <div class="ps-admin-group">
-                                        <span class="ps-label" x-text="group.label"></span>
-                                        <template x-for="item in group.items.filter((i) => i.key !== 'health')" :key="item.key">
+                                <template x-for="section in hostSections().filter((x) => !['health', 'legacy'].includes(x.key))" :key="section.key">
+                                    <div class="ps-admin-group" :style="{'--ps-tone': section.color}">
+                                        <span class="ps-admin-group-head"><span class="ps-host-rail-icon"><svg aria-hidden="true"><use :href="'#ps-'+section.icon"/></svg></span><span x-text="section.label"></span></span>
+                                        <template x-for="item in section.pages" :key="item.key">
                                             <button type="button" class="ps-admin-item" x-on:click="openAdminPage(item)">
                                                 <svg aria-hidden="true"><use :href="'#ps-'+item.icon"/></svg><span x-text="item.label"></span>
                                             </button>
@@ -69,6 +70,14 @@
                                             </button>
                                         </template>
                                     </div>
+                                </div>
+                            </template>
+                            <template x-for="section in hostSections().filter((x) => x.key === 'legacy')" :key="section.key">
+                                <div class="ps-admin-legacy">
+                                    <span class="ps-label">Legacy</span>
+                                    <template x-for="item in section.pages" :key="item.key">
+                                        <button type="button" class="ps-btn is-sm is-subtle" x-on:click="openAdminPage(item)" x-text="item.label"></button>
+                                    </template>
                                 </div>
                             </template>
                         </div>
@@ -262,7 +271,7 @@
                 <nav class="ps-host-rail" aria-label="Admin sections">
                     <span class="ps-label ps-host-rail-title">Admin</span>
                     <div class="ps-host-rail-items">
-                        <template x-for="section in hostSections().filter((x) => x.key !== 'health')" :key="section.key">
+                        <template x-for="section in hostSections().filter((x) => !['health', 'legacy'].includes(x.key))" :key="section.key">
                             <button type="button" class="ps-host-rail-item" :style="{'--ps-tone': section.color}" :aria-current="hostSection?.key===section.key ? 'page' : null" x-on:click="openHostSection(section)" :aria-label="section.label">
                                 <span class="ps-host-rail-icon"><svg aria-hidden="true"><use :href="'#ps-'+section.icon"/></svg></span><span class="ps-host-rail-label" x-text="section.label"></span>
                             </button>
@@ -281,14 +290,19 @@
                             </button>
                         </template>
                     </div>
+                    <template x-for="section in hostSections().filter((x) => x.key === 'legacy')" :key="section.key">
+                        <button type="button" class="ps-host-rail-item is-legacy" :style="{'--ps-tone': section.color}" :aria-current="hostSection?.key===section.key ? 'page' : null" x-on:click="openHostSection(section)" :aria-label="section.label">
+                            <span class="ps-host-rail-icon"><svg aria-hidden="true"><use :href="'#ps-'+section.icon"/></svg></span><span class="ps-host-rail-label" x-text="section.label"></span>
+                        </button>
+                    </template>
                 </nav>
                 <div class="ps-host-main" :style="{'--ps-tone': hostSection?.color}">
                     <header class="ps-host-head" x-show="hostSection">
-                        <span class="ps-host-rail-icon"><svg aria-hidden="true"><use :href="'#ps-'+(hostSection?.icon||'host')"/></svg></span>
-                        <h2 x-text="hostSection?.label"></h2>
+                        <div class="ps-host-title"><span class="ps-host-rail-icon"><svg aria-hidden="true"><use :href="'#ps-'+(hostSection?.icon||'host')"/></svg></span>
+                        <h2 x-text="hostSection?.label"></h2></div>
                         <div class="ps-segmented ps-host-subtabs" x-show="hostSection?.pages.length > 1" role="group" aria-label="Pages">
                             <template x-for="item in hostSection?.pages || []" :key="item.key">
-                                <button type="button" :aria-pressed="hostPage?.key===item.key" x-on:click="hostPage=item" x-text="item.label"></button>
+                                <button type="button" :aria-pressed="hostPage?.key===item.key" x-on:click="hostPage=item"><svg aria-hidden="true"><use :href="'#ps-'+item.icon"/></svg><span x-text="item.label"></span></button>
                             </template>
                         </div>
                     </header>

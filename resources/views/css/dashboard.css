@@ -781,16 +781,23 @@ button.ps-package:hover { border-color: var(--ps-accent); }
 .ps-host-rail .ps-health-grid { grid-template-columns: repeat(4, 26px); justify-content: space-evenly; gap: 8px; padding: 8px 4px 2px; }
 
 .ps-host-main { display: flex; flex-direction: column; min-width: 0; overflow: hidden; }
-.ps-host-head { display: flex; flex: none; flex-wrap: wrap; align-items: center; gap: 10px 12px; padding: 10px 14px; border-bottom: 1px solid var(--ps-line); }
+.ps-host-head { display: grid; flex: none; grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr); align-items: center; gap: 10px 16px; padding: 12px 14px; border-bottom: 1px solid var(--ps-line); }
+.ps-host-title { display: flex; align-items: center; gap: 10px; min-width: 0; }
 .ps-host-head h2 { margin: 0; font-size: 17px; font-weight: 700; }
-.ps-host-subtabs { margin-left: auto; }
-.ps-host-subtabs button { white-space: nowrap; }
+/* Pages of the open section: centred at the top, in the section colour. */
+.ps-host-subtabs { justify-self: center; padding: 4px; }
+.ps-host-subtabs button { gap: 7px; min-height: 36px; padding: 6px 16px; font-size: 14px; white-space: nowrap; }
+.ps-host-subtabs button svg { width: 16px; height: 16px; }
+.ps-host-subtabs button[aria-pressed="true"] { box-shadow: inset 0 -2px 0 var(--ps-tone, var(--ps-accent)); color: var(--ps-ink); }
+.ps-host-rail-item.is-legacy { margin-top: 6px; }
 .ps-host-frame { flex: 1; min-height: 0; }
 .ps-host-frame iframe { display: block; width: 100%; height: 100%; border: 0; background: var(--ps-surface); }
 @media (prefers-reduced-motion: reduce) { .ps-host, .ps-host-server { transition: none; } }
 @media (max-width: 1100px) {
   .ps-host { grid-template-columns: 58px minmax(0, 1fr); grid-template-rows: auto minmax(0, 1fr); gap: 14px 0; }
   .ps-host-servers { grid-column: 1 / -1; margin-right: 0; }
+  .ps-host-head { grid-template-columns: 1fr; }
+  .ps-host-subtabs { justify-self: start; }
   .ps-host-servers-toggle { display: inline-flex; margin: 8px; }
   .ps-host-server-list { display: none; max-height: 45dvh; }
   .ps-host-servers.is-open .ps-host-server-list { display: block; }
