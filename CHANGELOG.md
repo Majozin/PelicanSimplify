@@ -1,6 +1,7 @@
 # Changes
 
 ## 0.2.0-alpha.23
+- Reduce collapsed Host health padding, typography and icons to keep the dock compact.
 - Remove the empty strip above Host health; its soft shadow overlays the scrolling server region.
 - Shorter list cards use smaller server icons, software icons alongside and raised titles.
 - Taller overview grid cards retain logos and compress their contents when quick controls appear, without hover lift.
