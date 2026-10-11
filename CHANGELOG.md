@@ -1,5 +1,10 @@
 # Changes
 
+## 0.3.0-beta.13
+- Settings popup: the category menu stays in place while the settings scroll.
+- Host mode: the admin menu is joined to the page it opens and always shows its labels (no more folding); current health check icons sit in a tidy grid under Health.
+- Admin tools: health check icons in a grid under "Host health checks".
+
 ## 0.3.0-beta.12
 - Plugin install and uninstall from the Plugins page run in a fresh process with a start-up check; success and failure always arrive as a notification, also when the background job itself crashes or times out.
 - A plugin whose code fails to load is set back to "not installed" with the error shown, instead of staying enabled and stopping the whole panel (Pelican's own install leaves it enabled).

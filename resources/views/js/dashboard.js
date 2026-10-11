@@ -38,7 +38,6 @@
       hostMode: false,
       hostPage: null,
       hostSection: null,
-      hostRailCollapsed: false,
       hostServersOpen: false,
       adminPage: null,
       overviewCompact: false,
@@ -370,12 +369,10 @@
           pages: section.key === 'extensions' ? items.filter((item) => !known.has(item.key)) : section.pages.map((key) => items.find((item) => item.key === key)).filter(Boolean),
         })).filter((section) => section.pages.length);
       },
-      /** Opening a section from the menu folds the menu into its coloured icons. */
-      openHostSection(section, collapse = true) {
+      openHostSection(section) {
         if (!section) return;
         this.hostSection = section;
         this.hostPage = section.pages[0] || null;
-        if (collapse) this.hostRailCollapsed = true;
       },
       hostServerVersion(s) {
         const version = String(s.reported_version || '').trim();

@@ -61,7 +61,7 @@
                             <template x-if="adminHealthPage()">
                                 <div class="ps-admin-health">
                                     <button type="button" class="ps-admin-health-title" x-on:click="openAdminPage(adminHealthPage())"><svg aria-hidden="true"><use href="#ps-heart"/></svg><span>Host health checks</span></button>
-                                    <div class="ps-admin-health-checks">
+                                    <div class="ps-health-grid">
                                         <template x-for="check in healthChecks()" :key="check.label">
                                             <button type="button" class="ps-health-check" :class="'is-'+check.status" x-on:click="openAdminPage(adminHealthPage())"
                                                     :data-tip="check.label+(check.status==='ok' ? ': OK' : ': '+(check.message || check.status))" :aria-label="check.label+': '+check.status">
@@ -217,7 +217,7 @@
         </header>
 
         {{-- Host mode (admins, large hosts): server buttons per node, a colour-coded admin rail and the page. --}}
-        <section class="ps-host" x-show="!server && hostMode" x-cloak :class="{'rail-collapsed': hostRailCollapsed}" :style="accentStyle('overview')">
+        <section class="ps-host" x-show="!server && hostMode" x-cloak :style="accentStyle('overview')">
                 <aside class="ps-host-servers" :class="{'is-open': hostServersOpen}" aria-label="Servers">
                     <button type="button" class="ps-btn is-sm ps-host-servers-toggle" x-on:click="hostServersOpen=!hostServersOpen" :aria-expanded="hostServersOpen"><svg aria-hidden="true"><use href="#ps-list"/></svg><span x-text="'Servers ('+(boot.servers||[]).length+')'"></span></button>
                     <div class="ps-host-server-list">
@@ -242,21 +242,27 @@
                     </div>
                 </aside>
                 <nav class="ps-host-rail" aria-label="Admin sections">
-                    <button type="button" class="ps-host-rail-toggle" x-on:click="hostRailCollapsed=!hostRailCollapsed" :aria-expanded="!hostRailCollapsed" :data-tip="hostRailCollapsed ? 'Expand menu' : 'Collapse menu'" aria-label="Toggle admin menu">
-                        <svg aria-hidden="true"><use :href="hostRailCollapsed ? '#ps-menu' : '#ps-back'"/></svg><span>Admin</span>
-                    </button>
+                    <span class="ps-label ps-host-rail-title">Admin</span>
                     <div class="ps-host-rail-items">
                         <template x-for="section in hostSections().filter((x) => x.key !== 'health')" :key="section.key">
-                            <button type="button" class="ps-host-rail-item" :style="{'--ps-tone': section.color}" :aria-current="hostSection?.key===section.key ? 'page' : null" x-on:click="openHostSection(section)" :data-tip="hostRailCollapsed ? section.label : null" :aria-label="section.label">
+                            <button type="button" class="ps-host-rail-item" :style="{'--ps-tone': section.color}" :aria-current="hostSection?.key===section.key ? 'page' : null" x-on:click="openHostSection(section)" :aria-label="section.label">
                                 <span class="ps-host-rail-icon"><svg aria-hidden="true"><use :href="'#ps-'+section.icon"/></svg></span><span class="ps-host-rail-label" x-text="section.label"></span>
                             </button>
                         </template>
                     </div>
                     <template x-for="section in hostSections().filter((x) => x.key === 'health')" :key="section.key">
-                        <button type="button" class="ps-host-rail-item is-health" :style="{'--ps-tone': section.color}" :aria-current="hostSection?.key===section.key ? 'page' : null" x-on:click="openHostSection(section)" :data-tip="hostRailCollapsed ? section.label : null" :aria-label="section.label">
+                        <button type="button" class="ps-host-rail-item is-health" :style="{'--ps-tone': section.color}" :aria-current="hostSection?.key===section.key ? 'page' : null" x-on:click="openHostSection(section)" :aria-label="section.label">
                             <span class="ps-host-rail-icon"><svg aria-hidden="true"><use :href="'#ps-'+section.icon"/></svg></span><span class="ps-host-rail-label" x-text="section.label"></span>
                         </button>
                     </template>
+                    <div class="ps-health-grid" x-show="healthChecks().length" role="group" aria-label="Current health checks">
+                        <template x-for="check in healthChecks()" :key="check.label">
+                            <button type="button" class="ps-health-check" :class="'is-'+check.status" x-on:click="openHostSection(hostSections().find((x) => x.key === 'health'))"
+                                    :data-tip="check.label+(check.status==='ok' ? ': OK' : ': '+(check.message || check.status))" :aria-label="check.label+': '+check.status">
+                                <svg aria-hidden="true"><use :href="check.status==='ok' ? '#ps-check' : '#ps-alert'"/></svg>
+                            </button>
+                        </template>
+                    </div>
                 </nav>
                 <div class="ps-host-main" :style="{'--ps-tone': hostSection?.color}">
                     <header class="ps-host-head" x-show="hostSection">
