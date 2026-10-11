@@ -1,5 +1,10 @@
 # Changes
 
+## 0.3.0-beta.10
+- New plugin versions are noticed within about 15 minutes again (checked like Pelican's own plugin page) instead of once a day.
+- Root admins get a notification for each new version, once, with a link to the Plugins page.
+- With "Install plugin updates automatically" on, the update is installed right away (backup, check, rollback) instead of waiting for the night.
+
 ## 0.3.0-beta.9
 - Plugins page: "Check for updates" button that skips the cache and checks right away.
 - The update check runs every three hours instead of every twelve, and the update notice opens Simplify's plugin page.

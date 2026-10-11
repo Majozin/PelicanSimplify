@@ -5,7 +5,7 @@ use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Route;
 /**
  * Compares the installed version with the published update.json (the same file Pelican's
- * plugin updater reads). Checked at most every three hours (or on demand via forget()); installing stays with Pelican.
+ * plugin updater reads). Checked at most every ten minutes, like Pelican's own plugin page (or on demand via forget()); installing stays with Pelican.
  */
 final class UpdateCheck
 {
@@ -15,10 +15,10 @@ final class UpdateCheck
         $manifest = self::manifest();
         $url = is_string($manifest['update_url'] ?? null) ? $manifest['update_url'] : null;
         if (!$current || !$url || !str_starts_with($url, 'https://')) return null;
-        $published = Remember::value('simplify.update-check.'.hash('sha256', $url), 10800, function () use ($url): ?array {
+        $published = Remember::value('simplify.update-check.'.hash('sha256', $url), 600, function () use ($url): ?array {
             $response = Http::timeout(3)->connectTimeout(2)->acceptJson()->get($url);
             return $response->successful() && is_array($response->json()) ? $response->json() : null;
-        }, 3600);
+        }, 600);
         $entry = is_array($published) ? ($published[$manifest['panel_version'] ?? ''] ?? null) : null;
         $latest = is_array($entry) && is_string($entry['version'] ?? null) ? $entry['version'] : null;
         if (!$latest || !preg_match('/^\d+\.\d+\.\d+(?:[-+][0-9A-Za-z.-]+)?$/', $latest)) return null;

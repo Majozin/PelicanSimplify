@@ -51,7 +51,7 @@ final class SimplifyProvider extends ServiceProvider
         });
         $this->app->booted(function():void {
             Schedule::command('simplify:maintenance')->everyMinute()->withoutOverlapping(5);
-            Schedule::command('simplify:plugin-updates')->dailyAt('04:17')->withoutOverlapping(60);
+            Schedule::command('simplify:plugin-updates')->everyFifteenMinutes()->withoutOverlapping(60);
         });
     }
 }

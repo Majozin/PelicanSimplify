@@ -150,6 +150,22 @@ final class PluginUpdater
     }
 
     /** Result in the Simplify bell (Pelican database notification) for the starter or all root admins. */
+    /** Tells root admins once per version that an update is available (and whether it is being installed). */
+    public static function announce(Plugin $plugin, bool $installing): void
+    {
+        $latest = self::latestVersion($plugin);
+        if (!$latest || !\Illuminate\Support\Facades\Cache::add('simplify.plugin-announced.'.$plugin->id.'.'.$latest, true, now()->addDays(60))) return;
+        try {
+            $notification = \Filament\Notifications\Notification::make()->info()
+                ->title($plugin->name.' '.$latest.' is available')
+                ->body($installing ? 'Installing it now with a backup and automatic rollback. You get another notification when it is done.' : 'You are running '.$plugin->version.'. Install it from the Plugins page.')
+                ->actions([\Filament\Actions\Action::make('open')->label('Open plugins')->url(\Simplify\Panel\Filament\Admin\Pages\ManagePlugins::getUrl(panel: 'admin'))]);
+            foreach (\App\Models\User::query()->get()->filter(fn ($user) => $user->isRootAdmin()) as $user) $user->notifyNow($notification->toDatabase());
+        } catch (\Throwable $exception) {
+            report($exception);
+        }
+    }
+
     private static function notify(array $result, ?int $userId): void
     {
         try {
