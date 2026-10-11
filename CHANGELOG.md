@@ -1,5 +1,10 @@
 # Changes
 
+## 0.2.0-alpha.11
+
+- Wait for dashboard initialization, styles, fonts and visible images before showing the page, preventing refresh flashes.
+- Include the page loader and standalone settings stylesheet in blocking installation checks.
+
 ## 0.2.0-alpha.10
 
 - Outline the server title tile in its server accent color.

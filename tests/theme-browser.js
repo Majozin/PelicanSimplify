@@ -47,6 +47,17 @@ const html=`<!doctype html><html><head><link rel="stylesheet" href="/global.css"
   await popup.setViewportSize({width:390,height:844});await popup.waitForTimeout(150);const mobile=await geometry();assert(mobile.width<=390&&mobile.height<=828);assert.equal(mobile.innerScroll,false);
   await popup.evaluate(()=>testWorkspace.releaseCreatorFrame());await popup.close();
   const markup=fs.readFileSync(root+'dashboard.blade.php','utf8');assert(!markup.includes('keydown.escape.window="close()"'));assert(!markup.includes('click.self='));assert.equal((markup.match(/x-on:click="close\(\)"/g)||[]).length,1);
+  const loadingPage=await browser.newPage();
+  let releaseStyle;const styleGate=new Promise(resolve=>{releaseStyle=resolve;});
+  await loadingPage.route('**/delayed.css',async route=>{await styleGate;await route.fulfill({contentType:'text/css',body:'.fi-layout{display:block}'});});
+  await loadingPage.goto('http://127.0.0.1:'+server.address().port);await loadingPage.waitForLoadState('networkidle');
+  const critical=fs.readFileSync(root+'shared-assets.blade.php','utf8').match(/<style>([\s\S]*?)<\/style>/)[1];await loadingPage.addStyleTag({content:critical});
+  await loadingPage.evaluate(()=>{document.documentElement.classList.add('ps-page-loading');document.body.innerHTML='<main class="fi-layout"><section data-simplify-root>Ready content</section></main>';const global=document.querySelector('link');global.id='simplify-global-css';const delayed=document.createElement('link');delayed.id='simplify-dashboard-css';delayed.rel='stylesheet';delayed.href='/delayed.css';document.head.append(delayed);});
+  await loadingPage.addScriptTag({content:fs.readFileSync(root+'page-load.js','utf8')});
+  await loadingPage.evaluate(()=>{void SimplifyPageReady(document.querySelector('[data-simplify-root]'));});
+  assert.equal(await loadingPage.locator('.fi-layout').evaluate(el=>getComputedStyle(el).visibility),'hidden');
+  releaseStyle();await loadingPage.waitForFunction(()=>!document.documentElement.classList.contains('ps-page-loading'));
+  assert.equal(await loadingPage.locator('.fi-layout').evaluate(el=>getComputedStyle(el).visibility),'visible');assert.equal(await loadingPage.locator('#simplify-page-loading').count(),0);await loadingPage.close();
   console.log('PASS shared dark/light controls, creator and native frames, black console, persistence, legacy opt-out, adaptive console and mobile theme');
  }finally{await browser.close();await new Promise(resolve=>server.close(resolve));}
 })().catch(e=>{console.error(e);process.exit(1)});

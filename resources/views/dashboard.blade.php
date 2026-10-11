@@ -1,9 +1,9 @@
 <x-filament-panels::page>
 @assets
-<link rel="stylesheet" href="{{ route('simplify.asset',['asset'=>'dashboard.css']) }}?v=0.2.0-alpha.10">
-<script src="{{ route('simplify.asset',['asset'=>'dashboard.js']) }}?v=0.2.0-alpha.10"></script>
+<link id="simplify-dashboard-css" rel="stylesheet" href="{{ route('simplify.asset',['asset'=>'dashboard.css']) }}?v=0.2.0-alpha.11">
+<script src="{{ route('simplify.asset',['asset'=>'dashboard.js']) }}?v=0.2.0-alpha.11"></script>
 @endassets
-<div class="ps" wire:ignore.self x-data="pelicanSimplify($wire,@js($this->initial()))" x-on:resize.window.debounce.100ms="restoreOverviewView()" :class="{'console-closed':collapsed,'dark':themeDark,'server-active':!!server}" :style="accentStyle(server?.uuid || 'overview')">
+<div class="ps" data-simplify-root x-cloak wire:ignore.self x-data="pelicanSimplify($wire,@js($this->initial()))" x-on:resize.window.debounce.100ms="restoreOverviewView()" :class="{'console-closed':collapsed,'dark':themeDark,'server-active':!!server}" :style="accentStyle(server?.uuid || 'overview')">
     <svg class="ps-symbols" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><defs>
         <symbol id="ps-gamepad" viewBox="0 0 24 24"><path d="M7 7h10c3 0 5 4 5 9 0 3-3 4-5 1l-2-2H9l-2 2c-2 3-5 2-5-1 0-5 2-9 5-9Z M6 10v4m-2-2h4"/><circle cx="16" cy="11" r=".7"/><circle cx="19" cy="13" r=".7"/></symbol><symbol id="ps-cube" viewBox="0 0 24 24"><path d="m12 3 9 5v8l-9 5-9-5V8zM3 8l9 5 9-5m-9 5v8M7 5.8l9 5"/></symbol>
         <symbol id="ps-menu" viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h16"/></symbol><symbol id="ps-creeper" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="1"/><path fill="currentColor" stroke="none" d="M6 7h4v4H6zm8 0h4v4h-4zm-4 4h4v3h3v5h-3v-3h-4v3H7v-5h3z"/></symbol><symbol id="ps-settings" viewBox="0 0 24 24"><path d="M4 7h16M4 17h16M8 4v6m8 4v6"/><circle cx="8" cy="7" r="2"/><circle cx="16" cy="17" r="2"/></symbol>
