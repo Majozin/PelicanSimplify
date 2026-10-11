@@ -15,10 +15,11 @@
                         <div class="ps-check-grid">
                             @foreach($this->requirementGroups() as $group => $checks)
                                 @php($failed = array_filter($checks, fn($check) => !$check['ok']))
-                                <article class="ps-check-card {{ $failed ? 'is-blocked' : 'is-ready' }}">
+                                <article class="ps-check-card {{ $failed ? (array_filter($failed, fn($check) => $check['blocking'] ?? true) ? 'is-blocked' : 'is-warning') : 'is-ready' }}">
                                     <div class="ps-check-card-heading">@if($failed)<x-tabler-alert-circle />@else<x-tabler-circle-check />@endif<h3>{{ $group }}</h3><span>{{ count($checks) - count($failed) }}/{{ count($checks) }}</span></div>
-                                    @foreach($failed as $check)<div class="ps-check-fix"><strong>{{ $check['name'] }}</strong><p>{{ $check['fix'] }}</p></div>@endforeach
-                                    <details><summary>View checks</summary><ul>@foreach($checks as $check)<li><span class="ps-check-dot {{ $check['ok'] ? 'is-ready' : 'is-blocked' }}"></span><span>{{ $check['name'] }}</span><small>{{ $check['ok'] ? 'Ready' : 'Needs attention' }}</small></li>@endforeach</ul></details>
+                                    @foreach($failed as $check)<div class="ps-check-fix"><strong>{{ $check['name'] }}</strong><p>{{ $check['fix'] }}</p>@if(!empty($check['detail']))<p>{{ $check['detail'] }}</p>@endif</div>@endforeach
+                                    @foreach($checks as $check)@if($check['ok'] && !empty($check['detail']))<p class="ps-help">{{ $check['detail'] }}</p>@endif@endforeach
+                                    <details><summary>View checks</summary><ul>@foreach($checks as $check)<li><span class="ps-check-dot {{ $check['ok'] ? 'is-ready' : 'is-blocked' }}"></span><span>{{ $check['name'] }}</span><small>{{ $check['ok'] ? 'Ready' : (($check['blocking'] ?? true) ? 'Needs attention' : 'Warning · optional') }}</small></li>@endforeach</ul></details>
                                 </article>
                             @endforeach
                         </div>

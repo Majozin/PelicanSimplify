@@ -30,7 +30,7 @@ final class DependencyCheck
         foreach (['storage', 'bootstrap/cache'] as $directory) {
             $add('Writable '.$directory, self::writeProbe($panel.'/'.$directory), 'Grant the panel and queue worker read/write access to '.$directory.'.');
         }
-        foreach (['creator.css', 'global.css', 'dashboard.css', 'theme.js', 'dashboard.js', 'setup-progress.js', 'page-load.js', 'settings-page.css', 'filament/admin/draft.js'] as $file) {
+        foreach (['creator.css', 'global.css', 'dashboard.css', 'theme.js', 'dashboard.js', 'setup-progress.js', 'page-load.js', 'settings-page.css', 'frame.css', 'filament/admin/draft.js'] as $file) {
             $path = $plugin.'/resources/views/'.$file;
             $add('Plugin asset: '.$file, is_readable($path) && filesize($path) > 0, 'Reimport the complete PelicanSimplify package; this CSS/JavaScript file is missing, empty or unreadable.');
         }
@@ -69,18 +69,18 @@ final class DependencyCheck
             $add('Plugin settings storage', $storage, 'Repair the local Laravel storage disk and grant the panel write access.');
             $add('Background queue configured', !in_array(config('queue.default'), [null, '', 'sync', 'null'], true), 'Configure a persistent Pelican queue connection and start its queue worker.');
         }
-        return $checks;
+        return [...$checks,...UploadLimits::checks()];
     }
 
     public static function ready(array $checks): bool
     {
-        return $checks !== [] && !array_filter($checks, static fn (array $check): bool => !$check['ok']);
+        return $checks !== [] && !array_filter($checks, static fn (array $check): bool => !$check['ok'] && ($check['blocking'] ?? true));
     }
 
     public static function assertReady(array $checks): void
     {
         if (self::ready($checks)) return;
-        $failed = array_filter($checks, static fn (array $check): bool => !$check['ok']);
+        $failed = array_filter($checks, static fn (array $check): bool => !$check['ok'] && ($check['blocking'] ?? true));
         throw new \RuntimeException("PelicanSimplify installation blocked. Fix these requirements and retry:\n".implode("\n", array_map(static fn (array $check): string => $check['name'].': '.$check['fix'], $failed)));
     }
 

@@ -1,7 +1,7 @@
 const fs=require('fs'),vm=require('vm'),assert=require('assert');
 function doc(){const classes=new Set();const nodes={};return {documentElement:{style:{values:{},setProperty(k,v){this.values[k]=v}},dataset:{},classList:{toggle(key,value){value?classes.add(key):classes.delete(key)},add(key){classes.add(key)},contains:key=>classes.has(key)}},getElementById:key=>nodes[key],createElement:()=>({}),head:{append(node){nodes[node.id]=node}},addEventListener(){},querySelectorAll:()=>[]};}
 const document=doc(),values=new Map(),events={};let mediaListener;
-const window={simplifyThemeConfig:{global_theme:true,legacy_theme:true,console_dark:true,accent_color:'#446688',css_url:'/global.css'},dispatchEvent(event){for(const fn of events[event.type]||[])fn(event)},addEventListener(type,fn){(events[type]??=[]).push(fn)}};
+const window={simplifyThemeConfig:{global_theme:true,legacy_theme:true,console_dark:true,accent_color:'#446688',css_url:'/global.css',frame_css_url:'/frame.css'},dispatchEvent(event){for(const fn of events[event.type]||[])fn(event)},addEventListener(type,fn){(events[type]??=[]).push(fn)}};
 const context={window,document,localStorage:{getItem:key=>values.get(key),setItem:(key,value)=>values.set(key,value)},matchMedia:()=>({matches:false,addEventListener(type,fn){mediaListener=fn}}),CustomEvent:class{constructor(type,{detail}){this.type=type;this.detail=detail}}};
 vm.createContext(context);vm.runInContext(fs.readFileSync(__dirname+'/../resources/views/theme.js','utf8'),context);
 const t=window.SimplifyTheme;assert.equal(t.preference(),'system');assert(document.documentElement.classList.contains('ps-theme'));
@@ -13,3 +13,5 @@ t.configure({...window.simplifyThemeConfig,legacy_theme:false,console_dark:false
 t.configure({...window.simplifyThemeConfig,legacy_page:true});assert(!document.documentElement.classList.contains('ps-theme'));assert(settings.contentDocument.documentElement.classList.contains('ps-theme'));
 t.configure({...window.simplifyThemeConfig,global_theme:false});assert(!document.documentElement.classList.contains('ps-theme'));t.set('unsupported');assert.equal(t.preference(),'light');
 console.log('PASS theme propagation, shared asset link, saved preference, legacy opt-out, creator exception, console modes and theme opt-out');
+
+const isolated={dataset:{},contentDocument:doc()};t.frame(isolated,'native','#bb6677');assert.equal(isolated.contentDocument.getElementById('simplify-frame-css').href,'/frame.css');assert.equal(isolated.contentDocument.documentElement.style.values['--ps-accent'],'#bb6677');document.querySelectorAll=()=>[isolated];t.set('dark');assert.equal(isolated.contentDocument.documentElement.style.values['--ps-accent'],'#bb6677');assert.equal(isolated.contentDocument.documentElement.dataset.psDark,'1');assert.equal(document.getElementById('simplify-frame-css'),undefined);

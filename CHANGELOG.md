@@ -1,5 +1,15 @@
 # Changes
 
+## 0.2.0-alpha.13
+
+- Show advisory PHP/Livewire upload capacity and NGINX/proxy configuration guidance; cap banner uploads at the detected application limit.
+- Add a dedicated iframe stylesheet with server accent colors and shared control/icon styling.
+- Keep the file list visible while its native editor opens alongside it; save closes only the editor, preserving native warnings and permissions. Protect unsaved changes.
+- Show expandable, permission-gated SFTP details with copy and connect actions.
+- Enlarge the favicon pelican, tint Offline badges light red and add editable display aliases beside actual server names.
+- Place Server banners on its own tab inside Settings.
+
+
 ## 0.2.0-alpha.12
 
 - Stop popup iframe height feedback loops; resize when content grows or shrinks.

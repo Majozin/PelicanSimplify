@@ -1090,3 +1090,24 @@ body:has(.ps:not(.server-active)) .fi-main-ctn { height:auto!important;overflow:
  .ps .ps-nav-items>.ps-icon-button,.ps .ps-nav-items .ps-account-button { box-sizing:border-box; }
  .ps .ps-nav-items .ps-account-menu { min-width:0; }
 }
+
+.ps .ps-status.offline { color:#b94d57!important;background:#fbeaec!important;border-color:#eac4c8!important; }
+.ps.dark .ps-status.offline { color:#f3a6ae!important;background:#3b262d!important;border-color:#67404a!important; }
+.ps .ps-sftp-details { display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px;width:100%;padding:16px;border:1px solid var(--line);border-radius:12px;background:var(--raised);margin-top:12px; }
+.ps .ps-modal>header>div { flex:1;min-width:0; }
+.ps .ps-sftp-details p { margin:0;font-weight:400;font-size:13px; }
+.ps .ps-copy-field { display:flex;align-items:center;gap:6px;min-width:0; }
+.ps .ps-copy-field input { min-width:0;flex:1; }
+.ps .ps-sftp-connect { color:var(--accent);font-size:12px; }
+.ps .ps-files-workspace { display:grid;grid-template-columns:minmax(0,1fr);gap:16px;padding:16px;align-items:start; }
+.ps .ps-files-workspace.has-editor { grid-template-columns:minmax(260px,.8fr) minmax(0,1.2fr); }
+.ps .ps-files-list,.ps .ps-file-editor { min-width:0; }
+.ps .ps-file-editor { border:1px solid var(--accent);border-radius:12px;overflow:hidden; }
+.ps .ps-file-editor>header { display:flex;align-items:center;gap:10px;padding:12px 16px;background:var(--raised); }
+.ps .ps-file-editor>header .ps-close { margin-left:auto; }
+.ps .ps-editor-unsaved { color:var(--accent);font-size:12px; }
+@media(max-width:800px){ .ps .ps-sftp-details { grid-template-columns:1fr; } .ps .ps-files-workspace.has-editor { grid-template-columns:minmax(0,1fr); } }
+
+.ps .ps-real-server-name { color:var(--muted);font-size:14px;font-weight:400;overflow-wrap:anywhere; }
+.ps .ps-alias-button { display:flex;align-items:center;gap:6px;width:auto;flex:none;font-size:11px; }
+.ps .ps-game-title { flex-wrap:wrap; }

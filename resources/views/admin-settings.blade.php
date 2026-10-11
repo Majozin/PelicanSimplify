@@ -1,13 +1,10 @@
 <x-filament-panels::page>
     @assets
     @include('pelican-simplify::filament.admin.styles')
-    @if(!$this->embedded)<link rel="stylesheet" href="{{ route('simplify.asset',['asset'=>'settings-page.css']) }}?v=0.2.0-alpha.12">@endif
-    <script src="{{ route('simplify.asset',['asset'=>'setup-progress.js']) }}?v=0.2.0-alpha.12"></script>
+    @if(!$this->embedded)<link rel="stylesheet" href="{{ route('simplify.asset',['asset'=>'settings-page.css']) }}?v=0.2.0-alpha.13">@endif
+    <script src="{{ route('simplify.asset',['asset'=>'setup-progress.js']) }}?v=0.2.0-alpha.13"></script>
     @endassets
     <div class="ps-settings-page {{ $this->embedded ? 'is-embedded' : 'is-standalone' }}">
-        @if($this->bannerOnly)
-            @include('pelican-simplify::banner-library')
-        @else
         @if($this->needsSetup() && !$setupStarted)
             @include('pelican-simplify::system-checks')
         @endif
@@ -36,7 +33,6 @@
             @else
                 <button type="button" class="ps-diagnostics-toggle" wire:click="toggleDiagnostics" wire:loading.attr="disabled"><x-tabler-shield-check />System checks</button>
             @endif
-        @endif
         @endif
     </div>
 </x-filament-panels::page>

@@ -41,7 +41,6 @@ class SimplifySettings extends Page implements HasForms
     public bool $setupStarted = false;
     public bool $showDiagnostics = false;
     #[\Livewire\Attributes\Locked] public bool $embedded = false;
-    #[\Livewire\Attributes\Locked] public bool $bannerOnly = false;
     public function bannerLibrary(): array
     {
         abort_unless(static::canAccess(),403);
@@ -79,6 +78,7 @@ class SimplifySettings extends Page implements HasForms
         foreach ($this->requirements as $check) {
             $name = $check['name'];
             $group = match (true) {
+                ($check['blocking'] ?? true) === false => 'Upload capacity',
                 str_starts_with($name, 'PHP') => 'PHP runtime',
                 str_starts_with($name, 'Composer:') || str_contains($name, 'Composer') || str_contains($name, 'Tabler') => 'Panel components',
                 str_starts_with($name, 'Plugin asset:') || str_starts_with($name, 'Built ') || str_starts_with($name, 'Node.') || $name === 'Yarn' => 'Styles and scripts',
@@ -96,7 +96,6 @@ class SimplifySettings extends Page implements HasForms
     {
         abort_unless(static::canAccess(), 403);
         $this->embedded = request()->boolean('simplify_embed');
-        $this->bannerOnly = request()->query('section') === 'banners' && !$this->needsSetup();
         $this->form->fill([...CreatorAccess::settings(),'creation_defaults'=>\Simplify\Panel\Services\CreationDefaults::all(),'appearance'=>AppearanceSettings::all(),'features'=>\Simplify\Panel\Services\FeatureSettings::all(),'web'=>\Simplify\Panel\Services\Extensions::webInstalled()?app('simplify.web')->options():[]]);
     }
     public function form(Schema $schema): Schema
@@ -150,6 +149,7 @@ class SimplifySettings extends Page implements HasForms
                     ->submitAction(new \Illuminate\Support\HtmlString(view('pelican-simplify::setup-submit')->render())),
             ]);
         }
+        $categories['Server banners'] = [\Filament\Schemas\Components\View::make('pelican-simplify::banner-library')];
         return $schema->statePath('data')->components([
             \Filament\Schemas\Components\Tabs::make('Simplify settings')->columnSpanFull()->tabs(
                 array_map(fn(string $label, array $content) => \Filament\Schemas\Components\Tabs\Tab::make($label)->schema($content), array_keys($categories), array_values($categories))

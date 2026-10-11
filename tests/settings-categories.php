@@ -6,7 +6,7 @@ namespace Filament\Forms\Concerns {trait InteractsWithForms {}}
 namespace Filament\Forms\Contracts {interface HasForms {}}
 namespace Filament\Forms\Components {class Toggle extends \Test\Component {}class TextInput extends \Test\Component {}class Select extends \Test\Component {}class ColorPicker extends \Test\Component {}}
 namespace Filament\Schemas {class Schema extends \Test\Component {}}
-namespace Filament\Schemas\Components {class Section extends \Test\Component {}class Wizard extends \Test\Component {public static function make($steps=null){$instance=new self;$instance->options['steps']=$steps;return $instance;}}class Tabs extends \Test\Component {}}
+namespace Filament\Schemas\Components {class View extends \Test\Component {}class Section extends \Test\Component {}class Wizard extends \Test\Component {public static function make($steps=null){$instance=new self;$instance->options['steps']=$steps;return $instance;}}class Tabs extends \Test\Component {}}
 namespace Filament\Schemas\Components\Wizard {class Step extends \Test\Component {}}
 namespace Filament\Schemas\Components\Tabs {class Tab extends \Test\Component {}}
 namespace Illuminate\Support {class HtmlString {public function __construct($value){}}}
@@ -24,7 +24,7 @@ namespace {
  if(!isset($wizard->options['submitAction'])||$wizard->options['skippable']!==[false])throw new \RuntimeException('wizard final save or validation guard missing');
  \Simplify\Panel\Services\FeatureSettings::$complete=true;
  $schema=$page->form(new \Filament\Schemas\Schema);$tabs=$schema->options['components'][0][0]->options['tabs'][0];
- if(array_map(fn($tab)=>$tab->label,$tabs)!==$page->setupSteps())throw new \RuntimeException('settings tabs lost a setup category');
+ if(array_map(fn($tab)=>$tab->label,$tabs)!==[...$page->setupSteps(),'Server banners'])throw new \RuntimeException('settings tabs lost a setup category');
  $profiles=$tabs[6]->options['schema'][0][0]->options['schema'][0];
  if(count($profiles)!==3||$profiles[2]->label!=='Modded / modpacks'||count($profiles[2]->options['schema'][0])!==3)throw new \RuntimeException('CPU/RAM/disk profiles missing from settings');
  echo "PASS separate setup pages, matching numbered navigation, final-step submit, category tabs and editable modpack resource columns\n";

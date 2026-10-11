@@ -6,29 +6,30 @@
  let preference='system',options=config;
  try{const saved=localStorage.getItem(key);if(['light','dark','system'].includes(saved))preference=saved;}catch{}
  const dark=()=>preference==='dark'||(preference==='system'&&media.matches);
- const applyDocument=(doc,kind)=>{
+ const applyDocument=(doc,kind,accent)=>{
   if(!doc?.documentElement)return;
   const root=doc.documentElement;kind=kind||root.dataset.psFrame;
   const legacyPage=!kind&&options.legacy_page;
   const themed=!legacyPage&&!!options.global_theme&&(!kind||!!options.legacy_theme||['create','settings'].includes(kind));
   root.classList.toggle('ps-theme',themed);
-  if(root.style&&/^#[0-9a-f]{6}$/i.test(options.accent_color||''))root.style.setProperty('--ps-accent',options.accent_color);
+  if(root.style&&/^#[0-9a-f]{6}$/i.test(accent||options.accent_color||''))root.style.setProperty('--ps-accent',accent||options.accent_color);
   if(themed)root.classList.toggle('dark',dark());
   root.classList.toggle('ps-console-dark',!!options.console_dark);
   root.classList.toggle('ps-console-adaptive',!options.console_dark);
-  if(kind){root.classList.add('ps-frame');root.dataset.psFrame=kind;}
   if(options.global_theme&&kind&&!doc.getElementById('simplify-global-css')){
    const link=doc.createElement('link');link.id='simplify-global-css';link.rel='stylesheet';link.href=options.css_url;doc.head.append(link);
   }
+  if(kind){root.classList.add('ps-frame');root.dataset.psFrame=kind;root.dataset.psDark=dark()?'1':'0';if(options.frame_css_url&&!doc.getElementById('simplify-frame-css')){const link=doc.createElement('link');link.id='simplify-frame-css';link.rel='stylesheet';link.href=options.frame_css_url;doc.head.append(link);}}
+
  };
  const apply=()=>{
   applyDocument(document);
-  for(const frame of document.querySelectorAll('iframe[data-ps-frame]'))try{applyDocument(frame.contentDocument,frame.dataset.psFrame);}catch{}
+  for(const frame of document.querySelectorAll('iframe[data-ps-frame]'))try{applyDocument(frame.contentDocument,frame.dataset.psFrame,frame.dataset.psAccent);}catch{}
   window.dispatchEvent(new CustomEvent('simplify:theme',{detail:{preference,dark:dark()}}));
  };
  window.SimplifyTheme={
   set(value){if(!['light','dark','system'].includes(value))return;preference=value;try{localStorage.setItem(key,value);localStorage.setItem('theme',value);}catch{}apply();},
-  frame(frame,kind){frame.dataset.psFrame=kind;try{applyDocument(frame.contentDocument,kind);frame.contentWindow?.SimplifyTheme?.configure(options);frame.contentWindow?.SimplifyTheme?.set(preference);}catch{}},
+  frame(frame,kind,accent){frame.dataset.psFrame=kind;if(accent)frame.dataset.psAccent=accent;try{frame.contentWindow?.SimplifyTheme?.configure(options);frame.contentWindow?.SimplifyTheme?.set(preference);applyDocument(frame.contentDocument,kind,frame.dataset.psAccent);}catch{}},
   dark,preference:()=>preference,configure(value){options=value;apply();}
  };
  media.addEventListener('change',()=>{if(preference==='system')apply();});

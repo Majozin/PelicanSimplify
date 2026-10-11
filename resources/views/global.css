@@ -134,3 +134,6 @@ html.ps-frame,html.ps-frame body{overflow:hidden!important;min-height:0!importan
 
 /* The native profile saves through its header actions; keep them reachable in the popup. */
 .ps-frame[data-ps-frame="account"] .fi-header { display:flex!important;gap:12px;flex-wrap:wrap; }
+
+.ps-check-card.is-warning { border-color:#dca65b!important; }
+.ps-check-card.is-warning .ps-check-card-heading>svg,.ps-check-card.is-warning .ps-check-fix>strong { color:#c58a39!important; }

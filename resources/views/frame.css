@@ -1,0 +1,24 @@
+/* Only injected into workspaces opened from Simplify. Native pages keep their own CSS. */
+html.ps-frame { --ps-surface:#fff;--ps-raised:#eeeef1;--ps-field:#fafafa;--ps-ink:#26262e;--ps-muted:#666672;--ps-line:#dedee5;--ps-accent:#878787;font-family:Inter,ui-sans-serif,system-ui,sans-serif;color:var(--ps-ink);color-scheme:light; }
+html.ps-frame[data-ps-dark="1"] { --ps-surface:#1a1a1f;--ps-raised:#26262e;--ps-field:#202027;--ps-ink:#eeeeF1;--ps-muted:#a1a1aa;--ps-line:#393940;color-scheme:dark; }
+.ps-frame body { background:var(--ps-surface)!important;color:var(--ps-ink)!important;font-family:inherit!important; }
+.ps-frame :is(.fi-section,.fi-ta-ctn,.fi-modal-window,.fi-dropdown-panel,.fi-sc-tabs) { background:var(--ps-surface)!important;color:var(--ps-ink)!important;border:1px solid var(--ps-line)!important;border-radius:14px!important;box-shadow:none!important; }
+.ps-frame :is(.fi-ta-header,.fi-ta-header-toolbar,.fi-ta-content,.fi-ta-empty-state,.fi-section-content-ctn,.fi-section-header,.fi-tabs) { background:var(--ps-surface)!important;color:var(--ps-ink)!important; }
+.ps-frame :is(.fi-ta-header-cell,.fi-ta-cell,.fi-ta-row,.fi-ta-footer,.fi-section-header) { border-color:var(--ps-line)!important; }
+.ps-frame .fi-ta-row:hover { background:var(--ps-raised)!important; }
+.ps-frame :is(.fi-ta-text-item-label,.fi-ta-header-cell-label,.fi-section-header-heading,.fi-fo-field-label-content,.fi-sc-text,.fi-modal-heading) { color:var(--ps-ink)!important; }
+.ps-frame :is(.fi-section-header-description,.fi-fo-field-helper-text,.fi-ta-empty-state-description) { color:var(--ps-muted)!important; }
+.ps-frame :is(.fi-input-wrp,.fi-fo-textarea,.fi-select-input,.fi-fo-rich-editor) { background:var(--ps-field)!important;border:1px solid var(--ps-line)!important;border-radius:10px!important;box-shadow:none!important;color:var(--ps-ink)!important; }
+.ps-frame :is(input,textarea,select) { color:var(--ps-ink);accent-color:var(--ps-accent); }
+.ps-frame .fi-input-wrp:focus-within { border-color:var(--ps-accent)!important;outline:2px solid color-mix(in srgb,var(--ps-accent) 20%,transparent); }
+.ps-frame :is(.fi-btn,.fi-icon-btn) { border-radius:10px!important;box-shadow:none!important;transition:background .15s,border-color .15s!important;transform:none!important; }
+.ps-frame .fi-btn:not(.fi-color-danger) { background:var(--ps-raised)!important;color:var(--ps-ink)!important;border:1px solid var(--ps-line)!important; }
+.ps-frame :is(.fi-btn:not(.fi-color-danger),.fi-icon-btn):hover { border-color:var(--ps-accent)!important;color:var(--ps-accent)!important; }
+.ps-frame :is(.fi-btn.fi-color-primary,.fi-tabs-item-active,.fi-pagination-item-active,.fi-sc-tabs-tab-active) { color:var(--ps-accent)!important;border-color:var(--ps-accent)!important;background:color-mix(in srgb,var(--ps-accent) 12%,var(--ps-surface))!important; }
+.ps-frame :is(.fi-ta-icon,.fi-icon-btn-icon,.fi-btn-icon,.fi-ta-text-item-icon,.fi-section-header-icon) { color:var(--ps-accent)!important; }
+.ps-frame :is(.fi-color-danger,.fi-color-danger .fi-icon) { color:#ef6868!important; }
+.ps-frame :is(.fi-dropdown-list-item,.fi-breadcrumbs-item-label) { color:var(--ps-ink)!important; }
+.ps-frame .fi-dropdown-list-item:hover { background:var(--ps-raised)!important; }
+.ps-frame :is(.fi-btn,.fi-icon-btn):disabled { opacity:.5;cursor:not-allowed; }
+.ps-frame :is(.fi-btn,.fi-icon-btn):focus-visible { outline:2px solid var(--ps-accent);outline-offset:2px; }
+.ps-frame[data-ps-frame="native"] .fi-ta { border-radius:14px;overflow:hidden; }

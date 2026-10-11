@@ -42,10 +42,10 @@ final class Dashboard extends Page
     public function initial(): array
     {
         $admin=user()->canAccessPanel(\Filament\Facades\Filament::getPanel('admin'));
-        $base=['build_version'=>\Simplify\Panel\Services\BuildInfo::version(),'admin_url'=>$admin?\Filament\Facades\Filament::getPanel('admin')->getUrl():(\Simplify\Panel\Services\FeatureSettings::enabled('user_legacy')?route('filament.app.resources.servers.index',['simplify_legacy'=>1]):null),
+        $base=['banner_upload_bytes'=>\Simplify\Panel\Services\UploadLimits::bannerBytes(),'build_version'=>\Simplify\Panel\Services\BuildInfo::version(),'admin_url'=>$admin?\Filament\Facades\Filament::getPanel('admin')->getUrl():(\Simplify\Panel\Services\FeatureSettings::enabled('user_legacy')?route('filament.app.resources.servers.index',['simplify_legacy'=>1]):null),
             'legacy_create_url'=>\App\Filament\Admin\Resources\Servers\ServerResource::canCreate()?\App\Filament\Admin\Resources\Servers\ServerResource::getUrl('create',panel:'admin'):null,'create_url'=>Extensions::createUrl(),'can_create'=>Extensions::canCreate(),'create_games'=>Extensions::createGames(),'web'=>Extensions::web(),
             'native_list_url'=>\Filament\Facades\Filament::getPanel('app')->getUrl(),
-            'profile_url'=>\App\Filament\Pages\Auth\EditProfile::getUrl(panel:'app'),'appearance'=>\Simplify\Panel\Services\AppearanceSettings::all(),'panel_name'=>(string)config('app.name','Pelican'),'features'=>array_replace(\Simplify\Panel\Services\FeatureSettings::all(),array_combine(['settings','files','players','backups','packages','software','resources','advanced','activity','schedules'],array_map(fn($key)=>Access::feature($key),['settings','files','players','backups','packages','software','resources','advanced','activity','schedules']))),'settings_url'=>user()?->isRootAdmin()?\Simplify\Panel\Filament\Admin\Pages\SimplifySettings::getUrl(panel:'app'):null,'website_url'=>Extensions::webAdapter()?->url(),'list_url'=>self::getUrl(panel:'app'),'server'=>null,'servers'=>[],'user'=>user()->username,'avatar'=>user()->getFilamentAvatarUrl(),'favicon_url'=>route('simplify.favicon').'?v=0.2.0-alpha.12'];
+            'profile_url'=>\App\Filament\Pages\Auth\EditProfile::getUrl(panel:'app'),'appearance'=>\Simplify\Panel\Services\AppearanceSettings::all(),'panel_name'=>(string)config('app.name','Pelican'),'features'=>array_replace(\Simplify\Panel\Services\FeatureSettings::all(),array_combine(['settings','files','players','backups','packages','software','resources','advanced','activity','schedules'],array_map(fn($key)=>Access::feature($key),['settings','files','players','backups','packages','software','resources','advanced','activity','schedules']))),'settings_url'=>user()?->isRootAdmin()?\Simplify\Panel\Filament\Admin\Pages\SimplifySettings::getUrl(panel:'app'):null,'website_url'=>Extensions::webAdapter()?->url(),'list_url'=>self::getUrl(panel:'app'),'server'=>null,'servers'=>[],'user'=>user()->username,'avatar'=>user()->getFilamentAvatarUrl(),'favicon_url'=>route('simplify.favicon').'?v=0.2.0-alpha.13'];
         if(!$this->serverUuid){$base['servers']=$this->listing();$base['host_health']=$this->hostHealth();return$base;}
         $s=$this->server();$base['available_colors']=ServerAppearance::choices($s->uuid);$permissions=[];foreach(P::cases() as $p)$permissions[$p->value]=user()->can($p,$s);
         $meta=ManagedSettings::content($s);$mc=MinecraftStatus::get($s);
@@ -63,7 +63,7 @@ final class Dashboard extends Page
         $base['uploaded_backgrounds']=\Simplify\Panel\Services\ServerBanners::entries($s);
         $base['server']=['background_id'=>ServerArtwork::selection($s) ?? ($artworkMeta['background_id'] ?? 'auto'),'color'=>ServerAppearance::color($s),'uuid'=>$s->uuid,'short'=>$s->uuid_short,'name'=>$s->name,'address'=>$s->allocation?->address,
             'memory'=>$s->memory,'disk'=>$s->disk,'cpu'=>$s->cpu,'software'=>$s->egg?->name,'image'=>user()->can(P::StartupRead,$s)?$s->image:'Restricted','startup'=>user()->can(P::StartupRead,$s)?$s->startup:'Restricted',
-            'package_kind'=>Packages::capability($s),'native_sections'=>$this->nativeSections($s),
+            'alias'=>\Simplify\Panel\Services\ServerMetadata::read($s)['server_alias']??'','sftp'=>\Simplify\Panel\Services\SftpDetails::forServer($s),'package_kind'=>Packages::capability($s),'native_sections'=>$this->nativeSections($s),
             'owner'=>user()->isRootAdmin() || (int)$s->owner_id===(int)user()->id,'minecraft'=>ManagedSettings::minecraft($s),'can_resources'=>ManagedResources::canEdit($s),'permissions'=>$permissions,
             'properties'=>array_intersect_key($properties,array_flip(['motd','max-players','difficulty','gamemode','pvp','white-list','allow-flight','view-distance','spawn-protection'])),
             'properties_available'=>!ManagedSettings::minecraft($s) || !empty($properties),'pending'=>$pending?['pending'=>true,'restart_at'=>$pending['restart_at'],'restart_requested'=>$pending['restart_requested'],'error'=>$pending['error']??null]:null,
@@ -133,6 +133,23 @@ final class Dashboard extends Page
         if($action==='restart' && PendingChanges::read($s)){PendingChanges::requestRestart($s,0);return;}
         abort_if($s->isInConflictState(),409,'Wait until the current installation or recovery is complete.');
         app(DaemonServerRepository::class)->setServer($s)->power($action)->throw();
+    }
+    #[Renderless]
+    public function fileRevision(string $path): string
+    {
+        $s=$this->server();Access::permission($s,P::FileReadContent);
+        abort_unless(strlen($path)<=4096 && !str_contains($path,"\0") && !in_array('..',explode('/',$path),true),422);
+        $limit=(int)config('panel.files.max_edit_size',1048576);
+        $content=app(DaemonFileRepository::class)->setServer($s)->getContent($path,$limit);
+        abort_if($limit>0 && strlen($content)>$limit,413,'This file is too large to edit.');
+        return hash('sha256',$content);
+    }
+    public function saveAlias(string $alias): array
+    {
+        $s=$this->server();Access::permission($s,P::SettingsRename);
+        $state=validator(['alias'=>trim($alias)],['alias'=>['nullable','string','max:80','regex:/^[^\\x00-\\x1F\\x7F]*$/uD']])->validate();
+        \Simplify\Panel\Services\ServerMetadata::save($s,['server_alias'=>$state['alias']??'']);
+        return ['alias'=>$state['alias']??''];
     }
     public function saveSettings(array $state): array { abort_unless(Access::feature('settings'),404);return PendingChanges::stage($this->server(),$state,$this->iconUpload); }
     public function saveResourceLimits(array $state): array
