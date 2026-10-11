@@ -1,7 +1,7 @@
 <x-filament-panels::page>
     @assets
     @include('pelican-simplify::filament.admin.styles')
-    <script src="{{ route('simplify.asset',['asset'=>'setup-progress.js']) }}?v=0.2.0-alpha.6"></script>
+    <script src="{{ route('simplify.asset',['asset'=>'setup-progress.js']) }}?v=0.2.0-alpha.7"></script>
     @endassets
     <div class="ps-settings-page">
         @if(($this->needsSetup() && !$setupStarted) || $showDiagnostics)

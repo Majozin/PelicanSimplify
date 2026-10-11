@@ -1,5 +1,14 @@
 # Changes
 
+## 0.2.0-alpha.7
+
+- Show the installed build number beside Enhanced by Simplify in the copyright footer.
+- Replaced the README disclaimer image with a native GitHub warning block.
+
+- Added a Go to Simplify Panel button with a dashboard icon to the legacy server overview.
+- Added a matching return button beside the admin and legacy topbar controls, with an icon-only mobile layout.
+- Kept the current server selected when returning from its native pages; embedded workspaces hide the button.
+
 ## 0.2.0-alpha.6
 
 - Split first setup into separate categories with the same numbered stepper and controls as server creation.

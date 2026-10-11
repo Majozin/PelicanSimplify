@@ -90,3 +90,9 @@ html.ps-theme.dark{color-scheme:dark}
 .ps-settings-form .ssc-progress{border:1px solid var(--ps-line);border-radius:12px;margin-bottom:18px}
 .ps-settings-form .ssc-progress button.is-complete>span{color:var(--ps-ink);border:1px solid var(--ps-line)}
 .ps-settings-form .fi-sc-tabs-tablist{flex-wrap:wrap;gap:6px}
+/* Return from the native Pelican pages, next to the topbar controls. */
+.ps-legacy-return{display:inline-flex;align-items:center;justify-content:center;flex:none;gap:8px;min-height:38px;padding:8px 12px;border:1px solid var(--ps-line);border-radius:10px;background:var(--ps-surface);color:var(--ps-ink);font-size:13px;font-weight:600;line-height:1.25;text-decoration:none;white-space:nowrap}
+.ps-legacy-return svg{width:20px;height:20px;flex:none}
+.ps-legacy-return:hover{background:var(--ps-raised)}
+.ps-legacy-return:focus-visible{outline:2px solid var(--ps-accent);outline-offset:3px}
+@media(max-width:640px){.ps-legacy-return{width:38px;padding:8px}.ps-legacy-return span{display:none}}
