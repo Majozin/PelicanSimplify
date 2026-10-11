@@ -3,6 +3,7 @@
 from pathlib import Path
 import hashlib
 import json
+import shutil
 import zipfile
 root = Path(__file__).resolve().parent.parent
 manifest = json.loads((root / 'plugin.json').read_text())
@@ -20,6 +21,7 @@ with zipfile.ZipFile(archive, 'w', zipfile.ZIP_DEFLATED) as package:
         info.compress_type = zipfile.ZIP_DEFLATED
         info.external_attr = 0o100644 << 16
         package.writestr(info, path.read_bytes())
+shutil.copyfile(archive, root / 'dist' / 'pelican-simplify-latest.zip')
 checksum = hashlib.sha256(archive.read_bytes()).hexdigest()
 (root / 'update.json').write_text(json.dumps({manifest['panel_version']: {
     'version': version,

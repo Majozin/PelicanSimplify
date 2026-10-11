@@ -9,6 +9,7 @@ update=json.loads((root/'update.json').read_text())[manifest['panel_version']]
 archive=root/'dist'/f"pelican-simplify-v{manifest['version']}.zip"
 assert update['version']==manifest['version']
 assert update['sha256']==hashlib.sha256(archive.read_bytes()).hexdigest()
+assert (root/'dist/pelican-simplify-latest.zip').read_bytes()==archive.read_bytes()
 with zipfile.ZipFile(archive) as package:
     packaged=json.loads(package.read('pelican-simplify/plugin.json'))
     assert packaged==manifest

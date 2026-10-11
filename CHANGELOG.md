@@ -1,5 +1,11 @@
 # Changes
 
+## 0.2.0-alpha.4
+
+- Added a verified plugin backup/reset/restore script to reopen the setup wizard.
+- Added a stable latest ZIP URL for native panel imports.
+- Made README screenshots smaller, clickable previews.
+
 ## 0.2.0-alpha.3
 
 - Moved plugin.json, src, resources and database to the repository root for Pelican Hub submission and native source-archive imports.
