@@ -44,7 +44,7 @@ final class Dashboard extends Page
         $base=['admin_url'=>$admin?\Filament\Facades\Filament::getPanel('admin')->getUrl():(\Simplify\Panel\Services\FeatureSettings::enabled('user_legacy')?route('filament.app.resources.servers.index',['simplify_legacy'=>1]):null),
             'create_url'=>Extensions::createUrl(),'can_create'=>Extensions::canCreate(),'create_games'=>Extensions::createGames(),'web'=>Extensions::web(),
             'native_list_url'=>\Filament\Facades\Filament::getPanel('app')->getUrl(),
-            'profile_url'=>\App\Filament\Pages\Auth\EditProfile::getUrl(panel:'app'),'appearance'=>\Simplify\Panel\Services\AppearanceSettings::all(),'panel_name'=>(string)config('app.name','Pelican'),'features'=>array_replace(\Simplify\Panel\Services\FeatureSettings::all(),array_combine(['settings','files','players','backups','packages','software','resources','advanced','activity','schedules'],array_map(fn($key)=>Access::feature($key),['settings','files','players','backups','packages','software','resources','advanced','activity','schedules']))),'settings_url'=>user()?->isRootAdmin()?\Simplify\Panel\Filament\Admin\Pages\SimplifySettings::getUrl(panel:'app'):null,'website_url'=>Extensions::webAdapter()?->url(),'list_url'=>self::getUrl(panel:'app'),'server'=>null,'servers'=>[],'user'=>user()->username,'avatar'=>user()->getFilamentAvatarUrl(),'favicon_url'=>route('simplify.favicon').'?v=0.2.0-alpha.4'];
+            'profile_url'=>\App\Filament\Pages\Auth\EditProfile::getUrl(panel:'app'),'appearance'=>\Simplify\Panel\Services\AppearanceSettings::all(),'panel_name'=>(string)config('app.name','Pelican'),'features'=>array_replace(\Simplify\Panel\Services\FeatureSettings::all(),array_combine(['settings','files','players','backups','packages','software','resources','advanced','activity','schedules'],array_map(fn($key)=>Access::feature($key),['settings','files','players','backups','packages','software','resources','advanced','activity','schedules']))),'settings_url'=>user()?->isRootAdmin()?\Simplify\Panel\Filament\Admin\Pages\SimplifySettings::getUrl(panel:'app'):null,'website_url'=>Extensions::webAdapter()?->url(),'list_url'=>self::getUrl(panel:'app'),'server'=>null,'servers'=>[],'user'=>user()->username,'avatar'=>user()->getFilamentAvatarUrl(),'favicon_url'=>route('simplify.favicon').'?v=0.2.0-alpha.5'];
         if(!$this->serverUuid){$base['servers']=$this->listing();$base['host_health']=$this->hostHealth();return$base;}
         $s=$this->server();$base['available_colors']=ServerAppearance::choices($s->uuid);$permissions=[];foreach(P::cases() as $p)$permissions[$p->value]=user()->can($p,$s);
         $meta=ManagedSettings::content($s);$mc=MinecraftStatus::get($s);
@@ -58,7 +58,8 @@ final class Dashboard extends Page
             $pending=PendingChanges::read($s);
         }
         $artworkMeta=Extensions::web()?Extensions::webAdapter()->metadata($s):$meta;
-        $base['server']=['color'=>ServerAppearance::color($s),'uuid'=>$s->uuid,'short'=>$s->uuid_short,'name'=>$s->name,'address'=>$s->allocation?->address,
+        $base['background_choices']=array_map(fn($id)=>['id'=>$id,'name'=>ucfirst($id),'url'=>route('simplify.background',['id'=>$id])],array_keys(ServerArtwork::BACKGROUNDS));
+        $base['server']=['background_id'=>ServerArtwork::selection($s) ?? ($artworkMeta['background_id'] ?? 'auto'),'color'=>ServerAppearance::color($s),'uuid'=>$s->uuid,'short'=>$s->uuid_short,'name'=>$s->name,'address'=>$s->allocation?->address,
             'memory'=>$s->memory,'disk'=>$s->disk,'cpu'=>$s->cpu,'software'=>$s->egg?->name,'image'=>user()->can(P::StartupRead,$s)?$s->image:'Restricted','startup'=>user()->can(P::StartupRead,$s)?$s->startup:'Restricted',
             'package_kind'=>Packages::capability($s),'native_sections'=>$this->nativeSections($s),
             'owner'=>user()->isRootAdmin() || (int)$s->owner_id===(int)user()->id,'minecraft'=>ManagedSettings::minecraft($s),'can_resources'=>ManagedResources::canEdit($s),'permissions'=>$permissions,
@@ -145,6 +146,10 @@ final class Dashboard extends Page
     {
         $s=$this->server();Access::permission($s,P::SettingsRename);
         $name=trim($name);validator(['name'=>$name],['name'=>'required|string|max:255'])->validate();$s->update(['name'=>$name]);
+    }
+    public function saveServerBackground(string $id): array
+    {
+        return ServerArtwork::save($this->server(), $id);
     }
     #[Renderless]
     public function refreshInfo(): array

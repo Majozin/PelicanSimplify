@@ -24,6 +24,7 @@ final class AppearanceSettings
         $data=validator($input,['accent_color'=>'required|regex:/^#[0-9a-fA-F]{6}$/','individual_colors'=>'required|boolean'])->validate();
         $next=['accent_color'=>strtolower($data['accent_color']),'individual_colors'=>(bool)$data['individual_colors']];
         Cache::lock('simplify.appearance',10)->block(3,function()use($next):void{
+            if ($next['individual_colors']) ServerAppearance::assignMissingColors();
             if(!Storage::disk('local')->put(self::FILE,json_encode($next,JSON_THROW_ON_ERROR)))throw new \RuntimeException('Could not save appearance settings.');
             app(self::class)->loaded=$next;
         });

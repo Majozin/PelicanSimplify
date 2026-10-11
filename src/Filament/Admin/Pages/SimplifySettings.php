@@ -34,6 +34,8 @@ class SimplifySettings extends Page implements HasForms
     protected string $view = 'pelican-simplify::admin-settings';
     public ?array $data = [];
     public array $requirements = [];
+    public bool $setupStarted = false;
+    public bool $showDiagnostics = false;
     public function refreshRequirements(): void
     {
         abort_unless(static::canAccess(), 403);
@@ -43,13 +45,39 @@ class SimplifySettings extends Page implements HasForms
     {
         return \Simplify\Panel\Services\DependencyCheck::ready($this->requirements);
     }
+    public function beginSetup(): void
+    {
+        $this->refreshRequirements();
+        $this->setupStarted = $this->requirementsReady();
+    }
+    public function toggleDiagnostics(): void
+    {
+        abort_unless(static::canAccess(), 403);
+        $this->showDiagnostics = !$this->showDiagnostics;
+        if ($this->showDiagnostics) $this->refreshRequirements();
+    }
+    public function requirementGroups(): array
+    {
+        $groups = [];
+        foreach ($this->requirements as $check) {
+            $name = $check['name'];
+            $group = match (true) {
+                str_starts_with($name, 'PHP') => 'PHP runtime',
+                str_starts_with($name, 'Composer:') || str_contains($name, 'Composer') || str_contains($name, 'Tabler') => 'Panel components',
+                str_starts_with($name, 'Plugin asset:') || str_starts_with($name, 'Built ') || str_starts_with($name, 'Node.') || $name === 'Yarn' => 'Styles and scripts',
+                str_starts_with($name, 'Writable ') || str_contains($name, 'storage') => 'Storage permissions',
+                default => 'Panel services',
+            };
+            $groups[$group][] = $check;
+        }
+        return $groups;
+    }
 
     public static function canAccess(): bool { return (bool) user()?->isRootAdmin(); }
     public function needsSetup(): bool { return !\Simplify\Panel\Services\FeatureSettings::enabled('setup_completed'); }
     public function mount(): void
     {
         abort_unless(static::canAccess(), 403);
-        $this->refreshRequirements();
         $this->form->fill([...CreatorAccess::settings(),'appearance'=>AppearanceSettings::all(),'features'=>\Simplify\Panel\Services\FeatureSettings::all(),'web'=>\Simplify\Panel\Services\Extensions::webInstalled()?app('simplify.web')->options():[]]);
     }
     public function form(Schema $schema): Schema
@@ -61,7 +89,7 @@ class SimplifySettings extends Page implements HasForms
                     $fields=array_map(fn(array $definition,string $key)=>Toggle::make('features.'.$key)->label($definition[0])->helperText($definition[1]),$definitions,array_keys($definitions));
                     if($group==='Appearance')$fields=[...$fields,
                         ColorPicker::make('appearance.accent_color')->label('Panel accent color')->hex()->required()->rules(['regex:/^#[0-9a-fA-F]{6}$/'])->helperText('Used throughout the shared interface and by every server when separate colors are off.'),
-                        Toggle::make('appearance.individual_colors')->label('Use separate server colors')->live()->helperText('Off makes all servers use the panel accent. Saved server colors are retained.'),
+                        Toggle::make('appearance.individual_colors')->label('Use separate server colors')->live()->helperText('On assigns a color to every server without one. Off makes all servers use the panel accent; saved colors are retained.'),
                         Select::make('appearance.server_uuid')->label('Server color to edit')->searchable()->options(fn()=>Server::query()->orderBy('name')->pluck('name','uuid')->all())->live()->visible(fn(Get $get)=>$get('appearance.individual_colors'))->afterStateUpdated(function(?string $state,Set $set):void{$server=$state?Server::query()->where('uuid',$state)->first():null;$set('appearance.server_color',$server?ServerAppearance::color($server):null);}),
                         ColorPicker::make('appearance.server_color')->label('Selected server accent')->hex()->nullable()->rules(['regex:/^#[0-9a-fA-F]{6}$/'])->visible(fn(Get $get)=>$get('appearance.individual_colors')&&filled($get('appearance.server_uuid')))->helperText('Choose a color and save settings to apply it to this server.'),
                     ];
@@ -100,15 +128,19 @@ class SimplifySettings extends Page implements HasForms
         abort_unless(static::canAccess(), 403);
         $this->refreshRequirements();
         if (!$this->requirementsReady()) {
+            $this->setupStarted = false;
+            $this->showDiagnostics = true;
             Notification::make()->title('Setup blocked')->body('Fix the failed dependency checks and check again.')->danger()->send();
             return;
         }
+        $firstSetup = $this->needsSetup();
+        if ($firstSetup && !$this->setupStarted) return;
         $state=$this->form->getState();
-        AppearanceSettings::save($state['appearance']??[]);
         if(!empty($state['appearance']['server_uuid'])&&!empty($state['appearance']['server_color'])){
             $server=Server::query()->where('uuid',$state['appearance']['server_uuid'])->firstOrFail();
             ServerAppearance::save($server,$state['appearance']['server_color']);
         }
+        AppearanceSettings::save($state['appearance']??[]);
         $data = array_intersect_key($state, CreatorAccess::defaults());
         foreach (['user_ids' => User::class, 'node_ids' => Node::class, 'other_egg_ids' => Egg::class] as $key => $model) {
             $data[$key] = $model::query()->whereIn('id', $data[$key] ?? [])->pluck('id')->map(fn ($id) => (int) $id)->all();
@@ -123,5 +155,10 @@ class SimplifySettings extends Page implements HasForms
         app(CreatorAccess::class)->reset();
         \Simplify\Panel\Services\FeatureSettings::save($state['features']??[],true);
         Notification::make()->title('PelicanSimplify settings saved')->success()->send();
+        if ($firstSetup) {
+            $this->redirect(\Simplify\Panel\Filament\App\Pages\Dashboard::getUrl(panel: 'app'));
+        } else {
+            $this->dispatch('simplify-settings-saved');
+        }
     }
 }

@@ -43,7 +43,7 @@ Planned improvements; scope and release order may change.
 - **Creation:** Minecraft or other games, Vanilla/Paper/modpacks, automatic egg selection, bundled egg import, game/version selection, bird-name generator, server colors, saved drafts, resource limits and review before creation.
 - **Minecraft:** Modrinth, CurseForge, FTB and supported Technic packs; software/version changes, game settings, MOTD, whitelist, operators and player moderation.
 - **Management:** files and SFTP, mods/plugins, backup recovery points, automatic backup policies and retention, schedules, activity and advanced workspaces, subject to native Pelican permissions.
-- **Appearance:** light/dark/system theme, shared styling, optional legacy styling, always-dark or adaptive console, panel accent and separate server colors.
+- **Appearance:** light/dark/system theme, shared styling, optional legacy styling, always-dark or adaptive console, panel accent, automatic individual server colors and a built-in background picker.
 - **Access:** switchable Friends mode, administrator settings, individual user-feature switches, optional self-service creation and per-user server/resource allowances.
 - **Setup:** PHP/extensions, Composer and icons, Node/Yarn, writable storage, database/cache, queue configuration and validation of compiled CSS/JavaScript; failed checks block progress and can be rerun.
 

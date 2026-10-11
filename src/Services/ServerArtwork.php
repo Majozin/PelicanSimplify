@@ -35,7 +35,9 @@ final class ServerArtwork
     }
     public static function background(Server $server,array $meta): ?string
     {
-        if(!Extensions::web())return null;
+        $selection = self::selection($server);
+        if ($selection !== null) $meta = ['background_id' => $selection];
+        if (($meta['background_id'] ?? '') === 'none') return null;
         if(!empty($meta['screenshot_url']))return $meta['screenshot_url'];
         $id=$meta['background_id']??'auto';
         if($id==='auto'){
@@ -43,7 +45,30 @@ final class ServerArtwork
             $raw=$disk->exists($path)?$disk->get($path):null;
             $id=$raw?(json_decode($raw,true)['background_id']??''):'';
             if(!isset(self::BACKGROUNDS[$id]))$id=Extensions::webAdapter()?->backgroundFor($server)??'';
+            if (!isset(self::BACKGROUNDS[$id]) && ManagedSettings::minecraft($server)) {
+                // Stable per server, including servers created before Simplify was installed.
+                // Preserve existing/manual selections and require no website extension or storage writes.
+                $choices = array_keys(self::BACKGROUNDS);
+                $id = $choices[hexdec(substr(hash('sha256', $server->uuid), 0, 8)) % count($choices)];
+            }
         }
         return isset(self::BACKGROUNDS[$id])?route('simplify.background',['id'=>$id]):null;
+    }
+    public static function selection(Server $server): ?string
+    {
+        $disk = Storage::disk('local');
+        $path = 'simplify/backgrounds/'.$server->uuid.'.json';
+        $data = $disk->exists($path) ? json_decode($disk->get($path), true) : [];
+        $id = is_array($data) ? ($data['background_id'] ?? null) : null;
+        return is_string($id) && ($id === 'auto' || $id === 'none' || isset(self::BACKGROUNDS[$id])) ? $id : null;
+    }
+    public static function save(Server $server, string $id): array
+    {
+        Access::permission($server, \App\Enums\SubuserPermission::SettingsRename);
+        abort_unless($id === 'auto' || $id === 'none' || isset(self::BACKGROUNDS[$id]), 422);
+        if (!Storage::disk('local')->put('simplify/backgrounds/'.$server->uuid.'.json', json_encode(['background_id' => $id], JSON_THROW_ON_ERROR))) {
+            throw new \RuntimeException('Could not save server background.');
+        }
+        return ['background_id' => $id, 'background' => self::background($server, [])];
     }
 }

@@ -16,5 +16,12 @@ namespace {
  // No form or save services exist here. A direct save must return before accessing them.
  $page->save();
  if($page->requirementsReady()||!in_array('Setup blocked',\Filament\Notifications\Notification::$titles,true))throw new \RuntimeException('direct save bypassed dependency gate');
+ $page->requirements=[['name'=>'PHP extension: fake','ok'=>true,'fix'=>'']];
+ $page->beginSetup();
+ if($page->setupStarted||$page->requirementsReady())throw new \RuntimeException('first-setup button reused stale passed checks');
+ $groups=$page->requirementGroups();
+ if(!isset($groups['PHP runtime'],$groups['Styles and scripts'],$groups['Panel services']))throw new \RuntimeException('grouped checks omitted required categories');
+ if(array_sum(array_map('count',$groups))!==count($page->requirements))throw new \RuntimeException('grouping dropped a dependency');
+ echo "PASS failed or stale checks cannot open first setup; grouped cards retain every check\n";
  echo "PASS direct setup save cannot bypass failed dependencies or write settings\n";
 }

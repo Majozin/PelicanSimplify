@@ -1,5 +1,13 @@
 # Changes
 
+## 0.2.0-alpha.5
+
+- Redesigned first-run checks into compact cards with a separate first-setup button.
+- Added a dedicated navigation icon and popup for Simplify settings; diagnostics stay hidden by default.
+- Restored automatic backgrounds for existing Minecraft servers without the Web extension.
+- Added a background picker next to the server color control.
+- Automatically assigned distinct saved colors to servers without one when individual colors are enabled.
+
 ## 0.2.0-alpha.4
 
 - Added a verified plugin backup/reset/restore script to reopen the setup wizard.

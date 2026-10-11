@@ -23,7 +23,7 @@ namespace {
         $response->headers->values['X-Frame-Options']??='DENY';return $response->headers->values;
     };
     $check=function($condition){if(!$condition)throw new \RuntimeException('Frame policy assertion failed');};
-    foreach(['filament.app.pages.simple-server-creator','filament.app.pages.simplify','filament.admin.resources.servers.create','filament.admin.resources.servers.edit','filament.admin.resources.servers.view'] as $route){$r=$run($route);$check($r['X-Frame-Options']==='SAMEORIGIN'&&$r['X-Content-Type-Options']==='nosniff');}
+    foreach(['filament.app.pages.simple-server-creator','filament.app.pages.pelican-simplify-settings','filament.admin.pages.pelican-simplify-settings','filament.app.pages.simplify','filament.admin.resources.servers.create','filament.admin.resources.servers.edit','filament.admin.resources.servers.view'] as $route){$r=$run($route);$check($r['X-Frame-Options']==='SAMEORIGIN'&&$r['X-Content-Type-Options']==='nosniff');}
     foreach(['filament.server.resources.files.index','filament.server.resources.backups.index','filament.server.pages.settings','filament.server.resources.schedules.index','filament.server.pages.activity-log'] as $route){$r=$run($route);$check($r['X-Frame-Options']==='SAMEORIGIN');$check($r['Content-Security-Policy']==="default-src 'self'; frame-ancestors 'self'; script-src 'self' 'unsafe-inline'");$check($run($route,'POST')['X-Frame-Options']==='DENY');}
     $check($run('filament.admin.pages.dashboard')['X-Frame-Options']==='DENY');
     $check($run('filament.app.pages.simple-server-creator','POST')['X-Frame-Options']==='DENY');

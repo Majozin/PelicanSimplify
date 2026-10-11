@@ -1,1 +1,1 @@
-{"name":"pelican-simplify-checks","private":true,"version":"0.2.0-alpha.4","scripts":{"test":"bash tests/run.sh","test:browser":"node tests/theme-browser.js"},"devDependencies":{"playwright":"1.62.1"}}
+{"name":"pelican-simplify-checks","private":true,"version":"0.2.0-alpha.5","scripts":{"test":"bash tests/run.sh","test:browser":"node tests/theme-browser.js"},"devDependencies":{"playwright":"1.62.1"}}

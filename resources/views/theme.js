@@ -9,7 +9,7 @@
  const applyDocument=(doc,kind)=>{
   if(!doc?.documentElement)return;
   const root=doc.documentElement;kind=kind||root.dataset.psFrame;
-  const themed=!!options.global_theme&&(!kind||!!options.legacy_theme||kind==='create');
+  const themed=!!options.global_theme&&(!kind||!!options.legacy_theme||['create','settings'].includes(kind));
   root.classList.toggle('ps-theme',themed);
   if(root.style&&/^#[0-9a-f]{6}$/i.test(options.accent_color||''))root.style.setProperty('--ps-accent',options.accent_color);
   if(themed)root.classList.toggle('dark',dark());

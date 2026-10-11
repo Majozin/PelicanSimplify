@@ -4,6 +4,7 @@ namespace Simplify\Panel\Services;
 use App\Models\Server;
 use App\Enums\SubuserPermission as P;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Cache;
 final class ServerAppearance
 {
     public static function color(Server $server): ?string
@@ -72,7 +73,21 @@ final class ServerAppearance
         Access::permission($server,P::SettingsRename);
         $data=validator(['color'=>$color],['color'=>'required|regex:/^#[0-9a-fA-F]{6}$/'])->validate();
         $color=strtolower($data['color']);
-        if (!Storage::disk('local')->put('simplify/appearance/'.$server->uuid.'.json',json_encode(['color'=>$color],JSON_THROW_ON_ERROR))) throw new \RuntimeException('Could not save server color.');
+        Cache::lock('simplify.server-color.'.$server->uuid,10)->block(3,function()use($server,$color):void{
+            if (!Storage::disk('local')->put('simplify/appearance/'.$server->uuid.'.json',json_encode(['color'=>$color],JSON_THROW_ON_ERROR))) throw new \RuntimeException('Could not save server color.');
+        });
         return $color;
+    }
+    public static function assignMissingColors(): void
+    {
+        abort_unless(user()?->isRootAdmin(),403);
+        foreach (Server::query()->orderBy('uuid')->get() as $server) {
+            Cache::lock('simplify.server-color.'.$server->uuid,10)->block(3,function()use($server):void{
+                if (self::color($server) !== null) return;
+                $choices = self::choices($server->uuid);
+                $color = $choices ? array_key_first($choices) : '#'.bin2hex(random_bytes(3));
+                if (!Storage::disk('local')->put('simplify/appearance/'.$server->uuid.'.json',json_encode(['color'=>$color],JSON_THROW_ON_ERROR))) throw new \RuntimeException('Could not assign server color.');
+            });
+        }
     }
 }
