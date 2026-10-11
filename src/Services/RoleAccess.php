@@ -29,6 +29,7 @@ final class RoleAccess
         'legacy' => ['Legacy panel', 'Open Pelican\'s own client panel.'],
         'create' => ['Create servers', 'Use the easy creator within the limits below.'],
         'install_eggs' => ['Install missing eggs', 'Let the creator import Simplify\'s bundled egg when it is not installed yet.'],
+        'install_games' => ['Install new games', 'Let the creator download a game (egg) from the official Pelican egg index when it is not on the panel yet. Administrators can always do this.'],
     ];
     public const LIMITS = ['max_servers' => [2, 1, 100], 'max_memory_mb' => [8192, 1024, 131072], 'max_disk_mb' => [40960, 1024, 10485760], 'max_cpu' => [200, 1, 1600], 'max_backups' => [3, 0, 100]];
     private const EVERYONE_DEFAULT = ['settings', 'files', 'players', 'backups', 'packages', 'activity', 'resources'];

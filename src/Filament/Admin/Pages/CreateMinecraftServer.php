@@ -224,6 +224,7 @@ class CreateMinecraftServer extends Page implements HasForms
         $this->form->fill([
             'game' => $game,
             'game_egg_id' => null,
+            'game_key' => null,
             'game_variables' => [],
             'name' => '',
             'server_alias' => '',
@@ -353,6 +354,19 @@ class CreateMinecraftServer extends Page implements HasForms
         }
     }
 
+    /** Leaving the Game step: an index game is downloaded and installed, then used like any installed egg. */
+    public function installSelectedGame(): void
+    {
+        if (($this->creationGame ?: ($this->data['game'] ?? '')) !== 'other') return;
+        $egg = \Simplify\Panel\Services\GameCatalog::resolve($this->data['game_key'] ?? null);
+        if (!$egg) throw ValidationException::withMessages(['data.game_key' => 'Choose a game.']);
+        $changed = (int) ($this->data['game_egg_id'] ?? 0) !== (int) $egg->id;
+        $this->data['game_key'] = 'egg:'.$egg->id;
+        $this->data['game_egg_id'] = $egg->id;
+        $this->data['egg_id'] = $egg->id;
+        if ($changed || empty($this->data['game_variables'])) $this->data['game_variables'] = OtherGameCatalog::defaults($egg);
+    }
+
     public function form(Schema $schema): Schema
     {
         if ($this->creationGame!=='') $this->data['game']=$this->creationGame;
@@ -361,7 +375,7 @@ class CreateMinecraftServer extends Page implements HasForms
             ->components([
                 Hidden::make('game')->default('minecraft')->visible(fn () => $this->creationGame==='minecraft')->required()->in(['minecraft']),
                 Wizard::make([
-                    ...($this->creationGame==='minecraft' ? [] : [Step::make('Game')->schema([
+                    ...($this->creationGame==='minecraft' ? [] : [Step::make('Game')->afterValidation(fn () => $this->installSelectedGame())->schema([
                         Radio::make('game')->hiddenLabel()->extraAttributes(['class' => 'ssc-game-options'])
                             ->view('pelican-simplify::filament.admin.card-radio')
                             ->options(fn () => $this->creationGame!=='' ? [$this->creationGame=>$this->creationGame==='minecraft'?'Minecraft':'Other game'] : (CreatorAccess::admin() || CreatorAccess::settings()['minecraft_enabled']
@@ -370,6 +384,7 @@ class CreateMinecraftServer extends Page implements HasForms
                             ->required()->in(fn () => $this->creationGame!==''?[$this->creationGame]:['minecraft','other'])->live()->columns(2)
                             ->afterStateUpdated(function ($state, Set $set): void {
                                 $set('game_egg_id', null);
+                                $set('game_key', null);
                                 $set('game_variables', []);
                                 $set('egg_id', $state === 'minecraft' ? MinecraftCatalog::eggForType('vanilla')?->id : null);
                                 $set('server_type', 'vanilla');
@@ -379,15 +394,22 @@ class CreateMinecraftServer extends Page implements HasForms
                                 $set('image', '');
                                 $set('startup', '');
                             }),
-                        Select::make('game_egg_id')->label('Find a game')
-                            ->options(fn () => OtherGameCatalog::options())->searchable()->live()
+                        // Installed games and the Pelican egg index in one searchable grid; an index game is installed on Next.
+                        \Filament\Forms\Components\ViewField::make('game_key')->label('Find a game')
+                            ->view('pelican-simplify::filament.admin.game-picker')
+                            ->viewData(fn () => ['cards' => ($this->creationGame ?: ($this->data['game'] ?? '')) === 'other' ? \Simplify\Panel\Services\GameCatalog::cards() : []])
+                            ->live()
                             ->required(fn (Get $get) => ($this->creationGame ?: $get('game')) === 'other')
                             ->visible(fn (Get $get) => ($this->creationGame ?: $get('game')) === 'other')
-                            ->helperText('Games use the eggs already installed and approved by your administrator.')
+                            ->validationMessages(['required' => 'Choose a game.'])
                             ->afterStateUpdated(function ($state, Set $set): void {
-                                $set('egg_id', $state);
-                                $set('game_variables', []);
+                                $id = is_string($state) && str_starts_with($state, 'egg:') ? (int) substr($state, 4) : null;
+                                $set('game_egg_id', $id);
+                                $set('egg_id', $id);
+                                $egg = $id ? OtherGameCatalog::selected($id) : null;
+                                $set('game_variables', $egg ? OtherGameCatalog::defaults($egg) : []);
                             }),
+                        Hidden::make('game_egg_id'),
                     ])]),
                     Step::make('Type')
                         ->label('Server Type')
@@ -504,11 +526,12 @@ class CreateMinecraftServer extends Page implements HasForms
                                 ->description(fn (Get $get) => OtherGameCatalog::selected($get('game_egg_id'))?->description ?? 'Choose a game first.')
                                 ->schema(function (Get $get): array {
                                     $egg = OtherGameCatalog::selected($get('game_egg_id'));
-                                    return $egg ? $egg->variables->filter(fn ($variable) => CreatorAccess::admin() || ($variable->user_editable && $variable->user_viewable))
-                                        ->map(fn ($variable) => TextInput::make('game_variables.' . $variable->env_variable)
-                                            ->label($variable->name)->helperText($variable->description)
-                                            ->default($variable->default_value ?? '')
-                                            ->rules($variable->rules ?? ['nullable']))->all() : [];
+                                    if (!$egg) return [];
+                                    [$main, $advanced] = OtherGameCatalog::fields($egg);
+                                    return [
+                                        \Filament\Schemas\Components\Grid::make(2)->schema($main),
+                                        ...($advanced ? [Section::make('Advanced')->description('Install and Steam options; the defaults work for most servers.')->collapsible()->collapsed()->schema([\Filament\Schemas\Components\Grid::make(2)->schema($advanced)])] : []),
+                                    ];
                                 }),
                             Section::make('Resources')->description('Starting values follow your server type. Choose a preset or enter your own allocation.')->schema([
                             self::liveForVisibility(Radio::make('ram_gb')

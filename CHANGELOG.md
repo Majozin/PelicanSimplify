@@ -1,5 +1,11 @@
 # Changes
 
+## 0.3.0-beta.20
+- Other games creator: one searchable grid with the games on this panel and 170+ games from the official Pelican egg repositories (bundled index, searched in the browser), with Popular and Installed filters.
+- Picking a game that is not on the panel downloads its egg (pinned to a commit, checksum-checked) and imports it with Pelican's own importer when you continue. Administrators can always do this; other roles need the new "Install new games" ability (off by default). Root admins get a notification, and the game becomes available for self-service.
+- Game settings use proper fields: on/off switches, choice lists and number fields from the egg's rules, defaults filled in, passwords hidden, and install/Steam options under a collapsed "Advanced" section.
+- New `scripts/build-egg-index.py` rebuilds the index from local clones of the egg repositories.
+
 ## 0.3.0-beta.19
 - Host mode: Legacy sits right under Panel in the menu.
 - New setting "Show legacy pages" (General → Simplify interface) hides the Legacy section in Admin tools and host mode.

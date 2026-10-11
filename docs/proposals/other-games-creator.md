@@ -1,6 +1,15 @@
 # Voorstel: rework "Create other game server"
 
-Status: **voorstel, besluiten genomen**, nog niet uitgevoerd. Verwijs hiernaar met *"voer het other-games-voorstel uit"*.
+Status: **deels uitgevoerd in 0.3.0-beta.20**.
+- **Klaar:**
+  - fase 1: index en zoeken;
+  - fase 2: automatische egg-installatie met de ability *Install new games*;
+  - het eerste deel van fase 3: getypeerde instellingen en een Advanced-blok.
+- **Nog open:**
+  - EULA/licentie vooraf accepteren;
+  - aanbevolen resources per game;
+  - een eigen index-URL;
+  - fase 4: de voortgangskaart.
 Onderdeel van de add-on **Easy server creator** (Settings → Easy server creator).
 
 ## Probleem nu
