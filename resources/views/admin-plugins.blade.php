@@ -24,7 +24,12 @@
                         </div>
                         <small>{{ $plugin['author'] }} · version {{ $plugin['version'] }}</small>
                         @if($plugin['description'])<p>{{ $plugin['description'] }}</p>@endif
-                        @if($plugin['message'] && in_array($plugin['status'], ['errored', 'incompatible'], true))<p class="ps-plugin-error">{{ $plugin['message'] }}</p>@endif
+                        @if($plugin['busy_since'])
+                            <p class="ps-help">Working on it… you get a notification when it is done.
+                                @if(now()->timestamp - (int) $plugin['busy_since'] > 300)<span class="ps-plugin-error">This is taking long: check that Pelican's queue worker is running.</span>@endif
+                            </p>
+                        @endif
+                        @if($plugin['message'] && in_array($plugin['status'], ['errored', 'incompatible', 'not_installed'], true))<p class="ps-plugin-error">{{ $plugin['message'] }}</p>@endif
                     </div>
                     @if($plugin['can_change'])
                         <div class="ps-plugin-actions">

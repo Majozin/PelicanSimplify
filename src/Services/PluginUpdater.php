@@ -166,11 +166,58 @@ final class PluginUpdater
         }
     }
 
-    private static function notify(array $result, ?int $userId): void
+    /** Installs or uninstalls a plugin in a fresh process and always reports the outcome as a notification. */
+    public static function change(Plugin $plugin, string $action, ?int $userId = null): array
+    {
+        $label = $action === 'install' ? 'installed' : 'uninstalled';
+        try {
+            if ($action === 'install') {
+                $run = Process::path(base_path())->timeout(1100)->run([PHP_BINARY, 'artisan', 'simplify:plugin-install', $plugin->id, '--enable']);
+                if (!$run->successful()) throw new \RuntimeException(self::output($run) ?: 'The plugin could not be installed.');
+            } else {
+                app(\App\Services\Helpers\PluginService::class)->uninstallPlugin($plugin);
+            }
+            $boot = Process::path(base_path())->timeout(120)->run([PHP_BINARY, 'artisan', 'list', '--raw']);
+            if (!$boot->successful()) throw new \RuntimeException('The panel does not start with this plugin: '.(self::output($boot) ?: 'unknown error'));
+            $result = ['ok' => true, 'message' => $plugin->name.' was '.$label.'. Reload the panel to see the change.'];
+        } catch (\Throwable $exception) {
+            report($exception);
+            // Pelican enables a plugin before its code is known to load; a broken one would stop the whole panel.
+            if ($action === 'install') self::quarantine($plugin->id, $exception->getMessage());
+            $result = ['ok' => false, 'message' => $plugin->name.' could not be '.$label.': '.$exception->getMessage()];
+        }
+        \Illuminate\Support\Facades\Cache::forget('simplify.plugin-queued.'.$plugin->id);
+        self::notify($result, $userId, $action === 'install' ? ['Plugin installed', 'Plugin install failed'] : ['Plugin uninstalled', 'Plugin uninstall failed']);
+        return $result;
+    }
+
+    /** Sets a plugin back to not installed (Pelican still loads errored ones) so the panel keeps starting; the files stay for inspection or deletion. */
+    private static function quarantine(string $id, string $message): void
+    {
+        try {
+            $path = plugin_path($id).'/plugin.json';
+            $manifest = File::json($path);
+            $manifest['meta'] = ['status' => 'not_installed', 'status_message' => mb_substr($message, 0, 500)];
+            File::put($path, json_encode($manifest, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE));
+            Plugin::refreshRows();
+        } catch (\Throwable $exception) {
+            report($exception);
+        }
+    }
+
+    /** Called when a queued plugin job itself crashed or timed out, so a failure is never silent. */
+    public static function jobFailed(string $pluginId, string $action, ?int $userId, \Throwable $exception): void
+    {
+        \Illuminate\Support\Facades\Cache::forget('simplify.plugin-queued.'.$pluginId);
+        \Illuminate\Support\Facades\Cache::forget('simplify.plugin-update-queued.'.$pluginId);
+        self::notify(['ok' => false, 'message' => 'The '.$action.' of '.$pluginId.' stopped: '.$exception->getMessage()], $userId, ['', 'Plugin '.$action.' failed']);
+    }
+
+    private static function notify(array $result, ?int $userId, array $titles = ['Plugin updated', 'Plugin update failed']): void
     {
         try {
             $users = $userId ? \App\Models\User::query()->whereKey($userId)->get() : \App\Models\User::query()->get()->filter(fn ($user) => $user->isRootAdmin());
-            $notification = \Filament\Notifications\Notification::make()->title($result['ok'] ? 'Plugin updated' : 'Plugin update failed')->body($result['message']);
+            $notification = \Filament\Notifications\Notification::make()->title($result['ok'] ? $titles[0] : $titles[1])->body($result['message']);
             $result['ok'] ? $notification->success() : $notification->danger();
             // Delivered right away: the result must arrive even when the queue worker is busy or down.
             foreach ($users as $user) $user->notifyNow($notification->toDatabase());

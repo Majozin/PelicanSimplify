@@ -18,4 +18,8 @@ final class UpdatePlugin implements ShouldQueue, ShouldBeUnique
         $plugin = \App\Models\Plugin::find($this->pluginId);
         if ($plugin) \Simplify\Panel\Services\PluginUpdater::update($plugin, $this->userId);
     }
+    public function failed(\Throwable $exception): void
+    {
+        \Simplify\Panel\Services\PluginUpdater::jobFailed($this->pluginId, 'update', $this->userId, $exception);
+    }
 }

@@ -37,6 +37,7 @@ final class ManagePlugins extends Page
                 'can_change' => $this->canChange($plugin),
                 'can_delete' => (bool) user()?->can('delete', $plugin),
                 'updating' => \Illuminate\Support\Facades\Cache::has('simplify.plugin-update-queued.'.$plugin->id),
+                'busy_since' => \Illuminate\Support\Facades\Cache::get('simplify.plugin-queued.'.$plugin->id),
             ];
         })->all();
     }
@@ -64,7 +65,8 @@ final class ManagePlugins extends Page
     {
         $plugin = Plugin::query()->findOrFail($id);
         abort_unless($this->canChange($plugin) && $plugin->status->value === 'not_installed', 403);
-        \App\Jobs\Plugin\InstallPlugin::dispatch(user(), $plugin->id);
+        \Illuminate\Support\Facades\Cache::put('simplify.plugin-queued.'.$id, now()->timestamp, 1800);
+        \Simplify\Panel\Jobs\ChangePlugin::dispatch($plugin->id, 'install', (int) user()->id);
         Notification::make()->title('Install started')->body($plugin->name.' is installed in the background. You get a notification when it is done.')->info()->send();
     }
 
@@ -72,7 +74,8 @@ final class ManagePlugins extends Page
     {
         $plugin = Plugin::query()->findOrFail($id);
         abort_unless($this->canChange($plugin) && !in_array($plugin->status->value, ['not_installed', 'errored'], true), 403);
-        \App\Jobs\Plugin\UninstallPlugin::dispatch(user(), $plugin->id);
+        \Illuminate\Support\Facades\Cache::put('simplify.plugin-queued.'.$id, now()->timestamp, 1800);
+        \Simplify\Panel\Jobs\ChangePlugin::dispatch($plugin->id, 'uninstall', (int) user()->id);
         Notification::make()->title('Uninstall started')->body($plugin->name.' is removed in the background. Its files stay until you delete it.')->info()->send();
     }
 

@@ -1,5 +1,10 @@
 # Changes
 
+## 0.3.0-beta.12
+- Plugin install and uninstall from the Plugins page run in a fresh process with a start-up check; success and failure always arrive as a notification, also when the background job itself crashes or times out.
+- A plugin whose code fails to load is set back to "not installed" with the error shown, instead of staying enabled and stopping the whole panel (Pelican's own install leaves it enabled).
+- The Plugins page shows when a change is still running and warns when the queue worker seems to be down.
+
 ## 0.3.0-beta.11
 - Plugin updates are checked every minute (lookups cached for 50 seconds), so new versions are announced and, with automatic updates on, installed within a minute of GitHub serving them.
 
