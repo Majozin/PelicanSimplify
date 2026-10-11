@@ -1,17 +1,33 @@
 const fs=require('fs'),vm=require('vm'),assert=require('assert');
-function doc(){const classes=new Set();const nodes={};return {documentElement:{style:{values:{},setProperty(k,v){this.values[k]=v}},dataset:{},classList:{toggle(key,value){value?classes.add(key):classes.delete(key)},add(key){classes.add(key)},contains:key=>classes.has(key)}},getElementById:key=>nodes[key],createElement:()=>({}),head:{append(node){nodes[node.id]=node}},addEventListener(){},querySelectorAll:()=>[]};}
-const document=doc(),values=new Map(),events={};let mediaListener;
-const window={simplifyThemeConfig:{global_theme:true,legacy_theme:true,console_dark:true,accent_color:'#446688',css_url:'/global.css',frame_css_url:'/frame.css'},dispatchEvent(event){for(const fn of events[event.type]||[])fn(event)},addEventListener(type,fn){(events[type]??=[]).push(fn)}};
-const context={window,document,localStorage:{getItem:key=>values.get(key),setItem:(key,value)=>values.set(key,value)},matchMedia:()=>({matches:false,addEventListener(type,fn){mediaListener=fn}}),CustomEvent:class{constructor(type,{detail}){this.type=type;this.detail=detail}}};
-vm.createContext(context);vm.runInContext(fs.readFileSync(__dirname+'/../resources/views/theme.js','utf8'),context);
-const t=window.SimplifyTheme;assert.equal(t.preference(),'system');assert(document.documentElement.classList.contains('ps-theme'));
-const settings={dataset:{},contentDocument:doc()};const creator={dataset:{},contentDocument:doc()},legacy={dataset:{},contentDocument:doc()};document.querySelectorAll=()=>[creator,legacy,settings];
-t.frame(settings,'settings');t.frame(creator,'create');t.frame(legacy,'native');assert.equal(creator.contentDocument.documentElement.style.values['--ps-accent'],'#446688');assert.equal(legacy.contentDocument.documentElement.style.values['--ps-accent'],'#446688');t.set('dark');assert(document.documentElement.classList.contains('dark'));assert(creator.contentDocument.documentElement.classList.contains('dark'));assert(legacy.contentDocument.documentElement.classList.contains('dark'));assert(document.documentElement.classList.contains('ps-console-dark'));
-assert.equal(creator.contentDocument.getElementById('simplify-global-css').href,'/global.css');
-t.set('light');assert(!creator.contentDocument.documentElement.classList.contains('dark'));assert.equal(values.get('pelicanSimplify.theme'),'light');
-t.configure({...window.simplifyThemeConfig,legacy_theme:false,console_dark:false});assert(!legacy.contentDocument.documentElement.classList.contains('ps-theme'));assert(creator.contentDocument.documentElement.classList.contains('ps-theme'));assert(settings.contentDocument.documentElement.classList.contains('ps-theme'));assert(document.documentElement.classList.contains('ps-console-adaptive'));
-t.configure({...window.simplifyThemeConfig,legacy_page:true});assert(!document.documentElement.classList.contains('ps-theme'));assert(settings.contentDocument.documentElement.classList.contains('ps-theme'));
-t.configure({...window.simplifyThemeConfig,global_theme:false});assert(!document.documentElement.classList.contains('ps-theme'));t.set('unsupported');assert.equal(t.preference(),'light');
-console.log('PASS theme propagation, shared asset link, saved preference, legacy opt-out, creator exception, console modes and theme opt-out');
-
-const isolated={dataset:{},contentDocument:doc()};t.frame(isolated,'native','#bb6677');assert.equal(isolated.contentDocument.getElementById('simplify-frame-css').href,'/frame.css');assert.equal(isolated.contentDocument.documentElement.style.values['--ps-accent'],'#bb6677');document.querySelectorAll=()=>[isolated];t.set('dark');assert.equal(isolated.contentDocument.documentElement.style.values['--ps-accent'],'#bb6677');assert.equal(isolated.contentDocument.documentElement.dataset.psDark,'1');assert.equal(document.getElementById('simplify-frame-css'),undefined);
+const source=fs.readFileSync(__dirname+'/../resources/views/js/core.js','utf8');
+const storage=new Map();
+// Each page (dashboard or embedded workspace) runs its own copy of core.js.
+function page(config,frame=null){
+ const classes=new Set(),events={},style={};
+ const root={style:{setProperty(k,v){style[k]=v}},dataset:{},classList:{toggle(k,v){v?classes.add(k):classes.delete(k)},add:k=>classes.add(k),remove:k=>classes.delete(k),contains:k=>classes.has(k)}};
+ const window={simplifyThemeConfig:config,frameElement:frame,dispatchEvent(e){for(const fn of events[e.type]||[])fn(e)},addEventListener(t,fn){(events[t]??=[]).push(fn)}};
+ window.parent=window;
+ const context={window,document:{documentElement:root,addEventListener(){},querySelectorAll:()=>[],body:null},localStorage:{getItem:k=>storage.get(k),setItem:(k,v)=>storage.set(k,v)},matchMedia:()=>({matches:false,addEventListener(){}}),CustomEvent:class{constructor(type,{detail}){this.type=type;this.detail=detail}},getComputedStyle:()=>({getPropertyValue:()=>''}),setTimeout,clearTimeout};
+ vm.createContext(context);vm.runInContext(source,context);
+ return {window,root,style,has:k=>classes.has(k)};
+}
+const config={global_theme:true,legacy_theme:true,console_dark:true,accent_color:'#446688',legacy_page:false};
+const dashboard=page(config);
+assert.equal(dashboard.window.SimplifyTheme.preference(),'system');assert(dashboard.has('ps-theme'));assert(!dashboard.has('ps-frame'));
+assert.equal(dashboard.style['--ps-accent'],'#446688');assert.equal(dashboard.style['--ps-on-accent'],'#ffffff');assert(dashboard.has('ps-console-dark'));
+dashboard.window.SimplifyTheme.set('dark');assert(dashboard.has('dark'));assert.equal(storage.get('pelicanSimplify.theme'),'dark');assert.equal(storage.get('theme'),'dark');
+// Embedded workspaces read their kind and accent from the iframe element before the page paints.
+const creator=page(config,{dataset:{psFrame:'create',psAccent:'#bb6677'}});
+assert(creator.has('ps-frame'));assert.equal(creator.root.dataset.psFrame,'create');assert(creator.has('dark'),'saved preference applies inside frames');assert.equal(creator.style['--ps-accent'],'#bb6677');
+const legacy=page({...config,legacy_theme:false},{dataset:{psFrame:'native'}});
+assert(legacy.has('ps-frame'));assert(!legacy.has('ps-theme'),'native workspaces follow the legacy theme switch');
+const settings=page({...config,legacy_theme:false},{dataset:{psFrame:'settings'}});assert(settings.has('ps-theme'),'Simplify settings are always themed');
+// Live sync from the dashboard.
+creator.window.SimplifyTheme.sync('light','#123456');assert(!creator.has('dark'));assert.equal(creator.style['--ps-accent'],'#123456');
+const frameEl={dataset:{psFrame:'native'},contentWindow:legacy.window};dashboard.window.SimplifyTheme.frame(frameEl,'files','#abcdef');assert.equal(frameEl.dataset.psFrame,'files');assert.equal(frameEl.dataset.psAccent,'#abcdef');
+// Native pages and theme opt-out.
+const native=page({...config,legacy_page:true});assert(!native.has('ps-theme'));
+dashboard.window.SimplifyTheme.configure({...config,global_theme:false,console_dark:false});assert(!dashboard.has('ps-theme'));assert(dashboard.has('ps-console-adaptive'));
+dashboard.window.SimplifyTheme.set('unsupported');assert.equal(dashboard.window.SimplifyTheme.preference(),'dark');
+assert.equal(typeof dashboard.window.Simplify.confirm,'function');assert.equal(typeof dashboard.window.Simplify.toast,'function');
+console.log('PASS theme preference, accent, console modes, embedded frame detection, legacy opt-out, live sync and shared UI API');

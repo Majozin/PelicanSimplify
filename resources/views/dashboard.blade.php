@@ -1,80 +1,828 @@
 <x-filament-panels::page>
 @assets
-<link id="simplify-dashboard-css" rel="stylesheet" href="{{ route('simplify.asset',['asset'=>'dashboard.css']) }}?v=0.2.0-alpha.26">
-<script src="{{ route('simplify.asset',['asset'=>'dashboard.js']) }}?v=0.2.0-alpha.26"></script>
+<link id="simplify-dashboard-css" rel="stylesheet" href="{{ \Simplify\Panel\Services\BuildInfo::asset('dashboard.css') }}">
+<script src="{{ \Simplify\Panel\Services\BuildInfo::asset('dashboard.js') }}"></script>
 @endassets
-<div class="ps" data-simplify-root x-cloak wire:ignore.self x-data="pelicanSimplify($wire,@js($this->initial()))" x-on:resize.window.debounce.100ms="restoreOverviewView()" :class="{'console-closed':collapsed,'dark':themeDark,'server-active':!!server}" :style="accentStyle(server?.uuid || 'overview')">
-    <svg class="ps-symbols" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><defs>
-        <symbol id="ps-offline" viewBox="0 0 24 24"><path d="M11.1 5.1 10.4 4.4A5.5 5.5 0 0 0 2.6 12.2L10.8 20.4 10 16.5 12.2 13.1 8.9 10.4Z M13 5.1 13.7 4.4A5.5 5.5 0 0 1 21.5 12.2L13.2 20.4 12.1 16.8 14.9 12.5 11.3 9.8Z"/></symbol><symbol id="ps-traffic" viewBox="0 0 24 24"><path d="M7 3v18m-4-4 4 4 4-4M17 21V3m-4 4 4-4 4 4"/></symbol><symbol id="ps-gamepad" viewBox="0 0 24 24"><path d="M7 7h10c3 0 5 4 5 9 0 3-3 4-5 1l-2-2H9l-2 2c-2 3-5 2-5-1 0-5 2-9 5-9Z M6 10v4m-2-2h4"/><circle cx="16" cy="11" r=".7"/><circle cx="19" cy="13" r=".7"/></symbol><symbol id="ps-cube" viewBox="0 0 24 24"><path d="m12 3 9 5v8l-9 5-9-5V8zM3 8l9 5 9-5m-9 5v8M7 5.8l9 5"/></symbol>
-        <symbol id="ps-menu" viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h16"/></symbol><symbol id="ps-creeper" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="1"/><path fill="currentColor" stroke="none" d="M6 7h4v4H6zm8 0h4v4h-4zm-4 4h4v3h3v5h-3v-3h-4v3H7v-5h3z"/></symbol><symbol id="ps-gear" viewBox="0 0 24 24"><path d="m9 3-.7 3-2 .9-2.7-.8-2 3.4 2.1 2v2l-2.1 2 2 3.4 2.7-.8 2 .9.7 3h4l.7-3 2-.9 2.7.8 2-3.4-2.1-2v-2l2.1-2-2-3.4-2.7.8-2-.9L13 3Z"/><circle cx="11" cy="12" r="3"/></symbol><symbol id="ps-wand" viewBox="0 0 24 24"><path d="m3 21 12-12 3 3L6 24Z M12 12l3 3M18 2l.8 2.2L21 5l-2.2.8L18 8l-.8-2.2L15 5l2.2-.8ZM6 2l.6 1.4L8 4l-1.4.6L6 6l-.6-1.4L4 4l1.4-.6ZM21 15l.6 1.4L23 17l-1.4.6L21 20l-.6-2.4L19 17l1.4-.6Z"/></symbol><symbol id="ps-settings" viewBox="0 0 24 24"><path d="M4 7h16M4 17h16M8 4v6m8 4v6"/><circle cx="8" cy="7" r="2"/><circle cx="16" cy="17" r="2"/></symbol>
-        <symbol id="ps-edit" viewBox="0 0 24 24"><path d="m16 3 5 5-13 13H3v-5L16 3Z M13 6l5 5"/></symbol><symbol id="ps-image" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="3"/><circle cx="8" cy="8" r="1.5"/><path d="m3 17 5-5 4 4 4-6 5 7"/></symbol><symbol id="ps-files" viewBox="0 0 24 24"><path d="M3 7V5h7l2 2h9v13H3zM3 10h18"/></symbol>
-        <symbol id="ps-backups" viewBox="0 0 24 24"><path d="M3 11a9 9 0 1 1 2 7M3 4v7h7m2-4v5l3 2"/></symbol>
-        <symbol id="ps-players" viewBox="0 0 24 24"><circle cx="9" cy="7" r="3"/><path d="M3 21v-3a6 6 0 0 1 12 0v3m2-17a3 3 0 0 1 0 6m2 4a5 5 0 0 1 3 4v3"/></symbol>
-        <symbol id="ps-packages" viewBox="0 0 24 24"><path d="M4 4h6V3a3 3 0 0 1 6 0v1h4v6h1a3 3 0 0 1 0 6h-1v4h-6v-1a3 3 0 0 0-6 0v1H4v-6h1a3 3 0 0 0 0-6H4z"/></symbol>
-        <symbol id="ps-web" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><ellipse cx="12" cy="12" rx="4" ry="9"/><path d="M3 12h18m-17-5h16M4 17h16"/></symbol>
-        <symbol id="ps-mods" viewBox="0 0 24 24"><path d="M8 3h8v5h5v8h-5v5H8v-5H3V8h5z"/></symbol><symbol id="ps-plugins" viewBox="0 0 24 24"><path d="M8 3v5m8-5v5M6 8h12v4a6 6 0 0 1-12 0zM12 18v3"/></symbol><symbol id="ps-activity" viewBox="0 0 24 24"><path d="M8 5h13M8 12h13M8 19h13M3 5h.01M3 12h.01M3 19h.01"/></symbol><symbol id="ps-advanced" viewBox="0 0 24 24"><path d="m8 5-6 7 6 7m8-14 6 7-6 7m-3-16-2 18"/></symbol>
-        <symbol id="ps-copy" viewBox="0 0 24 24"><rect x="8" y="8" width="12" height="13" rx="2"/><path d="M16 8V3H3v13h5"/></symbol>
-        <symbol id="ps-link" viewBox="0 0 24 24"><path d="M13 4h7v7m0-7L10 14m10 1v5H4V4h5"/></symbol>
-        <symbol id="ps-heart" viewBox="0 0 24 24"><path d="M20.7 4.9a5.5 5.5 0 0 0-7.8 0L12 5.8l-.9-.9a5.5 5.5 0 0 0-7.8 7.8L12 21l8.7-8.3a5.5 5.5 0 0 0 0-7.8Z"/></symbol><symbol id="ps-host" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="8" rx="2"/><rect x="3" y="13" width="18" height="8" rx="2"/><path d="M7 7h.01M7 17h.01M12 7h6m-6 10h6"/></symbol><symbol id="ps-cpu" viewBox="0 0 24 24"><rect x="6" y="6" width="12" height="12" rx="2"/><path d="M9 2v4m6-4v4M9 18v4m6-4v4M2 9h4m-4 6h4m12-6h4m-4 6h4M10 10h4v4h-4z"/></symbol>
-        <symbol id="ps-ram" viewBox="0 0 24 24"><path d="M3 6h18v11H3zM6 10h3v3H6zm9 0h3v3h-3zM6 17v3m4-3v3m4-3v3m4-3v3"/></symbol>
-        <symbol id="ps-disk" viewBox="0 0 24 24"><path d="M5 3h14l3 13v5H2v-5zM2 16h20m-5 2h2"/></symbol>
-        <symbol id="ps-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v2m0 16v2M2 12h2m16 0h2M5 5l1.5 1.5m11 11L19 19M5 19l1.5-1.5m11-11L19 5"/></symbol>
-        <symbol id="ps-moon" viewBox="0 0 24 24"><path d="M20.5 14.3A9 9 0 0 1 9.7 3.5 9 9 0 1 0 20.5 14.3Z"/></symbol>
-        <symbol id="ps-grid" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></symbol><symbol id="ps-list" viewBox="0 0 24 24"><path d="M8 5h13M8 12h13M8 19h13M3 5h.01M3 12h.01M3 19h.01"/></symbol><symbol id="ps-chevron" viewBox="0 0 24 24"><path d="m9 5 7 7-7 7"/></symbol>
-    <symbol id="ps-back" viewBox="0 0 24 24"><path d="m12 5-7 7 7 7M5 12h14"/></symbol><symbol id="ps-plus" viewBox="0 0 24 24"><path d="M12 4v16M4 12h16"/></symbol><symbol id="ps-terminal" viewBox="0 0 24 24"><path d="m4 7 5 5-5 5m8 0h8"/></symbol><symbol id="ps-legacy" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 8h18M9 8v13M6 5.5h.01m3 0h.01"/></symbol><symbol id="ps-account" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 22v-2a8 8 0 0 1 16 0v2"/></symbol><symbol id="ps-monitor" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="13" rx="2"/><path d="M12 16v5m-5 0h10"/></symbol><symbol id="ps-logout" viewBox="0 0 24 24"><path d="M10 4H4v16h6m4-13 5 5-5 5M8 12h11"/></symbol><symbol id="ps-lock" viewBox="0 0 24 24"><rect x="5" y="10" width="14" height="11" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></symbol><symbol id="ps-play" viewBox="0 0 24 24"><path d="m8 4 12 8-12 8Z"/></symbol><symbol id="ps-stop" viewBox="0 0 24 24"><rect x="5" y="5" width="14" height="14" rx="2"/></symbol><symbol id="ps-restart" viewBox="0 0 24 24"><path d="M3 10a9 9 0 1 1 1 8M3 3v7h7"/></symbol><symbol id="ps-kill" viewBox="0 0 24 24"><path d="m6 6 12 12M18 6 6 18"/></symbol><symbol id="ps-clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></symbol><symbol id="ps-undo" viewBox="0 0 24 24"><path d="M4 10h10a6 6 0 0 1 0 12M4 10l5-5M4 10l5 5"/></symbol></defs></svg>
-    <div class="ps-software-tooltip" x-show="softwareHint" x-cloak role="tooltip" :style="softwareHint?.style" x-on:scroll.window="softwareHint=null" x-on:resize.window="softwareHint=null"><small>Server software</small><strong x-text="softwareHint?.text"></strong></div>
-    <main class="ps-main">
-        <header class="ps-top"><div class="ps-heading"><div class="ps-identity"><a :href="boot.list_url"><h1><span class="ps-panel-name" x-text="boot.panel_name || 'Pelican'"></span> <span class="ps-title-pelican">× Pelican</span></h1></a><small>Enhanced by <a class="ps-project-link" href="https://github.com/jerajerajerajera/PelicanSimplify" target="_blank" rel="noopener noreferrer">Simplify</a></small></div><a x-show="server" :href="boot.list_url" class="ps-back-overview" aria-label="Back to server overview"><svg aria-hidden="true"><use href="#ps-back"/></svg><span>Back to server overview</span></a></div><nav class="ps-top-actions" aria-label="Panel navigation" :class="{'nav-open':navMenu}" x-on:click.outside="navMenu=false;accountMenu=false" x-on:keydown.escape.stop="navMenu=false;accountMenu=false"><button type="button" class="ps-icon-button subtle ps-mobile-menu" aria-label="Panel navigation" aria-controls="ps-navigation-items" :aria-expanded="navMenu" x-on:click="navMenu=!navMenu;accountMenu=false;appearanceMenu=false"><svg aria-hidden="true"><use href="#ps-menu"/></svg></button><div class="ps-nav-items" id="ps-navigation-items">@if(\Simplify\Panel\Services\Extensions::web()) @include('server-directory::simplify.navigation') @endif<a x-show="boot.admin_url" :href="server?.admin_server_url || boot.admin_url" class="ps-icon-button subtle" title="Legacy panel" aria-label="Legacy panel"><svg aria-hidden="true"><use href="#ps-legacy"/></svg><span class="ps-mobile-label">Legacy panel</span></a><button type="button" x-show="boot.settings_url" x-on:click="openPanelSettings()" class="ps-icon-button subtle" title="Simplify settings" aria-label="Simplify settings" aria-haspopup="dialog"><svg aria-hidden="true"><use href="#ps-gear"/></svg><span class="ps-mobile-label">Simplify settings</span></button><div class="ps-overview-appearance" x-on:click.outside="appearanceMenu=false" x-on:keydown.escape.stop="appearanceMenu=false;$refs.overviewAppearance.focus()"><button type="button" x-ref="overviewAppearance" class="ps-icon-button subtle" title="Customize appearance" aria-label="Customize appearance" aria-controls="ps-overview-appearance-menu" :aria-expanded="appearanceMenu" x-on:click="appearanceMenu=!appearanceMenu;accountMenu=false"><svg aria-hidden="true"><use href="#ps-wand"/></svg><span class="ps-mobile-label">Customize appearance</span></button><div id="ps-overview-appearance-menu" class="ps-overview-appearance-menu" x-show="appearanceMenu" x-cloak x-transition.opacity><strong>Customize appearance</strong><div class="ps-appearance-section"><span>Theme</span><div class="ps-appearance-choice" role="group" aria-label="Colour theme"><template x-for="t in ['light','dark','system']" :key="t"><button x-on:click="setTheme(t)" :class="{'selected':theme===t}" :title="t==='light'?'Light theme':t==='dark'?'Dark theme':'System theme'" :aria-label="t+' theme'" :aria-pressed="theme===t"><svg aria-hidden="true"><use :href="t==='light'?'#ps-sun':t==='dark'?'#ps-moon':'#ps-monitor'"/></svg><span x-text="t==='light'?'Light':t==='dark'?'Dark':'System'"></span></button></template></div></div><div x-show="!server"><div class="ps-appearance-section" x-show="!overviewCompact"><span>Layout</span><div class="ps-appearance-choice" role="group" aria-label="Overview layout"><template x-for="view in [{key:'grid',label:'Grid',icon:'grid'},{key:'list',label:'List',icon:'list'}]" :key="view.key"><button type="button" :class="{'selected':overviewView===view.key}" :aria-pressed="overviewView===view.key" x-on:click="setOverviewView(view.key)"><svg aria-hidden="true"><use :href="'#ps-'+view.icon"/></svg><span x-text="view.label"></span></button></template></div></div><div class="ps-appearance-section"><span>Large icon</span><div class="ps-appearance-choice" role="group" aria-label="Large overview icon"><button type="button" :class="{'selected':overviewPreferences.largeIcon==='server'}" :aria-pressed="overviewPreferences.largeIcon==='server'" x-on:click="setOverviewPreference('largeIcon','server')">Server icon</button><button type="button" :class="{'selected':overviewPreferences.largeIcon==='egg'}" :aria-pressed="overviewPreferences.largeIcon==='egg'" x-on:click="setOverviewPreference('largeIcon','egg')">Egg icon</button></div></div><div class="ps-appearance-section"><span>Server details</span><template x-for="option in [{key:'showMotd',label:'Minecraft MOTD'},{key:'showCpu',label:'CPU tile'},{key:'showRam',label:'RAM tile'},{key:'showQuickActions',label:'Show quick actions on server overview'},{key:'minecraftAlwaysGreen',label:'Always keep Minecraft creation green'}]" :key="option.key"><button type="button" class="ps-appearance-toggle" role="switch" :aria-checked="overviewPreferences[option.key]" x-on:click="setOverviewPreference(option.key,!overviewPreferences[option.key])"><span x-text="option.label"></span><span class="ps-appearance-switch" :class="{'on':overviewPreferences[option.key]}" aria-hidden="true"><i></i></span></button></template></div></div></div></div><div class="ps-account" :class="{'account-open':accountMenu}" x-on:click.outside="accountMenu=false" x-on:keydown.escape.stop="accountMenu=false"><button type="button" x-on:click="accountMenu=!accountMenu;appearanceMenu=false" class="ps-icon-button ps-account-button" :class="{'has-avatar':!!boot.avatar}" title="Profile" aria-label="Profile options" aria-controls="ps-account-actions" :aria-expanded="accountMenu"><span class="ps-account-avatar" x-data="{failed:false}"><img x-show="boot.avatar && !failed" :src="boot.avatar" alt="" x-on:error="failed=true"><svg x-show="!boot.avatar || failed"><use href="#ps-account"/></svg></span><span class="ps-account-username" x-text="boot.user"></span></button><div id="ps-account-actions" class="ps-account-menu" :inert="!accountMenu" :aria-hidden="!accountMenu"><div class="ps-account-actions-inner"><button type="button" class="ps-profile-button" x-on:click="openAccount()" title="Profile settings" aria-label="Profile settings" aria-haspopup="dialog"><svg aria-hidden="true"><use href="#ps-account"/></svg></button><form method="post" action="{{ route('filament.app.auth.logout') }}">@csrf<button type="submit" title="Sign out" aria-label="Sign out"><svg><use href="#ps-logout"/></svg></button></form></div></div></div></div></nav></header>
-        <section x-show="!server" class="ps-overview" :class="{'is-list':overviewView==='list'}" :style="{'--grid-columns':overviewColumns()}">
-            <div class="ps-server-scroll" tabindex="0" role="region" aria-label="Servers"><div class="ps-server-stage" :class="{'is-list':overviewView==='list'}">            <div class="ps-overview-toolbar" :class="{'is-list':overviewView==='list'}">
-                <div class="ps-game-filters" role="group" aria-label="Filter servers by game">
-                    <button type="button" class="ps-outline-button" :class="{'selected':gameFilter==='all'}" :aria-pressed="gameFilter==='all'" x-on:click="setGameFilter('all')">All</button>
-                    <template x-for="game in gameOptions()" :key="game.key"><button type="button" class="ps-outline-button" :class="{'selected':gameFilter===game.key}" :aria-pressed="gameFilter===game.key" x-on:click="setGameFilter(game.key)" x-text="game.label"></button></template>
-                </div>
+<div class="ps" data-simplify-root x-cloak wire:ignore.self
+     x-data="pelicanSimplify($wire, @js($this->initial()))"
+     x-on:resize.window.debounce.150ms="restoreOverviewView()"
+     :class="{'dark': themeDark, 'server-active': !!server}"
+     :style="accentStyle(server?.uuid || 'overview')">
+    @include('pelican-simplify::dashboard-icons')
 
+    <main class="ps-main">
+        {{-- Header ------------------------------------------------------------------------------ --}}
+        <header class="ps-top">
+            <div class="ps-heading">
+                <div class="ps-identity">
+                    <a :href="boot.list_url"><h1><span class="ps-panel-name" x-text="boot.panel_name || 'Pelican'"></span> <span class="ps-title-pelican">× Pelican</span></h1></a>
+                    <small>Enhanced by <a class="ps-project-link" href="https://github.com/jerajerajerajera/PelicanSimplify" target="_blank" rel="noopener noreferrer">Simplify</a></small>
+                </div>
+                <a x-show="server" :href="boot.list_url" class="ps-btn ps-back-overview">
+                    <svg aria-hidden="true"><use href="#ps-back"/></svg><span>Back to server overview</span>
+                </a>
             </div>
-<div class="ps-server-layout"><div class="ps-server-grid" :class="{'is-list':overviewView==='list','has-motd':overviewPreferences.showMotd,'no-metrics':!overviewMetrics().length,'no-quick-actions':!overviewPreferences.showQuickActions}"><div class="ps-create-tiles" x-show="boot.can_create"><button type="button" x-show="canCreateGame('minecraft')" x-on:click="openCreate('minecraft')" class="ps-server-card ps-create-card is-minecraft" :style="creationAccent('minecraft')" aria-label="Create Minecraft server" aria-haspopup="dialog"><span class="ps-create-plus"><svg aria-hidden="true"><use href="#ps-creeper"/></svg><span class="ps-create-add"><svg aria-hidden="true"><use href="#ps-plus"/></svg></span></span><h3><span>Create</span><strong>Minecraft</strong><span>server</span></h3></button><button type="button" :disabled="!canCreateGame('other')" x-on:click="openCreate('other')" class="ps-server-card ps-create-card is-other" :style="creationAccent('other')" aria-label="Create other game server with legacy creator" aria-haspopup="dialog"><span class="ps-create-plus"><svg aria-hidden="true"><use href="#ps-gamepad"/></svg><span class="ps-create-add"><svg aria-hidden="true"><use href="#ps-plus"/></svg></span></span><h3><span>Create</span><strong>Other game</strong><span>server</span></h3></button></div><template x-for="s in visibleServers()" :key="s.uuid"><div class="ps-server-entry" :class="{'has-card-motd':overviewPreferences.showMotd &amp;&amp; s.game==='minecraft' &amp;&amp; !!s.motd,'has-power':overviewPreferences.showQuickActions &amp;&amp; s.linked && Object.values(s.permissions || {}).some(Boolean),'confirming-power':powerConfirmation?.uuid===s.uuid}" :style="accentStyle(s.uuid)"><article class="ps-server-card" :class="{'locked':!s.linked}" :style="accentStyle(s.uuid)"><span class="ps-offline-artwork" x-show="s.status==='offline'" aria-label="Server offline"><svg><use href="#ps-offline"/></svg></span><img class="ps-card-background" x-show="s.background && s.status!=='offline'" :src="safeImage(s.background)" alt="" x-on:error="$el.style.visibility='hidden'"><button class="ps-server-open" x-on:click="s.linked && (location.href=s.url)" :disabled="!s.linked" :aria-label="s.linked?'Open '+s.name:s.name+' — not assigned to you'"><div class="ps-card-head"><span class="ps-card-icons" :class="{'egg-primary':overviewPreferences.largeIcon==='egg' &amp;&amp; !!(s.egg_icon || s.software_icon)}"><span class="ps-card-icon" title="Server icon"><img x-show="s.server_icon || s.icon" :src="safeImage(s.server_icon || s.icon)" alt="Server icon" x-on:load="$el.style.visibility=''" x-on:error="$el.style.visibility='hidden'"><svg x-show="!s.server_icon && !s.icon"><use href="#ps-cube"/></svg></span><span class="ps-card-egg-icon" x-show="s.egg_icon || s.software_icon" :aria-label="softwareTooltip(s)" x-on:mouseenter="showSoftwareTooltip(s,$el)" x-on:mouseleave="softwareHint=null"><img :src="safeImage(s.egg_icon || s.software_icon)" alt="Server software icon" x-on:load="$el.style.visibility=''" x-on:error="$el.style.visibility='hidden'"></span></span></div><div class="ps-card-title"><div class="ps-card-title-row" x-data="{observer:null,width:0,init(){this.observer=new ResizeObserver(()=>{const w=this.$el.clientWidth;if(w!==this.width){this.width=w;this.fitCardTitle(this.$el,s.alias||s.name)}});this.observer.observe(this.$el)},destroy(){this.observer?.disconnect()}}" x-effect="const name=s.alias||s.name;$nextTick(()=>fitCardTitle($el,name))"><h3 x-text="s.alias || s.name"></h3><small class="ps-card-real-name" :class="{'no-alias':!s.alias}" x-text="s.alias ? '('+s.name+')' : '\u00a0'"></small></div><div class="ps-card-motd ps-motd-preview ps-motd-display" x-show="overviewPreferences.showMotd &amp;&amp; s.game==='minecraft' &amp;&amp; s.motd"><template x-for="(part,index) in motdPreview(s.motd)" :key="index"><span :style="part.style" x-text="part.text"></span></template></div></div><div class="ps-card-usage" x-show="overviewMetrics().length" :class="{'single-metric':overviewMetrics().length===1}"><template x-for="metric in overviewMetrics()" :key="metric.key"><div class="ps-card-mini-metric"><span class="ps-card-usage-label"><span class="ps-card-metric-name"><svg aria-hidden="true"><use :href="'#ps-'+metric.icon"/></svg><span x-text="metric.label"></span></span><strong x-text="metric.key==='cpu'?cpuLabel(s):cardRamLabel(s)"></strong></span><svg class="ps-card-graph" viewBox="0 0 100 30" preserveAspectRatio="none" aria-hidden="true"><path class="ps-card-graph-axis" d="M2 27H98"/><path :d="cardGraph(s,metric.key)"/><circle x-show="cardGraphPoint(s,metric.key)!==null" cx="98" :cy="cardGraphPoint(s,metric.key) || 0" r="1.4"/></svg></div></template></div><div class="ps-card-game ps-card-badges ps-identity-badges"><span class="ps-list-game"><svg aria-hidden="true"><use :href="s.game==='minecraft'?'#ps-cube':'#ps-gamepad'"/></svg><span x-text="s.game_label"></span></span><span class="ps-status" :class="s.status"><i></i><span x-text="s.status"></span></span></div><div class="ps-card-bottom" x-show="overviewView==='grid'"><span x-text="playerCount(s)"></span><svg><use :href="s.linked?'#ps-chevron':'#ps-lock'"/></svg></div></button><div class="ps-card-footer" x-show="boot.web || overviewView==='list'">@if(\Simplify\Panel\Services\Extensions::web()) @include('server-directory::simplify.visibility') @endif<button type="button" class="ps-list-player-count" x-show="overviewView==='list'" x-on:click="s.linked && (location.href=s.url)" :disabled="!s.linked" :aria-label="s.linked?'Open '+s.name:s.name+' — not assigned to you'"><span x-text="playerCount(s)"></span><svg aria-hidden="true"><use :href="s.linked?'#ps-chevron':'#ps-lock'"/></svg></button></div><div class="ps-overview-power-wrap" x-show="overviewPreferences.showQuickActions"><div class="ps-overview-power" :class="{'is-confirming':powerConfirmation?.uuid===s.uuid}" role="group" :aria-label="'Power controls for '+(s.alias || s.name)"><template x-for="action in [{key:'start',label:'Start',icon:'play'},{key:'stop',label:'Stop',icon:'stop'},{key:'restart',label:'Restart',icon:'restart'},{key:'kill',label:'Force stop',icon:'kill'}]" :key="action.key"><button type="button" :class="{'danger':action.key==='kill'}" :title="action.label" :aria-label="action.label+' '+(s.alias || s.name)" :disabled="!!overviewPowerBusy || !canOverviewPower(s,action.key)" x-on:click.stop="overviewPower(s,action.key)"><svg aria-hidden="true"><use :href="'#ps-'+action.icon"/></svg></button></template><div class="ps-power-confirm" x-show="powerConfirmation?.uuid===s.uuid" x-cloak><button type="button" title="Cancel power action" aria-label="Cancel power action" x-on:click.stop="powerConfirmation=null"><svg><use href="#ps-kill"/></svg></button><button type="button" class="confirm" :title="'Confirm '+powerActionLabel(powerConfirmation?.action)+(powerConfirmation?.action==='kill'?' — unsaved progress may be lost':'')" :aria-label="'Confirm '+powerActionLabel(powerConfirmation?.action)" x-on:click.stop="overviewPower(s,powerConfirmation.action,true)"><svg viewBox="0 0 24 24"><path d="m5 12 4 4 10-10"/></svg></button></div></div></div></article></div></template></div><!-- Overview cards end --></div><p x-show="!boot.servers.length" class="ps-empty">No servers yet.</p></div></div><section class="ps-health-panel" :style="accentStyle('overview')" x-on:click.outside="healthExpanded=false;healthOpenNodes=[]" x-show="boot.features.host_health" :class="{'expanded':healthExpanded}"><article class="ps-host-health" role="button" tabindex="0" aria-label="View health by node" :aria-expanded="healthExpanded" aria-controls="ps-health-details" x-on:click="openHostHealth()" x-on:keydown.enter.prevent="openHostHealth()" x-on:keydown.space.prevent="openHostHealth()"><div class="ps-host-state"><span class="ps-host-emblem ps-health-heart" :class="boot.host_health?.state || 'unavailable'" role="img" :aria-label="'Host health: '+(boot.host_health?.label || 'Unavailable')"><svg class="ps-host-heart" aria-hidden="true"><use href="#ps-heart"/></svg><span class="ps-host-server-badge"><svg aria-hidden="true"><use href="#ps-host"/></svg></span></span><div><div class="ps-host-heading"><h3>Host health</h3><svg class="ps-health-expand" :class="{'expanded':healthExpanded}" aria-hidden="true"><use href="#ps-chevron"/></svg></div><span class="ps-health-status" :class="boot.host_health?.state || 'unavailable'"><strong x-text="boot.host_health?.label || 'Unavailable'"></strong></span><small x-text="(boot.host_health?.available ?? 0)+' / '+(boot.host_health?.hosts ?? 0)+' hosts reporting'"></small></div></div><template x-for="metric in [{key:'cpu',label:'CPU',icon:'cpu'},{key:'memory',label:'RAM',icon:'ram'},{key:'disk',label:'Storage',icon:'disk'},{key:'network',label:'Network',icon:'traffic'}]" :key="metric.key"><div class="ps-host-metric"><div class="ps-host-heading"><svg aria-hidden="true"><use :href="'#ps-'+metric.icon"/></svg><span x-text="metric.label"></span><span class="ps-health-heart" :class="hostMetricState(metric.key)" role="img" :aria-label="metric.label+': '+hostMetricLabel(metric.key)" :title="hostMetricLabel(metric.key)"><svg aria-hidden="true"><use href="#ps-heart"/></svg></span></div><strong :class="{'ps-network-value':metric.key==='network'}" x-text="metric.key==='network'?hostRate():hostValue(metric.key)"></strong><span class="ps-card-meter" x-show="metric.key!=='network'"><span :style="{width:hostFill(metric.key)+'%'}"></span></span><small x-show="metric.key==='network'" x-text="'Used '+hostValue('network')"></small><small x-show="metric.key==='cpu' && boot.host_health?.hosts>1">Average across reporting hosts</small></div></template></article><div id="ps-health-details" class="ps-health-drawer" :inert="!healthExpanded" :aria-hidden="!healthExpanded"><div><div class="ps-health-detail-toolbar">Expand a node to view its servers</div><div class="ps-node-health-list"><template x-for="node in healthNodes()" :key="node.id"><article class="ps-node-health" :class="{'expanded':healthNodeOpen(node)}"><div class="ps-node-summary" x-on:click="if(!$event.target.closest('button'))toggleHealthNode(node)"><header><button type="button" class="ps-node-toggle" :aria-expanded="healthNodeOpen(node)" :aria-controls="'ps-node-servers-'+node.id" x-on:click="toggleHealthNode(node)"><svg class="ps-node-symbol" aria-hidden="true"><use href="#ps-host"/></svg><strong class="ps-node-name" x-text="node.name"></strong><span class="ps-health-status" :class="node.state" x-text="node.label"></span><svg class="ps-node-arrow" :class="{'expanded':healthNodeOpen(node)}" aria-hidden="true"><use href="#ps-chevron"/></svg></button></header><div class="ps-node-metrics"><template x-for="metric in [{key:'cpu',label:'CPU',icon:'cpu'},{key:'memory',label:'RAM',icon:'ram'},{key:'disk',label:'Storage',icon:'disk'},{key:'network',label:'Network',icon:'traffic'}]" :key="metric.key"><div class="ps-host-metric"><div class="ps-host-heading"><svg aria-hidden="true"><use :href="'#ps-'+metric.icon"/></svg><span x-text="metric.label"></span></div><strong :class="{'ps-network-value':metric.key==='network'}" x-text="metric.key==='network'?hostRate(node):hostValue(metric.key,node)"></strong><span class="ps-card-meter" x-show="metric.key!=='network'"><span :style="{width:hostFill(metric.key,node)+'%'}"></span></span><small x-show="metric.key==='network'" x-text="'Used '+hostValue('network',node)"></small></div></template></div></div><div class="ps-node-server-drawer" :class="{'expanded':healthNodeOpen(node)}" :id="'ps-node-servers-'+node.id" :inert="!healthNodeOpen(node)" :aria-hidden="!healthNodeOpen(node)"><div><div class="ps-node-servers"><template x-for="item in nodeServers(node)" :key="item.uuid"><div class="ps-node-server"><div><a x-show="item.linked" :href="item.url" x-text="item.alias || item.name"></a><strong x-show="!item.linked" x-text="item.alias || item.name"></strong><span class="ps-status" :class="item.status" x-text="item.status"></span></div><span><small>CPU</small><strong x-text="cpuLabel(item)"></strong></span><span><small>RAM</small><strong x-text="memoryLabel(item)"></strong></span><span><small>Storage</small><strong x-text="item.usage?.disk_bytes==null?'—':trafficBytes(item.usage.disk_bytes)"></strong></span><span><small>Network</small><strong x-text="serverRate(item)"></strong><small x-text="'Used '+serverTraffic(item)"></small></span></div></template><p x-show="!nodeServers(node).length" class="ps-help">No visible servers on this node.</p></div></div></div></article></template><p x-show="!boot.host_health?.nodes?.length" class="ps-empty">No nodes reporting yet.</p></div></div></div></section></section>
+            <nav class="ps-top-actions" aria-label="Panel navigation" :class="{'nav-open': navMenu}"
+                 x-on:click.outside="navMenu=false; accountMenu=false"
+                 x-on:keydown.escape.stop="navMenu=false; accountMenu=false">
+                <button type="button" class="ps-btn is-icon is-subtle ps-mobile-menu" aria-label="Panel navigation" aria-controls="ps-navigation-items" :aria-expanded="navMenu"
+                        x-on:click="navMenu=!navMenu; accountMenu=false; appearanceMenu=false; notifyMenu=false">
+                    <svg aria-hidden="true"><use href="#ps-menu"/></svg>
+                </button>
+                <div class="ps-nav-items" id="ps-navigation-items">
+                    @if(\Simplify\Panel\Services\Extensions::web()) @include('server-directory::simplify.navigation') @endif
+                    <a x-show="boot.admin_url" :href="server?.admin_server_url || boot.admin_url" class="ps-btn is-icon is-subtle" data-tip="Legacy panel" aria-label="Legacy panel">
+                        <svg aria-hidden="true"><use href="#ps-legacy"/></svg><span class="ps-mobile-label">Legacy panel</span>
+                    </a>
+                    <button type="button" x-show="boot.settings_url" x-on:click="openPanelSettings()" class="ps-btn is-icon is-subtle" data-tip="Simplify settings" aria-label="Simplify settings" aria-haspopup="dialog">
+                        <svg aria-hidden="true"><use href="#ps-gear"/></svg><span class="ps-mobile-label">Simplify settings</span>
+                    </button>
+
+                    {{-- Notifications: alerts, pending changes and plugin updates in one dropdown. --}}
+                    <div class="ps-notify" x-on:click.outside="notifyMenu=false" x-on:keydown.escape.stop="notifyMenu=false; $refs.notifyButton.focus()">
+                        <button type="button" x-ref="notifyButton" class="ps-btn is-icon is-subtle" data-tip="Notifications" aria-label="Notifications" aria-controls="ps-notify-menu" :aria-expanded="notifyMenu"
+                                x-on:click="notifyMenu=!notifyMenu; appearanceMenu=false; accountMenu=false">
+                            <svg aria-hidden="true"><use href="#ps-bell"/></svg><span class="ps-mobile-label">Notifications</span>
+                            <span class="ps-notify-count" x-show="notifications().length" x-text="notifications().length"></span>
+                        </button>
+                        <div id="ps-notify-menu" class="ps-dropdown is-end ps-notify-menu" x-show="notifyMenu" x-cloak x-transition.opacity>
+                            <strong class="ps-dropdown-title">Notifications</strong>
+                            <div class="ps-notify-list">
+                                <template x-for="item in notifications()" :key="item.id">
+                                    <div class="ps-notify-item" :class="'is-'+item.tone">
+                                        <svg aria-hidden="true"><use :href="'#ps-'+(item.tone==='ok'?'check':item.tone==='info'?'info':'alert')"/></svg>
+                                        <strong x-text="item.title"></strong>
+                                        <small x-text="item.text"></small>
+                                        <template x-if="item.action">
+                                            <a class="ps-btn is-sm" :href="item.action.url" x-on:click="if(item.action.run){$event.preventDefault(); notifyMenu=false; item.action.run()}" x-text="item.action.label"></a>
+                                        </template>
+                                    </div>
+                                </template>
+                                <p class="ps-empty" x-show="!notifications().length">You are all caught up.</p>
+                            </div>
+                            <div class="ps-dropdown-section" x-show="noticeHistory.length">
+                                <span class="ps-label">Recent messages</span>
+                                <div class="ps-notify-list">
+                                    <template x-for="entry in noticeHistory" :key="entry.id">
+                                        <div class="ps-notify-item" :class="'is-'+entry.tone">
+                                            <svg aria-hidden="true"><use href="#ps-info"/></svg>
+                                            <strong x-text="entry.text"></strong>
+                                            <small x-text="entry.time"></small>
+                                        </div>
+                                    </template>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    {{-- Personal appearance preferences. --}}
+                    <div class="ps-overview-appearance" x-on:click.outside="appearanceMenu=false" x-on:keydown.escape.stop="appearanceMenu=false; $refs.overviewAppearance.focus()">
+                        <button type="button" x-ref="overviewAppearance" class="ps-btn is-icon is-subtle" data-tip="Customize appearance" aria-label="Customize appearance" aria-controls="ps-overview-appearance-menu" :aria-expanded="appearanceMenu"
+                                x-on:click="appearanceMenu=!appearanceMenu; accountMenu=false; notifyMenu=false">
+                            <svg aria-hidden="true"><use href="#ps-wand"/></svg><span class="ps-mobile-label">Customize appearance</span>
+                        </button>
+                        <div id="ps-overview-appearance-menu" class="ps-dropdown is-end ps-overview-appearance-menu" x-show="appearanceMenu" x-cloak x-transition.opacity>
+                            <strong class="ps-dropdown-title">Customize appearance</strong>
+                            <div class="ps-dropdown-section">
+                                <span class="ps-label">Theme</span>
+                                <div class="ps-segmented" role="group" aria-label="Colour theme">
+                                    <template x-for="t in ['light','dark','system']" :key="t">
+                                        <button type="button" x-on:click="setTheme(t)" :aria-pressed="theme===t" :aria-label="t+' theme'">
+                                            <svg aria-hidden="true"><use :href="t==='light'?'#ps-sun':t==='dark'?'#ps-moon':'#ps-monitor'"/></svg>
+                                            <span x-text="t==='light'?'Light':t==='dark'?'Dark':'System'"></span>
+                                        </button>
+                                    </template>
+                                </div>
+                            </div>
+                            <template x-if="!server">
+                                <div>
+                                    <div class="ps-dropdown-section" x-show="!overviewCompact">
+                                        <span class="ps-label">Layout</span>
+                                        <div class="ps-segmented" role="group" aria-label="Overview layout">
+                                            <template x-for="view in [{key:'grid',label:'Grid',icon:'grid'},{key:'list',label:'List',icon:'list'}]" :key="view.key">
+                                                <button type="button" :aria-pressed="overviewView===view.key" x-on:click="setOverviewView(view.key)">
+                                                    <svg aria-hidden="true"><use :href="'#ps-'+view.icon"/></svg><span x-text="view.label"></span>
+                                                </button>
+                                            </template>
+                                        </div>
+                                    </div>
+                                    <div class="ps-dropdown-section">
+                                        <span class="ps-label">Large icon</span>
+                                        <div class="ps-segmented" role="group" aria-label="Large overview icon">
+                                            <button type="button" :aria-pressed="overviewPreferences.largeIcon==='server'" x-on:click="setOverviewPreference('largeIcon','server')">Server icon</button>
+                                            <button type="button" :aria-pressed="overviewPreferences.largeIcon==='egg'" x-on:click="setOverviewPreference('largeIcon','egg')">Egg icon</button>
+                                        </div>
+                                    </div>
+                                    <div class="ps-dropdown-section">
+                                        <span class="ps-label">Server details</span>
+                                        <template x-for="option in [{key:'showMotd',label:'Minecraft MOTD'},{key:'showCpu',label:'CPU tile'},{key:'showRam',label:'RAM tile'},{key:'showQuickActions',label:'Show quick actions on server overview'},{key:'minecraftAlwaysGreen',label:'Always keep Minecraft creation green'}]" :key="option.key">
+                                            <button type="button" class="ps-toggle" role="switch" :aria-checked="overviewPreferences[option.key]" x-on:click="setOverviewPreference(option.key, !overviewPreferences[option.key])">
+                                                <span x-text="option.label"></span>
+                                                <span class="ps-switch" :class="{'is-on': overviewPreferences[option.key]}" aria-hidden="true"></span>
+                                            </button>
+                                        </template>
+                                    </div>
+                                </div>
+                            </template>
+                        </div>
+                    </div>
+
+                    {{-- Account: avatar with inline profile and sign-out actions. --}}
+                    <div class="ps-account" :class="{'account-open': accountMenu}" x-on:click.outside="accountMenu=false" x-on:keydown.escape.stop="accountMenu=false">
+                        <button type="button" x-on:click="accountMenu=!accountMenu; appearanceMenu=false; notifyMenu=false" class="ps-btn ps-account-button" aria-label="Profile options" aria-controls="ps-account-actions" :aria-expanded="accountMenu">
+                            <span class="ps-account-avatar" x-data="{failed:false}">
+                                <img x-show="boot.avatar && !failed" :src="boot.avatar" alt="" x-on:error="failed=true">
+                                <svg x-show="!boot.avatar || failed" aria-hidden="true"><use href="#ps-account"/></svg>
+                            </span>
+                            <span class="ps-account-username" x-text="boot.user"></span>
+                        </button>
+                        <div id="ps-account-actions" class="ps-account-menu" :inert="!accountMenu" :aria-hidden="!accountMenu">
+                            <div class="ps-account-actions-inner">
+                                <button type="button" class="ps-btn is-icon" x-on:click="openAccount()" data-tip="Profile settings" aria-label="Profile settings" aria-haspopup="dialog">
+                                    <svg aria-hidden="true"><use href="#ps-account"/></svg>
+                                </button>
+                                <form method="post" action="{{ route('filament.app.auth.logout') }}">@csrf
+                                    <button type="submit" class="ps-btn is-icon" data-tip="Sign out" aria-label="Sign out"><svg aria-hidden="true"><use href="#ps-logout"/></svg></button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </nav>
+        </header>
+
+        {{-- Overview -------------------------------------------------------------------------------- --}}
+        <section x-show="!server" class="ps-overview" :class="{'is-list': overviewView==='list'}" :style="{'--grid-columns': overviewColumns()}">
+            <div class="ps-server-scroll" tabindex="0" role="region" aria-label="Servers">
+                <div class="ps-server-stage" :class="{'is-list': overviewView==='list'}">
+                    <div class="ps-overview-toolbar">
+                        <div class="ps-game-filters" role="group" aria-label="Filter servers by game">
+                            <button type="button" class="ps-chip" :aria-pressed="gameFilter==='all'" x-on:click="setGameFilter('all')">All</button>
+                            <template x-for="game in gameOptions()" :key="game.key">
+                                <button type="button" class="ps-chip" :aria-pressed="gameFilter===game.key" x-on:click="setGameFilter(game.key)" x-text="game.label"></button>
+                            </template>
+                        </div>
+                    </div>
+                    <div class="ps-server-grid" :class="{'is-list': overviewView==='list', 'has-motd': overviewPreferences.showMotd, 'no-metrics': !overviewMetrics().length, 'no-quick-actions': !overviewPreferences.showQuickActions}">
+                        <div class="ps-create-tiles" x-show="boot.can_create">
+                            <button type="button" x-show="canCreateGame('minecraft')" x-on:click="openCreate('minecraft')" class="ps-server-card ps-create-card is-minecraft" :style="creationAccent('minecraft')" aria-label="Create Minecraft server" aria-haspopup="dialog">
+                                <span class="ps-create-plus"><svg aria-hidden="true"><use href="#ps-creeper"/></svg><span class="ps-create-add"><svg aria-hidden="true"><use href="#ps-plus"/></svg></span></span>
+                                <h3><span>Create</span><strong>Minecraft</strong><span>server</span></h3>
+                            </button>
+                            <button type="button" :disabled="!canCreateGame('other')" x-on:click="openCreate('other')" class="ps-server-card ps-create-card is-other" :style="creationAccent('other')" aria-label="Create other game server with legacy creator" aria-haspopup="dialog">
+                                <span class="ps-create-plus"><svg aria-hidden="true"><use href="#ps-gamepad"/></svg><span class="ps-create-add"><svg aria-hidden="true"><use href="#ps-plus"/></svg></span></span>
+                                <h3><span>Create</span><strong>Other game</strong><span>server</span></h3>
+                            </button>
+                        </div>
+                        <template x-for="s in visibleServers()" :key="s.uuid">
+                            <div class="ps-server-entry" :class="{'has-card-motd': overviewPreferences.showMotd && s.game==='minecraft' && !!s.motd, 'has-power': overviewPreferences.showQuickActions && s.linked && Object.values(s.permissions || {}).some(Boolean), 'confirming-power': powerConfirmation?.uuid===s.uuid}" :style="accentStyle(s.uuid)">
+                                <article class="ps-server-card" :class="{'locked': !s.linked}">
+                                    <span class="ps-offline-artwork" x-show="s.status==='offline'" aria-label="Server offline"><svg aria-hidden="true"><use href="#ps-offline"/></svg></span>
+                                    <img class="ps-card-background" x-show="s.background && s.status!=='offline'" :src="safeImage(s.background)" alt="" loading="lazy" x-on:error="$el.style.visibility='hidden'">
+                                    <button class="ps-server-open" x-on:click="s.linked && (location.href=s.url)" :disabled="!s.linked" :aria-label="s.linked ? 'Open '+s.name : s.name+' — not assigned to you'">
+                                        <div class="ps-card-head">
+                                            <span class="ps-card-icons" :class="{'egg-primary': overviewPreferences.largeIcon==='egg' && !!(s.egg_icon || s.software_icon)}">
+                                                <span class="ps-card-icon">
+                                                    <img x-show="s.server_icon || s.icon" :src="safeImage(s.server_icon || s.icon)" alt="Server icon" loading="lazy" x-on:load="$el.style.visibility=''" x-on:error="$el.style.visibility='hidden'">
+                                                    <svg x-show="!s.server_icon && !s.icon" aria-hidden="true"><use href="#ps-cube"/></svg>
+                                                </span>
+                                                <span class="ps-card-egg-icon" x-show="s.egg_icon || s.software_icon" data-tip-label="Server software" :data-tip="softwareTooltip(s)" :aria-label="softwareTooltip(s)">
+                                                    <img :src="safeImage(s.egg_icon || s.software_icon)" alt="" loading="lazy" x-on:load="$el.style.visibility=''" x-on:error="$el.style.visibility='hidden'">
+                                                </span>
+                                            </span>
+                                        </div>
+                                        <div class="ps-card-title">
+                                            <div class="ps-card-title-row" x-data="{observer:null,width:0,init(){this.observer=new ResizeObserver(()=>{const w=this.$el.clientWidth;if(w!==this.width){this.width=w;this.fitCardTitle(this.$el,s.alias||s.name)}});this.observer.observe(this.$el)},destroy(){this.observer?.disconnect()}}"
+                                                 x-effect="const name=s.alias||s.name; $nextTick(()=>fitCardTitle($el,name))">
+                                                <h3 x-text="s.alias || s.name"></h3>
+                                                <small class="ps-card-real-name" :class="{'no-alias': !s.alias}" x-text="s.alias ? '('+s.name+')' : ' '"></small>
+                                            </div>
+                                            <div class="ps-card-motd ps-motd-display" x-show="overviewPreferences.showMotd && s.game==='minecraft' && s.motd"><template x-for="(part,index) in motdPreview(s.motd)" :key="index"><span :style="part.style" x-text="part.text"></span></template></div>
+                                        </div>
+                                        <div class="ps-card-usage" x-show="overviewMetrics().length" :class="{'single-metric': overviewMetrics().length===1}">
+                                            <template x-for="metric in overviewMetrics()" :key="metric.key">
+                                                <div class="ps-card-mini-metric">
+                                                    <span class="ps-card-usage-label">
+                                                        <span class="ps-card-metric-name"><svg aria-hidden="true"><use :href="'#ps-'+metric.icon"/></svg><span x-text="metric.label"></span></span>
+                                                        <strong x-text="metric.key==='cpu' ? cpuLabel(s) : cardRamLabel(s)"></strong>
+                                                    </span>
+                                                    <svg class="ps-card-graph" viewBox="0 0 100 30" preserveAspectRatio="none" aria-hidden="true">
+                                                        <path class="ps-card-graph-axis" d="M2 27H98"/>
+                                                        <path :d="cardGraph(s, metric.key)"/>
+                                                        <circle x-show="cardGraphPoint(s, metric.key)!==null" cx="98" :cy="cardGraphPoint(s, metric.key) || 0" r="1.4"/>
+                                                    </svg>
+                                                </div>
+                                            </template>
+                                        </div>
+                                        <div class="ps-card-badges ps-identity-badges">
+                                            <span class="ps-badge is-strong ps-list-game"><svg aria-hidden="true"><use :href="s.game==='minecraft' ? '#ps-cube' : '#ps-gamepad'"/></svg><span x-text="s.game_label"></span></span>
+                                            <span class="ps-badge ps-status" :class="s.status"><i></i><span x-text="s.status"></span></span>
+                                        </div>
+                                        <div class="ps-card-bottom" x-show="overviewView==='grid'">
+                                            <span x-text="playerCount(s)"></span>
+                                            <svg aria-hidden="true"><use :href="s.linked ? '#ps-chevron' : '#ps-lock'"/></svg>
+                                        </div>
+                                    </button>
+                                    <div class="ps-card-footer" x-show="boot.web || overviewView==='list'">
+                                        @if(\Simplify\Panel\Services\Extensions::web()) @include('server-directory::simplify.visibility') @endif
+                                        <button type="button" class="ps-list-player-count" x-show="overviewView==='list'" x-on:click="s.linked && (location.href=s.url)" :disabled="!s.linked" :aria-label="s.linked ? 'Open '+s.name : s.name+' — not assigned to you'">
+                                            <span x-text="playerCount(s)"></span>
+                                            <svg aria-hidden="true"><use :href="s.linked ? '#ps-chevron' : '#ps-lock'"/></svg>
+                                        </button>
+                                    </div>
+                                    <div class="ps-overview-power-wrap" x-show="overviewPreferences.showQuickActions">
+                                        <div class="ps-overview-power" :class="{'is-confirming': powerConfirmation?.uuid===s.uuid}" role="group" :aria-label="'Power controls for '+(s.alias || s.name)">
+                                            <template x-for="action in [{key:'start',label:'Start',icon:'play'},{key:'stop',label:'Stop',icon:'stop'},{key:'restart',label:'Restart',icon:'restart'},{key:'kill',label:'Force stop',icon:'kill'}]" :key="action.key">
+                                                <button type="button" class="ps-btn is-icon" :class="{'is-danger': action.key==='kill'}" :data-tip="action.label" :aria-label="action.label+' '+(s.alias || s.name)" :disabled="!!overviewPowerBusy || !canOverviewPower(s, action.key)" x-on:click.stop="overviewPower(s, action.key)">
+                                                    <svg aria-hidden="true"><use :href="'#ps-'+action.icon"/></svg>
+                                                </button>
+                                            </template>
+                                            <div class="ps-power-confirm" x-show="powerConfirmation?.uuid===s.uuid" x-cloak>
+                                                <button type="button" class="ps-btn is-icon" data-tip="Cancel" aria-label="Cancel power action" x-on:click.stop="powerConfirmation=null"><svg aria-hidden="true"><use href="#ps-close"/></svg></button>
+                                                <button type="button" class="ps-btn is-icon is-primary" :data-tip="'Confirm '+powerActionLabel(powerConfirmation?.action)+(powerConfirmation?.action==='kill' ? ' — unsaved progress may be lost' : '')" :aria-label="'Confirm '+powerActionLabel(powerConfirmation?.action)" x-on:click.stop="overviewPower(s, powerConfirmation.action, true)"><svg aria-hidden="true"><use href="#ps-check"/></svg></button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </article>
+                            </div>
+                        </template>
+                    </div>
+                    <p x-show="!boot.servers.length" class="ps-empty">No servers yet.</p>
+                </div>
+            </div>
+
+            {{-- Host health dock. --}}
+            <section class="ps-health-panel" :style="accentStyle('overview')" x-on:click.outside="healthExpanded=false; healthOpenNodes=[]" x-show="boot.features.host_health" :class="{'expanded': healthExpanded}">
+                <article class="ps-host-health" role="button" tabindex="0" aria-label="View health by node" :aria-expanded="healthExpanded" aria-controls="ps-health-details"
+                         x-on:click="openHostHealth()" x-on:keydown.enter.prevent="openHostHealth()" x-on:keydown.space.prevent="openHostHealth()">
+                    <div class="ps-host-state">
+                        <span class="ps-host-emblem ps-health-heart" :class="boot.host_health?.state || 'unavailable'" role="img" :aria-label="'Host health: '+(boot.host_health?.label || 'Unavailable')">
+                            <svg class="ps-host-heart" aria-hidden="true"><use href="#ps-heart"/></svg>
+                            <span class="ps-host-server-badge"><svg aria-hidden="true"><use href="#ps-host"/></svg></span>
+                        </span>
+                        <div>
+                            <div class="ps-host-heading"><h3>Host health</h3><svg class="ps-health-expand" :class="{'expanded': healthExpanded}" aria-hidden="true"><use href="#ps-chevron"/></svg></div>
+                            <span class="ps-health-status" :class="boot.host_health?.state || 'unavailable'"><strong x-text="boot.host_health?.label || 'Unavailable'"></strong></span>
+                            <small x-text="(boot.host_health?.available ?? 0)+' / '+(boot.host_health?.hosts ?? 0)+' hosts reporting'"></small>
+                        </div>
+                    </div>
+                    <template x-for="metric in hostMetrics" :key="metric.key">
+                        <div class="ps-host-metric">
+                            <div class="ps-host-heading">
+                                <svg aria-hidden="true"><use :href="'#ps-'+metric.icon"/></svg><span x-text="metric.label"></span>
+                                <span class="ps-health-heart" :class="hostMetricState(metric.key)" role="img" :aria-label="metric.label+': '+hostMetricLabel(metric.key)" :data-tip="hostMetricLabel(metric.key)"><svg aria-hidden="true"><use href="#ps-heart"/></svg></span>
+                            </div>
+                            <strong :class="{'ps-network-value': metric.key==='network'}" x-text="metric.key==='network' ? hostRate() : hostValue(metric.key)"></strong>
+                            <span class="ps-meter" x-show="metric.key!=='network'"><span :style="{width: hostFill(metric.key)+'%'}"></span></span>
+                            <small x-show="metric.key==='network'" x-text="'Used '+hostValue('network')"></small>
+                            <small x-show="metric.key==='cpu' && boot.host_health?.hosts>1">Average across reporting hosts</small>
+                        </div>
+                    </template>
+                </article>
+                <div id="ps-health-details" class="ps-health-drawer" :inert="!healthExpanded" :aria-hidden="!healthExpanded">
+                    <div>
+                        <div class="ps-health-detail-toolbar">Expand a node to view its servers</div>
+                        <div class="ps-node-health-list">
+                            <template x-for="node in healthNodes()" :key="node.id">
+                                <article class="ps-node-health" :class="{'expanded': healthNodeOpen(node)}">
+                                    <div class="ps-node-summary" x-on:click="if(!$event.target.closest('button')) toggleHealthNode(node)">
+                                        <header>
+                                            <button type="button" class="ps-node-toggle" :aria-expanded="healthNodeOpen(node)" :aria-controls="'ps-node-servers-'+node.id" x-on:click="toggleHealthNode(node)">
+                                                <svg class="ps-node-symbol" aria-hidden="true"><use href="#ps-host"/></svg>
+                                                <strong class="ps-node-name" x-text="node.name"></strong>
+                                                <span class="ps-badge ps-status" :class="node.state" x-text="node.label"></span>
+                                                <svg class="ps-node-arrow" :class="{'expanded': healthNodeOpen(node)}" aria-hidden="true"><use href="#ps-chevron"/></svg>
+                                            </button>
+                                        </header>
+                                        <div class="ps-node-metrics">
+                                            <template x-for="metric in hostMetrics" :key="metric.key">
+                                                <div class="ps-host-metric">
+                                                    <div class="ps-host-heading"><svg aria-hidden="true"><use :href="'#ps-'+metric.icon"/></svg><span x-text="metric.label"></span></div>
+                                                    <strong :class="{'ps-network-value': metric.key==='network'}" x-text="metric.key==='network' ? hostRate(node) : hostValue(metric.key, node)"></strong>
+                                                    <span class="ps-meter" x-show="metric.key!=='network'"><span :style="{width: hostFill(metric.key, node)+'%'}"></span></span>
+                                                    <small x-show="metric.key==='network'" x-text="'Used '+hostValue('network', node)"></small>
+                                                </div>
+                                            </template>
+                                        </div>
+                                    </div>
+                                    <div class="ps-node-server-drawer" :class="{'expanded': healthNodeOpen(node)}" :id="'ps-node-servers-'+node.id" :inert="!healthNodeOpen(node)" :aria-hidden="!healthNodeOpen(node)">
+                                        <div>
+                                            <div class="ps-node-servers">
+                                                <template x-for="item in nodeServers(node)" :key="item.uuid">
+                                                    <div class="ps-node-server">
+                                                        <div>
+                                                            <a x-show="item.linked" :href="item.url" x-text="item.alias || item.name"></a>
+                                                            <strong x-show="!item.linked" x-text="item.alias || item.name"></strong>
+                                                            <span class="ps-badge ps-status" :class="item.status" x-text="item.status"></span>
+                                                        </div>
+                                                        <span><small>CPU</small><strong x-text="cpuLabel(item)"></strong></span>
+                                                        <span><small>RAM</small><strong x-text="memoryLabel(item)"></strong></span>
+                                                        <span><small>Storage</small><strong x-text="item.usage?.disk_bytes==null ? '—' : trafficBytes(item.usage.disk_bytes)"></strong></span>
+                                                        <span><small>Network</small><strong x-text="serverRate(item)"></strong><small x-text="'Used '+serverTraffic(item)"></small></span>
+                                                    </div>
+                                                </template>
+                                                <p x-show="!nodeServers(node).length" class="ps-help">No visible servers on this node.</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </article>
+                            </template>
+                            <p x-show="!boot.host_health?.nodes?.length" class="ps-empty">No nodes reporting yet.</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </section>
+
+        {{-- Server dashboard ----------------------------------------------------------------------- --}}
         <section x-show="server" class="ps-server-dashboard">
-            <div class="ps-pending" x-show="server?.pending" x-cloak><div><strong x-text="server?.pending?.error ? 'Changes need attention' : server?.pending?.file_only ? 'File changes saved — restart to load them' : 'Stop or restart to apply changes'"></strong><small x-text="server?.pending?.error || (server?.pending?.restart_at ? 'Applying changes when the server stops. The console remains available.' : (server?.pending?.file_only ? 'Files are saved. Restart now or schedule a restart if the game needs to reload them.' : 'Your saved changes are staged until the server stops or restarts.'))"></small></div><div><button x-on:click="restartChanges(0)" :disabled="busy" class="ps-button" aria-label="Apply changes and restart" title="Restart now"><svg><use href="#ps-restart"/></svg></button><button x-on:click="open('restart')" :disabled="busy || !showWidget('restart')" class="ps-button" aria-label="Schedule restart" title="Schedule restart"><svg><use href="#ps-clock"/></svg></button><button x-on:click="discard()" :disabled="busy" class="ps-button subtle" :aria-label="server?.pending?.file_only?'Dismiss restart reminder':'Discard changes'" :title="server?.pending?.file_only?'Dismiss reminder (saved files stay changed)':'Discard changes'"><svg><use href="#ps-undo"/></svg></button></div></div>
-            <article class="ps-server-heading ps-server-info" aria-label="Server information">
-                <span class="ps-offline-artwork" x-show="status==='offline'" aria-label="Server offline"><svg><use href="#ps-offline"/></svg></span><img class="ps-server-banner" x-show="server?.background && status!=='offline'" :src="safeImage(server?.background)" alt="" x-on:error="$el.style.visibility='hidden'">
-                <div class="ps-info-badges ps-identity-badges"><span class="ps-list-game"><svg aria-hidden="true"><use :href="server?.minecraft?'#ps-cube':'#ps-gamepad'"/></svg><span x-text="server?.minecraft?'Minecraft':(server?.software || 'Other game')"></span></span><span class="ps-status" :class="status"><i></i><span x-text="status"></span></span></div>
-                <span class="ps-info-icons"><span class="ps-info-icon ps-custom-server-icon" x-show="server?.server_icon" title="server-icon.png"><img :src="safeImage(server?.server_icon)" alt="Custom server icon" x-on:load="$el.style.visibility=''" x-on:error="$el.style.visibility='hidden'"></span><span class="ps-info-icon ps-software-icon" :title="server?.pack?.modpack_name || server?.software || 'Server software'"><img x-show="server?.software_icon" :src="safeImage(server?.software_icon)" alt="Server software icon" x-on:load="$el.style.visibility=''" x-on:error="$el.style.visibility='hidden'"><svg x-show="!server?.software_icon"><use href="#ps-cube"/></svg></span></span>
-                <div class="ps-info-content"><div class="ps-game-title"><h2 x-text="server?.alias || server?.name"></h2><small class="ps-real-server-name" x-show="server?.alias" x-text="'('+server?.name+')'"></small><button type="button" class="ps-icon-button subtle ps-alias-button" x-show="server?.permissions['settings.rename']" x-on:click="openAlias()" aria-label="Change alias" title="Change alias" aria-haspopup="dialog"><svg aria-hidden="true"><use href="#ps-edit"/></svg></button><div class="ps-color-control" x-on:click.outside="colorMenu=false" x-on:keydown.escape.stop="colorMenu=false">
-<button type="button" class="ps-color-dot" :disabled="busy || !server?.permissions['settings.rename']" :aria-expanded="colorMenu" aria-label="Change server color" title="Server color" x-on:click="toggleColorMenu($el)"></button>
-<button type="button" class="ps-background-button" :disabled="busy || !server?.permissions['settings.rename']" aria-label="Change server background" title="Server background" aria-haspopup="dialog" x-on:click="openBackground()"><svg aria-hidden="true"><use href="#ps-image"/></svg></button>
-<div class="ps-color-dropdown" x-show="colorMenu" x-cloak :style="colorMenuStyle" x-on:click.stop>
-<div class="ps-color-presets"><template x-for="(name,color) in (boot.available_colors || {})" :key="color"><button type="button" :style="{'background-color':color}" :title="name" :aria-label="'Select '+name+' server color'" :aria-pressed="colorDraft===color" :disabled="busy" x-on:click="colorDraft=color"></button></template></div>
-<label class="ps-custom-color"><span>Custom color</span><input type="color" x-model="colorDraft" :disabled="busy" aria-label="Choose custom server color"></label>
-<div class="ps-color-actions"><button type="button" x-on:click="colorMenu=false" :disabled="busy">Cancel</button><button type="button" x-on:click="commitServerColor()" :disabled="busy">Save</button></div>
-</div></div></div>
-                    <dl class="ps-info-details"><div><dt>Software</dt><dd x-text="server?.software || 'Not reported'"></dd></div><div x-show="server?.minecraft"><dt>Minecraft version</dt><dd x-text="minecraftVersion()"></dd></div><div x-show="server?.pack?.modpack_name"><dt>Modpack</dt><dd x-text="server?.pack?.modpack_name"></dd></div><div x-show="server?.pack?.modpack_name"><dt>Modpack version</dt><dd x-text="server?.pack?.modpack_version || 'Not reported'"></dd></div></dl>
+            <div class="ps-alert is-warn ps-pending" x-show="server?.pending" x-cloak>
+                <svg aria-hidden="true"><use href="#ps-alert"/></svg>
+                <div>
+                    <strong x-text="server?.pending?.error ? 'Changes need attention' : server?.pending?.file_only ? 'File changes saved — restart to load them' : 'Stop or restart to apply changes'"></strong>
+                    <small x-text="server?.pending?.error || (server?.pending?.restart_at ? 'Applying changes when the server stops. The console remains available.' : (server?.pending?.file_only ? 'Files are saved. Restart now or schedule a restart if the game needs to reload them.' : 'Your saved changes are staged until the server stops or restarts.'))"></small>
+                </div>
+                <div class="ps-pending-actions">
+                    <button type="button" x-on:click="restartChanges(0)" :disabled="busy" class="ps-btn is-sm" aria-label="Apply changes and restart"><svg aria-hidden="true"><use href="#ps-restart"/></svg><span>Restart now</span></button>
+                    <button type="button" x-on:click="open('restart')" :disabled="busy || !showWidget('restart')" class="ps-btn is-sm is-icon" data-tip="Schedule restart" aria-label="Schedule restart"><svg aria-hidden="true"><use href="#ps-clock"/></svg></button>
+                    <button type="button" x-on:click="discard()" :disabled="busy" class="ps-btn is-sm is-icon is-subtle" :aria-label="server?.pending?.file_only ? 'Dismiss restart reminder' : 'Discard changes'" :data-tip="server?.pending?.file_only ? 'Dismiss reminder (saved files stay changed)' : 'Discard changes'"><svg aria-hidden="true"><use href="#ps-undo"/></svg></button>
+                </div>
+            </div>
+
+            <article class="ps-server-info" aria-label="Server information">
+                <span class="ps-offline-artwork" x-show="status==='offline'" aria-label="Server offline"><svg aria-hidden="true"><use href="#ps-offline"/></svg></span>
+                <img class="ps-server-banner" x-show="server?.background && status!=='offline'" :src="safeImage(server?.background)" alt="" x-on:error="$el.style.visibility='hidden'">
+                <div class="ps-info-badges ps-identity-badges">
+                    <span class="ps-badge is-strong ps-list-game"><svg aria-hidden="true"><use :href="server?.minecraft ? '#ps-cube' : '#ps-gamepad'"/></svg><span x-text="server?.minecraft ? 'Minecraft' : (server?.software || 'Other game')"></span></span>
+                    <span class="ps-badge ps-status" :class="status"><i></i><span x-text="status"></span></span>
+                </div>
+                <span class="ps-info-icons">
+                    <span class="ps-info-icon ps-custom-server-icon" x-show="server?.server_icon" data-tip="server-icon.png"><img :src="safeImage(server?.server_icon)" alt="Custom server icon" x-on:load="$el.style.visibility=''" x-on:error="$el.style.visibility='hidden'"></span>
+                    <span class="ps-info-icon ps-software-icon" data-tip-label="Server software" :data-tip="server?.pack?.modpack_name || server?.software || 'Server software'">
+                        <img x-show="server?.software_icon" :src="safeImage(server?.software_icon)" alt="Server software icon" x-on:load="$el.style.visibility=''" x-on:error="$el.style.visibility='hidden'">
+                        <svg x-show="!server?.software_icon" aria-hidden="true"><use href="#ps-cube"/></svg>
+                    </span>
+                </span>
+                <div class="ps-info-content">
+                    <div class="ps-game-title">
+                        <h2 x-text="server?.alias || server?.name"></h2>
+                        <small class="ps-real-server-name" x-show="server?.alias" x-text="'('+server?.name+')'"></small>
+                        <button type="button" class="ps-btn is-icon is-sm is-subtle ps-alias-button" x-show="server?.permissions['settings.rename']" x-on:click="openAlias()" data-tip="Change alias" aria-label="Change alias" aria-haspopup="dialog"><svg aria-hidden="true"><use href="#ps-edit"/></svg></button>
+                    </div>
+                    <dl class="ps-info-details">
+                        <div><dt>Software</dt><dd x-text="server?.software || 'Not reported'"></dd></div>
+                        <div x-show="server?.minecraft"><dt>Minecraft version</dt><dd x-text="minecraftVersion()"></dd></div>
+                        <div x-show="server?.pack?.modpack_name"><dt>Modpack</dt><dd x-text="server?.pack?.modpack_name"></dd></div>
+                        <div x-show="server?.pack?.modpack_name"><dt>Modpack version</dt><dd x-text="server?.pack?.modpack_version || 'Not reported'"></dd></div>
+                    </dl>
                     <div class="ps-motd-preview ps-motd-display" x-show="server?.properties?.motd || server?.pack?.motd"><template x-for="(part,index) in motdPreview(server?.properties?.motd || server?.pack?.motd || '')" :key="index"><span :style="part.style" x-text="part.text"></span></template></div>
-                    <button class="ps-address ps-info-address" x-on:click="copy(server.address)" :disabled="!server?.address" title="Copy server address"><svg aria-hidden="true"><use href="#ps-link"/></svg><span x-text="server?.address || 'No address assigned'"></span><svg aria-hidden="true"><use href="#ps-copy"/></svg></button>
+                    <button type="button" class="ps-address ps-info-address" x-on:click="copy(server.address)" :disabled="!server?.address" data-tip="Copy server address">
+                        <svg aria-hidden="true"><use href="#ps-link"/></svg><span x-text="server?.address || 'No address assigned'"></span><svg aria-hidden="true"><use href="#ps-copy"/></svg>
+                    </button>
+                </div>
+                <div class="ps-color-control" x-on:click.outside="colorMenu=false" x-on:keydown.escape.stop="colorMenu=false">
+                    <button type="button" class="ps-swatch ps-color-dot" :disabled="busy || !server?.permissions['settings.rename']" :aria-expanded="colorMenu" aria-label="Change server color" data-tip="Server color" x-on:click="toggleColorMenu($el)"></button>
+                    <button type="button" class="ps-btn is-icon is-sm" :disabled="busy || !server?.permissions['settings.rename']" aria-label="Change server background" data-tip="Server background" aria-haspopup="dialog" x-on:click="openBackground()"><svg aria-hidden="true"><use href="#ps-image"/></svg></button>
+                    <div class="ps-dropdown is-fixed ps-color-dropdown" x-show="colorMenu" x-cloak :style="colorMenuStyle" x-on:click.stop>
+                        <span class="ps-label">Server color</span>
+                        <div class="ps-swatches ps-color-presets">
+                            <template x-for="(name,color) in (boot.available_colors || {})" :key="color">
+                                <button type="button" class="ps-swatch" :style="{'background-color': color}" :data-tip="name" :aria-label="'Select '+name+' server color'" :aria-pressed="colorDraft===color" :disabled="busy" x-on:click="colorDraft=color"></button>
+                            </template>
+                        </div>
+                        <label class="ps-check ps-custom-color"><span>Custom color</span><input type="color" class="ps-color-input" x-model="colorDraft" :disabled="busy" aria-label="Choose custom server color"></label>
+                        <div class="ps-dropdown-actions">
+                            <button type="button" class="ps-btn is-sm" x-on:click="colorMenu=false" :disabled="busy">Cancel</button>
+                            <button type="button" class="ps-btn is-sm is-primary" x-on:click="commitServerColor()" :disabled="busy">Save</button>
+                        </div>
+                    </div>
                 </div>
             </article>
-            <div class="ps-server-workspace"><div class="ps-settings-column"><div class="ps-widget-grid"><template x-for="widget in widgets" :key="widget.key"><button class="ps-widget" :title="widgetTitle(widget)+' — '+widgetDescription(widget)" :aria-label="widgetTitle(widget)+' — '+widgetDescription(widget)" x-show="showWidget(widget.key)" x-on:click="open(widget.key)"><span class="ps-widget-icon" :class="widget.key"><svg><use :href="'#ps-'+widget.icon"/></svg></span><span><strong x-text="widgetTitle(widget)"></strong><small x-text="widgetDescription(widget)"></small></span><svg class="ps-widget-arrow"><use href="#ps-chevron"/></svg></button></template></div></div><div class="ps-live-column"><aside class="ps-console" x-show="server"><div class="ps-console-title"><div><span class="ps-terminal-icon">›_</span><strong>Live console</strong><span class="ps-console-dot" :class="{'connected':connected}"></span></div></div><div class="ps-console-body"><div class="ps-console-meta"><span x-text="connected?'Connected to Wings':'Connecting to Wings…'"></span><button x-on:click="logs=[];renderLogs()">Clear</button></div><pre wire:ignore class="ps-console-output" x-ref="output" tabindex="0" aria-label="Server console output"></pre><form class="ps-command" x-on:submit.prevent="sendCommand()"><span>›</span><input x-model="command" placeholder="Type a command…" :disabled="!connected || !server?.permissions['control.console']" x-on:keydown.up.prevent="historyBack()" x-on:keydown.down.prevent="historyForward()" aria-label="Console command"><button type="submit" :disabled="!connected || !server?.permissions['control.console']">↵</button></form></div></aside><article class="ps-stat ps-players-stat" x-show="server?.minecraft"><div class="ps-stat-top"><span>Players</span><svg><use href="#ps-players"/></svg></div><strong><span x-text="server?.players ?? '—'"></span><span class="ps-stat-total" x-text="server?.max_players ? ' / '+server.max_players : ''"></span></strong><small>Online right now</small><ul class="ps-online-players" aria-label="Online players"><template x-for="p in server?.player_names||[]" :key="p.name"><li><img :src="head(p)" alt="" x-on:error="$el.style.visibility='hidden'"><span x-text="p.name"></span></li></template></ul><p class="ps-player-empty" x-show="!server?.player_names?.length" x-text="server?.players>0?'Player names are not available.':'No players online.'"></p></article><div class="ps-resource-tile"><template x-for="metric in metrics" :key="metric.key"><article class="ps-stat"><div class="ps-stat-top"><span x-text="metric.label"></span><svg><use :href="'#ps-'+metric.icon"/></svg></div><strong x-text="metricValue(metric.key)"></strong><small x-text="metricLimit(metric.key)"></small><svg class="ps-spark" viewBox="0 0 200 36" preserveAspectRatio="none"><path :d="spark(metric.key)"/></svg></article></template></div><div class="ps-power ps-power-tile"><button class="ps-button primary" x-on:click="power('start')" :disabled="busy || !server?.permissions['control.start'] || status==='running'" aria-label="Start server" title="Start server"><svg><use href="#ps-play"/></svg><span>Start</span></button><button class="ps-button" x-on:click="power('restart')" :disabled="busy || !server?.permissions['control.restart']" aria-label="Restart server" title="Restart server"><svg><use href="#ps-restart"/></svg><span>Restart</span></button><button class="ps-button" x-on:click="power('stop')" :disabled="busy || !server?.permissions['control.stop'] || status==='offline'" aria-label="Stop server" title="Stop server"><svg><use href="#ps-stop"/></svg><span>Stop</span></button><button class="ps-button danger" x-on:click="power('kill')" :disabled="busy || !server?.permissions['control.stop'] || status==='offline'" aria-label="Force stop server" title="Force stop server"><svg><use href="#ps-kill"/></svg><span>Kill</span></button></div></div></div>
-            <article x-show="server?.pack?.modpack_name" class="ps-pack-summary"><img :src="safeImage(server?.pack?.modpack_icon_url)" alt="Modpack icon"><div><p class="ps-eyebrow">YOUR MODPACK</p><h3 x-text="server?.pack?.modpack_name"></h3><p x-text="server?.pack?.modpack_version"></p></div><a :href="safeLink(server?.pack?.modpack_url)" target="_blank" rel="noopener noreferrer" class="ps-button subtle" title="Modpack info" aria-label="Modpack info"><svg><use href="#ps-link"/></svg></a></article>
+
+            <div class="ps-server-workspace">
+                <div class="ps-settings-column">
+                    <div class="ps-widget-grid">
+                        <template x-for="widget in widgets" :key="widget.key">
+                            <button type="button" class="ps-widget" :aria-label="widgetTitle(widget)+' — '+widgetDescription(widget)" x-show="showWidget(widget.key)" x-on:click="open(widget.key)">
+                                <span class="ps-widget-icon"><svg aria-hidden="true"><use :href="'#ps-'+widget.icon"/></svg></span>
+                                <span><strong x-text="widgetTitle(widget)"></strong><small x-text="widgetDescription(widget)"></small></span>
+                            </button>
+                        </template>
+                    </div>
+                </div>
+                <div class="ps-live-column">
+                    <aside class="ps-console" x-show="server">
+                        <div class="ps-console-title">
+                            <span class="ps-terminal-icon" aria-hidden="true">›_</span>
+                            <strong>Live console</strong>
+                            <span class="ps-console-dot" :class="{'connected': connected}"></span>
+                            <span class="ps-console-state" x-text="connected ? 'Connected to Wings' : 'Connecting to Wings…'"></span>
+                            <button type="button" class="ps-console-clear" x-on:click="logs=[]; renderLogs()">Clear</button>
+                        </div>
+                        <pre wire:ignore class="ps-console-output" x-ref="output" tabindex="0" aria-label="Server console output"></pre>
+                        <form class="ps-command" x-on:submit.prevent="sendCommand()">
+                            <span aria-hidden="true">›</span>
+                            <input x-model="command" placeholder="Type a command…" :disabled="!connected || !server?.permissions['control.console']" x-on:keydown.up.prevent="historyBack()" x-on:keydown.down.prevent="historyForward()" aria-label="Console command">
+                            <button type="submit" :disabled="!connected || !server?.permissions['control.console']" aria-label="Send command">↵</button>
+                        </form>
+                    </aside>
+                    <article class="ps-card ps-stat ps-players-stat" x-show="server?.minecraft">
+                        <div class="ps-stat-top"><span>Players</span><svg aria-hidden="true"><use href="#ps-players"/></svg></div>
+                        <strong><span x-text="server?.players ?? '—'"></span><span class="ps-stat-total" x-text="server?.max_players ? ' / '+server.max_players : ''"></span></strong>
+                        <small>Online right now</small>
+                        <ul class="ps-online-players" aria-label="Online players">
+                            <template x-for="p in server?.player_names || []" :key="p.name"><li><img :src="head(p)" alt="" loading="lazy" x-on:error="$el.style.visibility='hidden'"><span x-text="p.name"></span></li></template>
+                        </ul>
+                        <p class="ps-player-empty" x-show="!server?.player_names?.length" x-text="server?.players>0 ? 'Player names are not available.' : 'No players online.'"></p>
+                    </article>
+                    <div class="ps-card ps-resource-tile">
+                        <template x-for="metric in metrics" :key="metric.key">
+                            <article class="ps-stat">
+                                <div class="ps-stat-top"><span x-text="metric.label"></span><svg aria-hidden="true"><use :href="'#ps-'+metric.icon"/></svg></div>
+                                <strong x-text="metricValue(metric.key)"></strong>
+                                <small x-text="metricLimit(metric.key)"></small>
+                                <svg class="ps-spark" viewBox="0 0 200 36" preserveAspectRatio="none" aria-hidden="true"><path :d="spark(metric.key)"/></svg>
+                            </article>
+                        </template>
+                    </div>
+                    <div class="ps-card ps-power-tile">
+                        <button type="button" class="ps-btn is-primary" x-on:click="power('start')" :disabled="busy || !server?.permissions['control.start'] || status==='running'" aria-label="Start server"><svg aria-hidden="true"><use href="#ps-play"/></svg><span>Start</span></button>
+                        <button type="button" class="ps-btn" x-on:click="power('restart')" :disabled="busy || !server?.permissions['control.restart']" aria-label="Restart server"><svg aria-hidden="true"><use href="#ps-restart"/></svg><span>Restart</span></button>
+                        <button type="button" class="ps-btn" x-on:click="power('stop')" :disabled="busy || !server?.permissions['control.stop'] || status==='offline'" aria-label="Stop server"><svg aria-hidden="true"><use href="#ps-stop"/></svg><span>Stop</span></button>
+                        <button type="button" class="ps-btn is-danger" x-on:click="power('kill')" :disabled="busy || !server?.permissions['control.stop'] || status==='offline'" aria-label="Force stop server"><svg aria-hidden="true"><use href="#ps-kill"/></svg><span>Kill</span></button>
+                    </div>
+                </div>
+            </div>
+            <article x-show="server?.pack?.modpack_name" class="ps-card ps-pack-summary">
+                <img :src="safeImage(server?.pack?.modpack_icon_url)" alt="Modpack icon">
+                <div><p class="ps-eyebrow">Your modpack</p><h3 x-text="server?.pack?.modpack_name"></h3><p x-text="server?.pack?.modpack_version"></p></div>
+                <a :href="safeLink(server?.pack?.modpack_url)" target="_blank" rel="noopener noreferrer" class="ps-btn is-icon is-subtle" data-tip="Modpack info" aria-label="Modpack info"><svg aria-hidden="true"><use href="#ps-link"/></svg></a>
+            </article>
         </section>
-        <div class="ps-notice" role="status" x-show="notice" x-text="notice"></div>
     </main>
-    <div class="ps-modal-layer" :data-open="!!modal" :class="{'is-create':['create','panel-settings','account','files','schedules','activity'].includes(modal)}" x-show="modal" x-cloak><section class="ps-modal" :class="{'is-create':['create','panel-settings','account','files','schedules','activity'].includes(modal),'is-native':['files','schedules','activity','panel-settings'].includes(modal),'is-files':modal==='files'}" role="dialog" aria-modal="true" :aria-label="modalTitle()" x-trap.inert.noscroll="modal"><header><div class="ps-workspace-heading"><h2 x-text="modalTitle()"></h2><div class="ps-sftp-inline" x-show="modal==='files' && server?.sftp"><button type="button" class="ps-button ps-sftp-toggle" x-on:click="sftpOpen=!sftpOpen" :aria-expanded="sftpOpen" aria-controls="ps-sftp-details">Show SFTP details</button><span id="ps-sftp-details" class="ps-sftp-details" x-show="sftpOpen" x-cloak><button type="button" class="ps-sftp-value" x-on:click="copy(server.sftp.username)" title="Copy SFTP username"><span x-text="server?.sftp?.username"></span></button><small>Panel password</small></span><a class="ps-sftp-connect" :href="sftpLink()" x-show="sftpOpen" title="Open SFTP connection"><span x-text="server?.sftp?.url"></span><svg aria-hidden="true"><use href="#ps-link"/></svg></a></div></div><button class="ps-close" x-on:click="close()" aria-label="Close dialog">×</button></header><div class="ps-modal-content"><template x-if="modal==='create'"><iframe :src="createFrameUrl()" title="Create server" x-on:load="createFrameLoaded($el)"></iframe></template><template x-if="modal==='panel-settings'"><iframe :src="panelSettingsUrl()" title="Simplify settings" x-on:load="panelSettingsLoaded($el)"></iframe></template><template x-if="modal==='account'"><iframe :src="boot.profile_url" title="Profile" x-on:load="styleFrame($el,'account')"></iframe></template>
-        <template x-if="modal==='alias'"><div><label class="ps-field">Server alias<input x-model="aliasDraft" maxlength="80" placeholder="Leave empty to use the server name"></label><p class="ps-help">The actual server name stays unchanged. Clear the alias to show the server name as the title.</p><button type="button" class="ps-button primary" x-on:click="saveAlias()" :disabled="busy">Save alias</button></div></template><template x-if="modal==='background'"><div><p class="ps-help">Choose the artwork for this server’s overview card and dashboard.</p><div class="ps-background-grid"><button type="button" class="ps-background-choice ps-background-auto" :aria-pressed="backgroundDraft==='auto'" x-on:click="backgroundDraft='auto'" :disabled="busy"><svg><use href="#ps-image"/></svg><strong>Automatic</strong><small>A consistent image for this server</small></button><button type="button" class="ps-background-choice ps-background-auto" :aria-pressed="backgroundDraft==='none'" x-on:click="backgroundDraft='none'" :disabled="busy"><strong>No background</strong><small>Keep it simple</small></button><template x-for="image in boot.background_choices || []" :key="image.id"><button type="button" class="ps-background-choice" :aria-pressed="backgroundDraft===image.id" x-on:click="backgroundDraft=image.id" :disabled="busy"><img :src="image.url" :alt="image.name"><strong x-text="image.name"></strong></button></template></div><h3>Your uploaded banners</h3><div class="ps-background-grid"><template x-for="image in uploadedBackgrounds" :key="image.id"><article class="ps-uploaded-banner"><button type="button" class="ps-background-choice" :aria-pressed="backgroundDraft===image.id" x-on:click="backgroundDraft=image.id" :disabled="busy"><img :src="image.url" :alt="image.name"><strong x-text="image.name"></strong></button><button type="button" class="ps-button danger" x-on:click="deleteBanner(image.id)" :disabled="busy">Remove</button></article></template></div><label class="ps-field">Upload a banner<input type="file" accept="image/png,image/jpeg,image/webp" wire:model="bannerUpload" x-on:change.capture="bannerUploadChanged($event)" x-on:livewire-upload-error="toast('Upload failed. Check PHP, Livewire and NGINX upload limits in System checks.')"></label>@error('bannerUpload')<p class="ps-warning">{{ $message }}</p>@enderror<p class="ps-help">JPG, PNG or WebP · up to {{ \Simplify\Panel\Services\UploadLimits::label(\Simplify\Panel\Services\UploadLimits::bannerBytes()) }} (PHP/Livewire; your proxy may be lower). Wide images work best.</p><button type="button" class="ps-button" x-on:click="uploadBanner()" :disabled="busy" wire:loading.attr="disabled" wire:target="bannerUpload,uploadServerBanner">Upload and use banner</button><div class="ps-background-actions"><button type="button" class="ps-button primary" x-on:click="saveBackground()" :disabled="busy"><svg aria-hidden="true" viewBox="0 0 24 24"><path d="m5 12 4 4L19 6"/></svg><span x-text="busy ? 'Saving…' : 'Save background'"></span></button></div></div></template>
-<div x-show="loading" class="ps-empty">Loading your workspace…</div>
-        <div x-show="modal==='settings' && !loading"><p class="ps-help" x-show="server?.minecraft">Save changes now, then apply them by stopping or restarting the server. The current server keeps running until you choose when.</p><label class="ps-field">Server name<div class="ps-inline"><input x-model="name" maxlength="255"><button class="ps-button" x-on:click="rename()" :disabled="busy || !server?.permissions['settings.rename']">Rename</button></div></label><div x-show="server?.minecraft"><div class="ps-form-grid"><div class="ps-field ps-span ps-motd-editor"><label for="ps-motd-input">MOTD</label><textarea id="ps-motd-input" x-ref="motdInput" x-model="settings.motd" rows="2" maxlength="512"></textarea><div class="ps-motd-tools" role="group" aria-label="Minecraft text colors and formatting"><div class="ps-motd-colors"><template x-for="color in motdColors" :key="color[0]"><button type="button" :style="{'--motd-color':color[2]}" :title="color[1]" :aria-label="'MOTD color: '+color[1]" x-on:mousedown.prevent x-on:click="insertMotdCode(color[0])"></button></template></div><div class="ps-motd-styles"><button type="button" title="Bold" aria-label="MOTD bold" x-on:mousedown.prevent x-on:click="insertMotdCode('l')"><b>B</b></button><button type="button" title="Italic" aria-label="MOTD italic" x-on:mousedown.prevent x-on:click="insertMotdCode('o')"><i>I</i></button><button type="button" title="Underline" aria-label="MOTD underline" x-on:mousedown.prevent x-on:click="insertMotdCode('n')"><u>U</u></button><button type="button" title="Strikethrough" aria-label="MOTD strikethrough" x-on:mousedown.prevent x-on:click="insertMotdCode('m')"><s>S</s></button><button type="button" title="Obfuscated" aria-label="MOTD obfuscated" x-on:mousedown.prevent x-on:click="insertMotdCode('k')">▒</button><button type="button" title="Reset formatting" aria-label="Reset MOTD formatting" x-on:mousedown.prevent x-on:click="insertMotdCode('r')"><svg aria-hidden="true"><use href="#ps-undo"/></svg></button></div></div><small class="ps-help">Select text, then choose a color or style. Minecraft codes are inserted automatically.</small><div class="ps-motd-preview" aria-label="Minecraft MOTD preview"><template x-for="(part,index) in motdPreview()" :key="index"><span :style="part.style" x-text="part.text"></span></template><span x-show="!settings.motd" class="ps-help">MOTD preview</span></div></div><label class="ps-field">Maximum players<input type="number" min="1" max="1000" x-model.number="settings.max_players"></label><label class="ps-field">Difficulty<select x-model="settings.difficulty"><option>peaceful</option><option>easy</option><option>normal</option><option>hard</option></select></label><label class="ps-field">Game mode<select x-model="settings.gamemode"><option>survival</option><option>creative</option><option>adventure</option><option>spectator</option></select></label><label class="ps-field">View distance<input type="number" min="2" max="32" x-model.number="settings.view_distance"></label><label class="ps-field">Spawn protection<input type="number" min="0" max="1000" x-model.number="settings.spawn_protection"></label><label class="ps-field">Server icon · 64 × 64 PNG<input type="file" accept="image/png" wire:model="iconUpload"></label></div><div class="ps-checks"><label><input type="checkbox" role="switch" x-model="settings.pvp"> PvP</label><label><input type="checkbox" role="switch" x-model="settings.white_list"> Whitelist</label><label><input type="checkbox" role="switch" x-model="settings.allow_flight"> Allow flight</label></div></div><p x-show="server?.minecraft && !server?.properties_available" class="ps-warning">Settings are available after server.properties has been created.</p><button class="ps-button primary" x-on:click="saveSettings()" :disabled="busy || (server?.minecraft && (!server?.properties_available || !server?.permissions['file.update'])) || (!server?.minecraft && !server?.can_resources)">Save changes</button></div>
-<div x-show="modal==='performance' && !loading"><p class="ps-help">Allocated CPU, memory and storage for this server.</p><dl class="ps-runtime"><dt>CPU limit</dt><dd x-text="server?.cpu ? server.cpu+'%' : 'Unlimited'"></dd><dt>Memory limit</dt><dd x-text="server?.memory ? bytes(server.memory*1048576) : 'Unlimited'"></dd><dt>Storage limit</dt><dd x-text="server?.disk ? bytes(server.disk*1048576) : 'Unlimited'"></dd></dl><section x-show="server?.can_resources" class="ps-resource-options"><h3>Resources</h3><div class="ps-form-grid"><label class="ps-field">RAM · GB<input type="number" min="1" max="128" x-model.number="settings.memory_gb"></label><label class="ps-field">CPU · %<input type="number" min="1" max="1600" x-model.number="settings.cpu"></label><label class="ps-field">Storage · MB<input type="number" min="1024" x-model.number="settings.disk_mb"></label></div></section><p class="ps-help" x-show="!server?.can_resources">Ask an administrator to change these limits.</p><button class="ps-button primary" x-show="server?.can_resources" x-on:click="saveSettings()" :disabled="busy">Save limits</button><p class="ps-help" x-show="server?.can_resources">Save changes, then apply them with a restart.</p></div>
-        <div x-show="modal==='files' && !loading" class="ps-files-workspace" :class="{'has-editor':!!fileEditorUrl}"><div class="ps-files-list"><p class="ps-warning" x-show="fileSavedNotice" x-text="fileSavedNotice"></p><iframe x-ref="filesFrame" :src="modal==='files'?server?.files_url+'?simplify_embed=1':'about:blank'" x-on:load="filesFrameLoaded($el)" title="Server file manager"></iframe></div><template x-if="fileEditorUrl"><section class="ps-file-editor"><header><strong>File editor</strong><span class="ps-editor-unsaved" x-show="fileEditorDirty">Unsaved changes</span><button type="button" class="ps-close" x-on:click="closeFileEditor()" aria-label="Close file editor">×</button></header><iframe :src="fileEditorUrl" x-on:load="fileEditorLoaded($el)" title="File editor"></iframe></section></template></div>
-        <div x-show="modal==='backups' && !loading"><div class="ps-backup-policy"><svg><use href="#ps-backups"/></svg><div><strong>Automatic backups</strong><p x-text="'Every '+(server?.backup_options?.interval_minutes||30)+' minutes · '+(server?.backup_options?.retention||2)+' recovery points'"></p><small>A failed backup never replaces a successful recovery point.</small></div></div><div x-show="server?.root_admin" class="ps-admin-options"><h3>Admin options</h3><div class="ps-form-grid"><label class="ps-field">Interval · minutes<input type="number" min="30" x-model.number="backupSettings.interval_minutes"></label><label class="ps-field">Recovery points<input type="number" min="1" max="100" x-model.number="backupSettings.retention"></label><label class="ps-check"><input type="checkbox" role="switch" x-model="backupSettings.enabled"> Automatic backups enabled</label></div><button class="ps-button primary" x-on:click="saveBackups()">Save backup policy</button></div><p class="ps-warning" x-show="!backups.configured">Backup storage is not configured yet. Ask an administrator to configure a backup host in Pelican.</p><div class="ps-installed"><template x-for="b in backups.items" :key="b.uuid"><div><span><strong x-text="b.name"></strong><small x-text="b.completed ? (b.successful ? bytes(b.bytes) : 'Failed') : 'In progress'"></small></span><button class="ps-button" x-on:click="downloadBackup(b.uuid)" :disabled="busy || !b.successful || !b.completed || !server?.permissions['backup.download']">Download</button><button class="ps-button subtle" x-on:click="restoreBackup(b.uuid)" :disabled="busy || status!=='offline' || !b.successful || !b.completed || !server?.permissions['backup.restore']">Restore</button></div></template></div><p x-show="!backups.items.length" class="ps-empty">Your first automatic backup will appear here.</p><div x-show="server?.root_admin"><h3>Full backup management · admin</h3><iframe x-ref="backupFrame" :src="modal==='backups' && server?.root_admin?server?.backups_url+'?simplify_embed=1':'about:blank'" x-on:load="styleFrame($el,'native')" title="Admin backup management"></iframe></div></div>
-        <div x-show="modal==='players' && !loading"><div class="ps-player-actions"><label class="ps-field">Player name<input x-model="playerName" maxlength="16" placeholder="Minecraft username"></label><div class="ps-action-wrap"><template x-for="action in ['Whitelist','Unwhitelist','OP','DeOP','Kick','Ban','Unban']"><button class="ps-button" x-on:click="playerAction(action)" :disabled="!connected || status!=='running' || !server?.permissions['control.console']" x-text="action"></button></template></div></div><h3>Online players</h3><p class="ps-help">Servers may hide player names in their status response.</p><div class="ps-player-list"><template x-for="p in server?.player_names||[]" :key="p.name"><button x-on:click="playerName=p.name"><img :src="head(p)" :alt="p.name"><span x-text="p.name"></span><span class="ps-label">Online</span></button></template></div><p x-show="!server?.player_names?.length" class="ps-empty">No player names reported.</p><template x-for="[key,title] in [['whitelist','Whitelist'],['ops','Operators'],['banned-players','Banned players']]"><section><h3 x-text="title"></h3><div class="ps-player-list"><template x-for="p in playerLists[key]||[]" :key="p.name"><button x-on:click="playerName=p.name"><img :src="head(p)" :alt="p.name"><span x-text="p.name"></span></button></template></div></section></template></div>
-        <div x-show="isPackageModal() && !loading"><p class="ps-help">Install releases compatible with your Minecraft version and server loader. Stop the server before making changes.</p><div class="ps-inline"><input x-model="packageQuery" x-on:keydown.enter="searchPackages()" :placeholder="modal==='plugins'?'Search plugins…':'Search mods…'"><input x-model="packageVersion" placeholder="Minecraft version"><button class="ps-button primary" x-on:click="searchPackages()" :disabled="busy">Search</button></div><div class="ps-package-grid"><template x-for="p in packageResults" :key="p.project_id"><article class="ps-package"><img :src="safeImage(p.icon_url)" alt=""><div><strong x-text="p.title"></strong><p x-text="p.description"></p><small>Modrinth</small></div><button class="ps-button" x-on:click="installPackage(p.project_id)" :disabled="busy || status!=='offline'">Install</button></article></template></div><h3 x-text="modal==='plugins'?'Installed plugins':'Installed mods'"></h3><div class="ps-installed"><template x-for="f in installed.files||[]" :key="f.name"><div><span x-text="f.name"></span><button class="ps-button" x-show="tracked(f.name)" x-on:click="installPackage(tracked(f.name).project_id)" :disabled="busy || status!=='offline'">Update</button><button class="ps-button subtle" x-on:click="removePackage(f.name)" :disabled="busy || status!=='offline'">Remove</button></div></template></div></div>
-        @if(\Simplify\Panel\Services\Extensions::web()) @include('server-directory::simplify.workspace') @endif
-        <div x-show="modal==='connection' && !loading"><h3>Network</h3><p class="ps-help">Use this address to connect to your server.</p><button class="ps-address" x-on:click="copy(server.address)"><span x-text="server?.address || 'No address assigned'"></span><svg><use href="#ps-copy"/></svg></button>@if(\Simplify\Panel\Services\Extensions::web()) @include('server-directory::simplify.subdomain') @endif</div>
-        <div x-show="modal==='software' && server?.minecraft && !loading"><h3>Server software</h3><p class="ps-warning">Changing software reinstalls the server. A successful backup from the last 30 minutes is required. Stop the server and enter its name to confirm.</p><div class="ps-form-grid"><label class="ps-field">Server type<select x-model="software.server_type"><option value="vanilla">Vanilla</option><option value="plus">Vanilla+</option><option value="modded">Modpack</option></select></label><label x-show="software.server_type!=='modded'" class="ps-field">Installed software<select x-model.number="software.egg_id"><option value="">Choose software</option><template x-for="e in advanced.eggs||[]" :key="e.id"><option :value="e.id" x-text="e.name"></option></template></select></label><label x-show="software.server_type!=='modded'" class="ps-field">Minecraft version<input x-model="software.minecraft_version" placeholder="1.21.3"></label></div><div x-show="software.server_type==='modded'"><div class="ps-inline"><input x-model="packQuery" placeholder="Search Modrinth, FTB, Technic…"><button class="ps-button" x-on:click="searchPacks()">Search</button></div><div class="ps-package-grid"><template x-for="p in packs" :key="p.key"><button class="ps-package" x-on:click="selectPack(p)"><img :src="safeImage(p.icon_url)" alt=""><span><strong x-text="p.title"></strong><small x-text="p.source"></small><p x-text="p.description"></p></span></button></template></div><label class="ps-field">Selected pack release<select x-model="software.modpack_version"><option value="">Choose a release</option><template x-for="[id,name] in Object.entries(packReleases)" :key="id"><option :value="id" x-text="name"></option></template></select></label></div><label class="ps-field">Type the server name<input x-model="softwareConfirm" :placeholder="server?.name"></label><button class="ps-button" x-on:click="changeSoftware()" :disabled="busy || status!=='offline'">Install selected software</button></div>
-        <div x-show="modal==='software' && !server?.minecraft && !loading" class="ps-iframe-wrap"><iframe :src="modal==='software' && !server?.minecraft && server?.native_sections?.startup?server.native_sections.startup+'?simplify_embed=1':'about:blank'" x-on:load="styleFrame($el,'native')" title="Game startup settings"></iframe></div>
-        <div x-show="modal==='schedules' && !loading" class="ps-iframe-wrap"><iframe :src="modal==='schedules' && server?.native_sections?.schedules?server.native_sections.schedules+'?simplify_embed=1':'about:blank'" x-on:load="styleFrame($el,'native')" title="Scheduled tasks"></iframe></div>
-        <div x-show="modal==='activity' && !loading" class="ps-iframe-wrap"><iframe :src="modal==='activity' && server?.native_sections?.activity?server.native_sections.activity+'?simplify_embed=1':'about:blank'" x-on:load="styleFrame($el,'native')" title="Activity log"></iframe></div>
-        <div x-show="modal==='advanced' && !loading"><div class="ps-action-wrap"><a class="ps-button" x-show="server?.permissions['database.read'] && server?.native_sections?.databases" :href="server?.native_sections?.databases" target="_blank" rel="noopener">Databases</a><a class="ps-button" x-show="server?.root_admin && server?.permissions['user.read'] && server?.native_sections?.access" :href="server?.native_sections?.access" target="_blank" rel="noopener">Server access</a></div><h3>Automatic runtime</h3><dl class="ps-runtime"><dt>Container image</dt><dd x-text="server?.image"></dd><dt>Startup command</dt><dd x-text="server?.startup"></dd></dl><p class="ps-help">Selected automatically. Only administrators can override these values.</p><section x-show="server?.owner" class="ps-danger-zone"><h3>Delete server</h3><p>Deletes this server and its files. This action cannot be undone.</p><label class="ps-field">Type the server name<input x-model="deleteConfirm" :placeholder="server?.name"></label><button class="ps-button danger" x-on:click="deleteServer()" :disabled="busy || status!=='offline' || deleteConfirm!==server?.name">Delete server</button></section></div>
-        <div x-show="modal==='restart' && !loading"><p class="ps-help">Choose when to stop, apply your staged settings, and start the server again.</p><label class="ps-field">Restart in · minutes<input type="number" min="1" max="10080" x-model.number="restartMinutes"></label><button class="ps-button primary" x-on:click="restartChanges(restartMinutes)" aria-label="Schedule restart" title="Schedule restart"><svg><use href="#ps-clock"/></svg></button></div>
-    </div></section></div>
+
+    {{-- Workspace popup: one shell with fixed sizes (sm, md, lg); only the body scrolls. ------------------- --}}
+    <div class="ps-modal-layer" :data-open="!!modal" x-show="modal" x-cloak>
+        <section class="ps-modal" :class="modalSize()" role="dialog" aria-modal="true" :aria-label="modalTitle()" x-trap.noscroll="modal">
+            <header class="ps-modal-head">
+                <h2 x-text="modalTitle()"></h2>
+                <div class="ps-sftp-inline" x-show="modal==='files' && server?.sftp">
+                    <button type="button" class="ps-btn is-sm ps-sftp-toggle" x-on:click="sftpOpen=!sftpOpen" :aria-expanded="sftpOpen" aria-controls="ps-sftp-details" x-text="sftpOpen ? 'Hide SFTP details' : 'Show SFTP details'"></button>
+                    <span id="ps-sftp-details" class="ps-sftp-details" x-show="sftpOpen" x-cloak>
+                        <button type="button" class="ps-sftp-value" x-on:click="copy(server.sftp.username, 'Username copied')" data-tip="Copy SFTP username"><span x-text="server?.sftp?.username"></span><svg aria-hidden="true"><use href="#ps-copy"/></svg></button>
+                        <small>Password: your panel password</small>
+                        <a class="ps-sftp-connect" :href="sftpLink()" data-tip="Open SFTP connection"><span x-text="server?.sftp?.url"></span><svg aria-hidden="true"><use href="#ps-link"/></svg></a>
+                    </span>
+                </div>
+                <button type="button" class="ps-btn is-icon is-subtle ps-close" x-on:click="close()" aria-label="Close dialog"><svg aria-hidden="true"><use href="#ps-close"/></svg></button>
+            </header>
+
+            <div class="ps-modal-body" :class="{'is-flush': modalFlush()}">
+                <div x-show="loading" class="ps-modal-loading" role="status"><span class="ps-spinner"></span><span>Loading your workspace…</span></div>
+
+                <template x-if="modal==='create'">
+                    <iframe :data-ps-frame="createGame==='other' ? 'native' : 'create'" :data-ps-accent="currentAccentHex()" :src="createFrameUrl()" title="Create server" x-on:load="createFrameLoaded($el)"></iframe>
+                </template>
+                <template x-if="modal==='panel-settings'">
+                    <iframe data-ps-frame="settings" :data-ps-accent="currentAccentHex()" :src="panelSettingsUrl()" title="Simplify settings" x-on:load="panelSettingsLoaded($el)"></iframe>
+                </template>
+                <template x-if="modal==='account'">
+                    <iframe data-ps-frame="account" :data-ps-accent="currentAccentHex()" :src="frameUrl(boot.profile_url)" title="Profile" x-on:load="styleFrame($el, 'account')"></iframe>
+                </template>
+
+                {{-- Alias --}}
+                <template x-if="modal==='alias'">
+                    <div>
+                        <label class="ps-field">Server alias<input x-model="aliasDraft" maxlength="80" placeholder="Leave empty to use the server name" x-on:keydown.enter="saveAlias()"></label>
+                        <p class="ps-help">The actual server name stays unchanged. Clear the alias to show the server name as the title.</p>
+                    </div>
+                </template>
+
+                {{-- Background --}}
+                <template x-if="modal==='background'">
+                    <div>
+                        <p class="ps-help">Choose the artwork for this server’s overview card and dashboard.</p>
+                        <div class="ps-background-grid">
+                            <button type="button" class="ps-background-choice ps-background-auto" :aria-pressed="backgroundDraft==='auto'" x-on:click="backgroundDraft='auto'" :disabled="busy">
+                                <svg aria-hidden="true"><use href="#ps-image"/></svg><strong>Automatic</strong><small>A consistent image for this server</small>
+                            </button>
+                            <button type="button" class="ps-background-choice ps-background-auto" :aria-pressed="backgroundDraft==='none'" x-on:click="backgroundDraft='none'" :disabled="busy">
+                                <strong>No background</strong><small>Keep it simple</small>
+                            </button>
+                            <template x-for="image in boot.background_choices || []" :key="image.id">
+                                <button type="button" class="ps-background-choice" :aria-pressed="backgroundDraft===image.id" x-on:click="backgroundDraft=image.id" :disabled="busy"><img :src="image.url" :alt="image.name" loading="lazy"><strong x-text="image.name"></strong></button>
+                            </template>
+                        </div>
+                        <h3 class="ps-section-title">Your uploaded banners</h3>
+                        <div class="ps-background-grid">
+                            <template x-for="image in uploadedBackgrounds" :key="image.id">
+                                <article class="ps-uploaded-banner">
+                                    <button type="button" class="ps-background-choice" :aria-pressed="backgroundDraft===image.id" x-on:click="backgroundDraft=image.id" :disabled="busy"><img :src="image.url" :alt="image.name" loading="lazy"><strong x-text="image.name"></strong></button>
+                                    <button type="button" class="ps-btn is-sm is-danger" x-on:click="deleteBanner(image.id)" :disabled="busy">Remove</button>
+                                </article>
+                            </template>
+                        </div>
+                        <p class="ps-help" x-show="!uploadedBackgrounds.length">No uploaded banners yet.</p>
+                        <label class="ps-field">Upload a banner<input type="file" accept="image/png,image/jpeg,image/webp" wire:model="bannerUpload" x-on:change.capture="bannerUploadChanged($event)" x-on:livewire-upload-error="toast('Upload failed. Check PHP, Livewire and NGINX upload limits in System checks.', 'danger')"></label>
+                        @error('bannerUpload')<p class="ps-alert is-danger">{{ $message }}</p>@enderror
+                        <p class="ps-help">JPG, PNG or WebP · up to {{ \Simplify\Panel\Services\UploadLimits::label(\Simplify\Panel\Services\UploadLimits::bannerBytes()) }} (PHP/Livewire; your proxy may be lower). Wide images work best.</p>
+                        <button type="button" class="ps-btn" x-on:click="uploadBanner()" :disabled="busy" wire:loading.attr="disabled" wire:target="bannerUpload,uploadServerBanner"><svg aria-hidden="true"><use href="#ps-download"/></svg>Upload and use banner</button>
+                    </div>
+                </template>
+
+                {{-- Game settings: tabs on the left, one save action in the footer. --}}
+                <div x-show="modal==='settings' && !loading" class="ps-settings-workspace" :class="{'has-tabs': server?.minecraft}">
+                    <nav class="ps-tabs" x-show="server?.minecraft" aria-label="Settings sections">
+                        <template x-for="tab in settingsTabs()" :key="tab.key">
+                            <button type="button" :aria-pressed="settingsTab===tab.key" x-on:click="settingsTab=tab.key"><svg aria-hidden="true"><use :href="'#ps-'+tab.icon"/></svg><span x-text="tab.label"></span></button>
+                        </template>
+                    </nav>
+                    <div class="ps-tab-panels">
+                        <section x-show="settingsTab==='general' || !server?.minecraft">
+                            <h3 class="ps-section-title">Server identity</h3>
+                            <label class="ps-field">Server name
+                                <span class="ps-input-row"><input x-model="name" maxlength="255"><button type="button" class="ps-btn" x-on:click="rename()" :disabled="busy || !server?.permissions['settings.rename']">Rename</button></span>
+                            </label>
+                            <label class="ps-field">Display alias
+                                <span class="ps-input-row"><input x-model="aliasDraft" maxlength="80" placeholder="Leave empty to use the server name"><button type="button" class="ps-btn" x-on:click="saveAlias()" :disabled="busy || !server?.permissions['settings.rename']">Save alias</button></span>
+                            </label>
+                            <p class="ps-help">Name and alias are saved immediately and do not need a restart.</p>
+                            <template x-if="server?.minecraft">
+                                <div>
+                                    <h3 class="ps-section-title">Server icon</h3>
+                                    <label class="ps-field">64 × 64 PNG<input type="file" accept="image/png" wire:model="iconUpload"></label>
+                                    <p class="ps-help">The icon is uploaded with your other saved settings at the next restart.</p>
+                                </div>
+                            </template>
+                        </section>
+                        <section x-show="settingsTab==='gameplay' && server?.minecraft">
+                            <h3 class="ps-section-title">Gameplay</h3>
+                            <div class="ps-grid-2">
+                                <label class="ps-field">Maximum players<input type="number" min="1" max="1000" x-model.number="settings.max_players"></label>
+                                <label class="ps-field">Difficulty<select x-model="settings.difficulty"><option>peaceful</option><option>easy</option><option>normal</option><option>hard</option></select></label>
+                                <label class="ps-field">Game mode<select x-model="settings.gamemode"><option>survival</option><option>creative</option><option>adventure</option><option>spectator</option></select></label>
+                                <label class="ps-field">View distance<input type="number" min="2" max="32" x-model.number="settings.view_distance"></label>
+                                <label class="ps-field">Spawn protection<input type="number" min="0" max="1000" x-model.number="settings.spawn_protection"></label>
+                            </div>
+                            <h3 class="ps-section-title">Rules</h3>
+                            <div class="ps-checks">
+                                <label class="ps-check"><input type="checkbox" role="switch" x-model="settings.pvp"> PvP</label>
+                                <label class="ps-check"><input type="checkbox" role="switch" x-model="settings.white_list"> Whitelist</label>
+                                <label class="ps-check"><input type="checkbox" role="switch" x-model="settings.allow_flight"> Allow flight</label>
+                            </div>
+                        </section>
+                        <section x-show="settingsTab==='motd' && server?.minecraft" class="ps-motd-editor">
+                            <h3 class="ps-section-title">Message of the day</h3>
+                            <label class="ps-field" for="ps-motd-input">MOTD</label>
+                            <textarea id="ps-motd-input" class="ps-input" x-ref="motdInput" x-model="settings.motd" rows="2" maxlength="512"></textarea>
+                            <div class="ps-motd-tools" role="group" aria-label="Minecraft text colors and formatting">
+                                <div class="ps-motd-colors">
+                                    <template x-for="color in motdColors" :key="color[0]">
+                                        <button type="button" class="ps-swatch" :style="{'background-color': color[2]}" :data-tip="color[1]" :aria-label="'MOTD color: '+color[1]" x-on:mousedown.prevent x-on:click="insertMotdCode(color[0])"></button>
+                                    </template>
+                                </div>
+                                <div class="ps-motd-styles">
+                                    <button type="button" class="ps-btn is-icon is-sm" data-tip="Bold" aria-label="MOTD bold" x-on:mousedown.prevent x-on:click="insertMotdCode('l')"><b>B</b></button>
+                                    <button type="button" class="ps-btn is-icon is-sm" data-tip="Italic" aria-label="MOTD italic" x-on:mousedown.prevent x-on:click="insertMotdCode('o')"><i>I</i></button>
+                                    <button type="button" class="ps-btn is-icon is-sm" data-tip="Underline" aria-label="MOTD underline" x-on:mousedown.prevent x-on:click="insertMotdCode('n')"><u>U</u></button>
+                                    <button type="button" class="ps-btn is-icon is-sm" data-tip="Strikethrough" aria-label="MOTD strikethrough" x-on:mousedown.prevent x-on:click="insertMotdCode('m')"><s>S</s></button>
+                                    <button type="button" class="ps-btn is-icon is-sm" data-tip="Obfuscated" aria-label="MOTD obfuscated" x-on:mousedown.prevent x-on:click="insertMotdCode('k')">▒</button>
+                                    <button type="button" class="ps-btn is-icon is-sm" data-tip="Reset formatting" aria-label="Reset MOTD formatting" x-on:mousedown.prevent x-on:click="insertMotdCode('r')"><svg aria-hidden="true"><use href="#ps-undo"/></svg></button>
+                                </div>
+                            </div>
+                            <p class="ps-help">Select text, then choose a color or style. Minecraft codes are inserted automatically.</p>
+                            <div class="ps-motd-preview" aria-label="Minecraft MOTD preview"><template x-for="(part,index) in motdPreview()" :key="index"><span :style="part.style" x-text="part.text"></span></template><span x-show="!settings.motd" class="ps-motd-placeholder">MOTD preview</span></div>
+                        </section>
+                        <p x-show="server?.minecraft && !server?.properties_available" class="ps-alert is-warn">Settings are available after server.properties has been created.</p>
+                    </div>
+                </div>
+
+                {{-- Performance --}}
+                <div x-show="modal==='performance' && !loading">
+                    <p class="ps-help">Allocated CPU, memory and storage for this server.</p>
+                    <dl class="ps-kv">
+                        <dt>CPU limit</dt><dd x-text="server?.cpu ? server.cpu+'%' : 'Unlimited'"></dd>
+                        <dt>Memory limit</dt><dd x-text="server?.memory ? bytes(server.memory*1048576) : 'Unlimited'"></dd>
+                        <dt>Storage limit</dt><dd x-text="server?.disk ? bytes(server.disk*1048576) : 'Unlimited'"></dd>
+                    </dl>
+                    <section x-show="server?.can_resources">
+                        <h3 class="ps-section-title">Change resources</h3>
+                        <div class="ps-grid-2">
+                            <label class="ps-field">RAM · GB<input type="number" min="1" max="128" x-model.number="settings.memory_gb"></label>
+                            <label class="ps-field">CPU · %<input type="number" min="1" max="1600" x-model.number="settings.cpu"></label>
+                            <label class="ps-field">Storage · MB<input type="number" min="1024" x-model.number="settings.disk_mb"></label>
+                        </div>
+                        <p class="ps-help">Save changes, then apply them with a restart.</p>
+                    </section>
+                    <p class="ps-help" x-show="!server?.can_resources">Ask an administrator to change these limits.</p>
+                </div>
+
+                {{-- Files: fixed workspace, each iframe scrolls on its own. --}}
+                <div x-show="modal==='files' && !loading" class="ps-files-workspace" :class="{'has-editor': !!fileEditorUrl}">
+                    <div class="ps-files-list">
+                        <iframe x-ref="filesFrame" data-ps-frame="files" :data-ps-accent="currentAccentHex()" :src="modal==='files' ? frameUrl(server?.files_url) : 'about:blank'" x-on:load="filesFrameLoaded($el)" title="Server file manager"></iframe>
+                    </div>
+                    <template x-if="fileEditorUrl">
+                        <section class="ps-file-editor">
+                            <header>
+                                <strong>File editor</strong>
+                                <span class="ps-badge is-warn" x-show="fileEditorDirty">Unsaved changes</span>
+                                <button type="button" class="ps-btn is-icon is-sm is-subtle" x-on:click="closeFileEditor()" aria-label="Close file editor"><svg aria-hidden="true"><use href="#ps-close"/></svg></button>
+                            </header>
+                            <iframe data-ps-frame="editor" :data-ps-accent="currentAccentHex()" :src="fileEditorUrl" x-on:load="fileEditorLoaded($el)" title="File editor"></iframe>
+                        </section>
+                    </template>
+                </div>
+
+                {{-- Backups --}}
+                <div x-show="modal==='backups' && !loading">
+                    <div class="ps-panel ps-backup-policy">
+                        <svg aria-hidden="true"><use href="#ps-backups"/></svg>
+                        <div>
+                            <strong>Automatic backups</strong>
+                            <p x-text="backupPolicyLabel()"></p>
+                            <small>A failed backup never replaces a successful recovery point.</small>
+                        </div>
+                    </div>
+                    <div x-show="server?.root_admin" class="ps-admin-options">
+                        <h3 class="ps-section-title">Admin options</h3>
+                        <div class="ps-grid-2">
+                            <label class="ps-field">Interval · minutes<input type="number" min="30" x-model.number="backupSettings.interval_minutes"></label>
+                            <label class="ps-field">Recovery points<input type="number" min="1" max="100" x-model.number="backupSettings.retention"></label>
+                        </div>
+                        <div class="ps-input-row">
+                            <label class="ps-check"><input type="checkbox" role="switch" x-model="backupSettings.enabled"> Automatic backups enabled</label>
+                            <label class="ps-check"><input type="checkbox" role="switch" x-model="backupSettings.only_when_used"> Skip while the server has not run</label>
+                            <button type="button" class="ps-btn is-primary" x-on:click="saveBackups()" :disabled="busy">Save backup policy</button>
+                        </div>
+                    </div>
+                    <p class="ps-alert is-warn" x-show="!backups.configured">Backup storage is not configured yet. Ask an administrator to configure a backup host in Pelican.</p>
+                    <h3 class="ps-section-title">Recovery points</h3>
+                    <div class="ps-rows">
+                        <template x-for="b in backups.items" :key="b.uuid">
+                            <div>
+                                <span><strong x-text="b.name"></strong><small x-text="b.completed ? (b.successful ? bytes(b.bytes) : 'Failed') : 'In progress'"></small></span>
+                                <button type="button" class="ps-btn is-sm" x-on:click="downloadBackup(b.uuid)" :disabled="busy || !b.successful || !b.completed || !server?.permissions['backup.download']"><svg aria-hidden="true"><use href="#ps-download"/></svg>Download</button>
+                                <button type="button" class="ps-btn is-sm" x-on:click="restoreBackup(b.uuid)" :disabled="busy || status!=='offline' || !b.successful || !b.completed || !server?.permissions['backup.restore']"><svg aria-hidden="true"><use href="#ps-restart"/></svg>Restore</button>
+                            </div>
+                        </template>
+                    </div>
+                    <p x-show="!backups.items.length" class="ps-empty">Your first automatic backup will appear here.</p>
+                    <div x-show="server?.root_admin">
+                        <h3 class="ps-section-title">Full backup management · admin</h3>
+                        <iframe class="ps-embedded-frame" x-ref="backupFrame" data-ps-frame="native" :data-ps-accent="currentAccentHex()" :src="modal==='backups' && server?.root_admin ? frameUrl(server?.backups_url) : 'about:blank'" x-on:load="styleFrame($el, 'native')" title="Admin backup management"></iframe>
+                    </div>
+                </div>
+
+                {{-- Players --}}
+                <div x-show="modal==='players' && !loading">
+                    <div class="ps-player-actions">
+                        <label class="ps-field">Player name<input x-model="playerName" maxlength="16" placeholder="Minecraft username"></label>
+                        <div class="ps-action-wrap">
+                            <template x-for="action in ['Whitelist','Unwhitelist','OP','DeOP','Kick','Ban','Unban']">
+                                <button type="button" class="ps-btn is-sm" :class="{'is-danger': ['Kick','Ban'].includes(action)}" x-on:click="playerAction(action)" :disabled="!connected || status!=='running' || !server?.permissions['control.console']" x-text="action"></button>
+                            </template>
+                        </div>
+                    </div>
+                    <h3 class="ps-section-title">Online players</h3>
+                    <p class="ps-help">Servers may hide player names in their status response.</p>
+                    <div class="ps-player-list">
+                        <template x-for="p in server?.player_names || []" :key="p.name">
+                            <button type="button" x-on:click="playerName=p.name"><img :src="head(p)" :alt="p.name" loading="lazy"><span x-text="p.name"></span><span class="ps-badge is-ok">Online</span></button>
+                        </template>
+                    </div>
+                    <p x-show="!server?.player_names?.length" class="ps-empty">No player names reported.</p>
+                    <template x-for="[key,title] in [['whitelist','Whitelist'],['ops','Operators'],['banned-players','Banned players']]">
+                        <section>
+                            <h3 class="ps-section-title" x-text="title"></h3>
+                            <div class="ps-player-list">
+                                <template x-for="p in playerLists[key] || []" :key="p.name">
+                                    <button type="button" x-on:click="playerName=p.name"><img :src="head(p)" :alt="p.name" loading="lazy"><span x-text="p.name"></span></button>
+                                </template>
+                            </div>
+                            <p class="ps-help" x-show="!(playerLists[key] || []).length">Nobody yet.</p>
+                        </section>
+                    </template>
+                </div>
+
+                {{-- Plugins and mods --}}
+                <div x-show="isPackageModal() && !loading">
+                    <p class="ps-help">Install releases compatible with your Minecraft version and server loader. Stop the server before making changes.</p>
+                    <div class="ps-input-row ps-package-search">
+                        <input class="ps-input" x-model="packageQuery" x-on:keydown.enter="searchPackages()" :placeholder="modal==='plugins' ? 'Search plugins…' : 'Search mods…'">
+                        <input class="ps-input ps-version-input" x-model="packageVersion" placeholder="Minecraft version">
+                        <button type="button" class="ps-btn is-primary" x-on:click="searchPackages()" :disabled="busy"><svg aria-hidden="true"><use href="#ps-search"/></svg>Search</button>
+                    </div>
+                    <div class="ps-package-grid">
+                        <template x-for="p in packageResults" :key="p.project_id">
+                            <article class="ps-package">
+                                <img :src="safeImage(p.icon_url)" alt="" loading="lazy">
+                                <div><strong x-text="p.title"></strong><p x-text="p.description"></p><small>Modrinth</small></div>
+                                <button type="button" class="ps-btn is-sm" x-on:click="installPackage(p.project_id)" :disabled="busy || status!=='offline'">Install</button>
+                            </article>
+                        </template>
+                    </div>
+                    <h3 class="ps-section-title" x-text="modal==='plugins' ? 'Installed plugins' : 'Installed mods'"></h3>
+                    <div class="ps-rows">
+                        <template x-for="f in installed.files || []" :key="f.name">
+                            <div>
+                                <span x-text="f.name"></span>
+                                <button type="button" class="ps-btn is-sm" x-show="tracked(f.name)" x-on:click="installPackage(tracked(f.name).project_id)" :disabled="busy || status!=='offline'">Update</button>
+                                <button type="button" class="ps-btn is-sm is-danger" x-on:click="removePackage(f.name)" :disabled="busy || status!=='offline'">Remove</button>
+                            </div>
+                        </template>
+                    </div>
+                    <p class="ps-help" x-show="!(installed.files || []).length">Nothing installed yet.</p>
+                </div>
+
+                @if(\Simplify\Panel\Services\Extensions::web()) @include('server-directory::simplify.workspace') @endif
+
+                {{-- Network --}}
+                <div x-show="modal==='connection' && !loading">
+                    <h3 class="ps-section-title">Server address</h3>
+                    <p class="ps-help">Use this address to connect to your server.</p>
+                    <button type="button" class="ps-btn ps-address" x-on:click="copy(server.address)"><span x-text="server?.address || 'No address assigned'"></span><svg aria-hidden="true"><use href="#ps-copy"/></svg></button>
+                    @if(\Simplify\Panel\Services\Extensions::web()) @include('server-directory::simplify.subdomain') @endif
+                </div>
+
+                {{-- Server software (Minecraft): reinstall with another type, version or modpack. --}}
+                <div x-show="modal==='software' && server?.minecraft && !loading">
+                    <p class="ps-alert is-warn">Changing software reinstalls the server. A successful backup from the last 30 minutes is required. Stop the server and enter its name to confirm.</p>
+                    <div class="ps-grid-2">
+                        <label class="ps-field">Server type<select x-model="software.server_type"><option value="vanilla">Vanilla</option><option value="plus">Vanilla+</option><option value="modded">Modpack</option></select></label>
+                        <label x-show="software.server_type!=='modded'" class="ps-field">Installed software
+                            <select x-model.number="software.egg_id"><option value="">Choose software</option><template x-for="e in advanced.eggs || []" :key="e.id"><option :value="e.id" x-text="e.name"></option></template></select>
+                        </label>
+                        <label x-show="software.server_type!=='modded'" class="ps-field">Minecraft version<input x-model="software.minecraft_version" placeholder="1.21.3"></label>
+                    </div>
+                    <div x-show="software.server_type==='modded'">
+                        <div class="ps-input-row">
+                            <input class="ps-input" x-model="packQuery" placeholder="Search Modrinth, FTB, Technic…" x-on:keydown.enter="searchPacks()">
+                            <button type="button" class="ps-btn" x-on:click="searchPacks()" :disabled="busy"><svg aria-hidden="true"><use href="#ps-search"/></svg>Search</button>
+                        </div>
+                        <div class="ps-package-grid">
+                            <template x-for="p in packs" :key="p.key">
+                                <button type="button" class="ps-package" x-on:click="selectPack(p)">
+                                    <img :src="safeImage(p.icon_url)" alt="" loading="lazy">
+                                    <span><strong x-text="p.title"></strong><small x-text="p.source"></small><p x-text="p.description"></p></span>
+                                </button>
+                            </template>
+                        </div>
+                        <label class="ps-field">Selected pack release
+                            <select x-model="software.modpack_version"><option value="">Choose a release</option><template x-for="[id,name] in Object.entries(packReleases)" :key="id"><option :value="id" x-text="name"></option></template></select>
+                        </label>
+                    </div>
+                    <label class="ps-field">Type the server name<input x-model="softwareConfirm" :placeholder="server?.name"></label>
+                </div>
+                <template x-if="modal==='software' && !server?.minecraft && server?.native_sections?.startup">
+                    <iframe data-ps-frame="native" :data-ps-accent="currentAccentHex()" :src="frameUrl(server.native_sections.startup)" x-on:load="styleFrame($el, 'native')" title="Game startup settings"></iframe>
+                </template>
+                <template x-if="modal==='schedules' && server?.native_sections?.schedules">
+                    <iframe data-ps-frame="native" :data-ps-accent="currentAccentHex()" :src="frameUrl(server.native_sections.schedules)" x-on:load="styleFrame($el, 'native')" title="Scheduled tasks"></iframe>
+                </template>
+                <template x-if="modal==='activity' && server?.native_sections?.activity">
+                    <iframe data-ps-frame="native" :data-ps-accent="currentAccentHex()" :src="frameUrl(server.native_sections.activity)" x-on:load="styleFrame($el, 'native')" title="Activity log"></iframe>
+                </template>
+
+                {{-- Advanced --}}
+                <div x-show="modal==='advanced' && !loading">
+                    <div class="ps-action-wrap">
+                        <a class="ps-btn" x-show="server?.permissions['database.read'] && server?.native_sections?.databases" :href="server?.native_sections?.databases" target="_blank" rel="noopener">Databases<svg aria-hidden="true"><use href="#ps-link"/></svg></a>
+                        <a class="ps-btn" x-show="server?.root_admin && server?.permissions['user.read'] && server?.native_sections?.access" :href="server?.native_sections?.access" target="_blank" rel="noopener">Server access<svg aria-hidden="true"><use href="#ps-link"/></svg></a>
+                    </div>
+                    <h3 class="ps-section-title">Automatic runtime</h3>
+                    <dl class="ps-kv">
+                        <dt>Container image</dt><dd x-text="server?.image"></dd>
+                        <dt>Startup command</dt><dd x-text="server?.startup"></dd>
+                    </dl>
+                    <p class="ps-help">Selected automatically. Only administrators can override these values.</p>
+                    <section x-show="server?.owner" class="ps-danger-zone">
+                        <h3 class="ps-section-title">Delete server</h3>
+                        <p class="ps-help">Deletes this server and its files. This action cannot be undone.</p>
+                        <label class="ps-field">Type the server name<input x-model="deleteConfirm" :placeholder="server?.name"></label>
+                        <button type="button" class="ps-btn is-danger" x-on:click="deleteServer()" :disabled="busy || status!=='offline' || deleteConfirm!==server?.name">Delete server</button>
+                    </section>
+                </div>
+
+                {{-- Scheduled restart --}}
+                <div x-show="modal==='restart' && !loading">
+                    <p class="ps-help">Choose when to stop, apply your staged settings, and start the server again.</p>
+                    <label class="ps-field">Restart in · minutes<input type="number" min="1" max="10080" x-model.number="restartMinutes"></label>
+                </div>
+            </div>
+
+            {{-- Footer actions belong to the open workspace. --}}
+            <footer class="ps-modal-foot" x-show="['alias','background','settings','performance','software','restart'].includes(modal) && !loading && (modal!=='settings' || server?.minecraft) && (modal!=='performance' || server?.can_resources)">
+                <span class="is-start" x-show="modal==='settings'" x-text="server?.pending ? 'Changes are waiting for a restart.' : 'Saved changes apply after a stop or restart.'"></span>
+                <button type="button" class="ps-btn" x-on:click="close()" :disabled="busy">Cancel</button>
+                <button type="button" class="ps-btn is-primary" x-show="modal==='alias'" x-on:click="saveAlias()" :disabled="busy">Save alias</button>
+                <button type="button" class="ps-btn is-primary" x-show="modal==='background'" x-on:click="saveBackground()" :disabled="busy"><svg aria-hidden="true"><use href="#ps-check"/></svg><span x-text="busy ? 'Saving…' : 'Save background'"></span></button>
+                <button type="button" class="ps-btn is-primary" x-show="modal==='settings'" x-on:click="saveSettings()" :disabled="busy || !server?.properties_available || !server?.permissions['file.update']">Save changes</button>
+                <button type="button" class="ps-btn is-primary" x-show="modal==='performance'" x-on:click="saveSettings()" :disabled="busy">Save limits</button>
+                <button type="button" class="ps-btn is-danger" x-show="modal==='software'" x-on:click="changeSoftware()" :disabled="busy || status!=='offline'">Install selected software</button>
+                <button type="button" class="ps-btn is-primary" x-show="modal==='restart'" x-on:click="restartChanges(restartMinutes)" :disabled="busy"><svg aria-hidden="true"><use href="#ps-clock"/></svg>Schedule restart</button>
+            </footer>
+        </section>
+    </div>
 </div>
 </x-filament-panels::page>

@@ -7,10 +7,8 @@ use Filament\Actions\Action;
 use Simplify\Panel\Filament\App\Pages\Dashboard;
 use Simplify\Panel\Filament\Admin\Pages\SimplifySettings;
 use Simplify\Panel\Filament\Admin\Pages\CreateMinecraftServer;
-use Simplify\Panel\Filament\Admin\Pages\CreateServerLegacy;
 use Simplify\Panel\Filament\App\Pages\CreateServer;
 use Simplify\Panel\Services\FeatureSettings;
-use App\Filament\Admin\Resources\Servers\ServerResource;
 final class PelicanSimplifyPlugin implements Plugin
 {
     public function getId(): string { return 'pelican-simplify'; }
@@ -33,7 +31,6 @@ final class PelicanSimplifyPlugin implements Plugin
         if($panel->getId()==='admin'){
             $panel->topbar(true);
             $panel->pages([SimplifySettings::class,CreateMinecraftServer::class]);
-            ServerResource::registerCustomPages(['legacy'=>CreateServerLegacy::route('/create-legacy')]);
         }
         if($panel->getId()==='server')$panel->middleware([Http\Middleware\ServerHome::class]);
     }

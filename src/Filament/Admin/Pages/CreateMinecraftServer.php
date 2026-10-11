@@ -175,6 +175,31 @@ class CreateMinecraftServer extends Page implements HasForms
 
     #[\Livewire\Attributes\Locked] public string $nameExample='';
 
+    /** Per-request memo for lookups that form closures evaluate several times per render. */
+    private array $memo = [];
+    private function memo(string $key, \Closure $resolve): mixed
+    {
+        return array_key_exists($key, $this->memo) ? $this->memo[$key] : ($this->memo[$key] = $resolve());
+    }
+    private function multipleNodes(): bool
+    {
+        return $this->memo('multiple-nodes', fn (): bool => CreatorAccess::admin() && CreatorAccess::nodes()->count() > 1);
+    }
+    /** Filament 4 can toggle visibility in the browser; older versions fall back to a server round trip. */
+    private static function clientVisibility(): bool
+    {
+        return method_exists(\Filament\Forms\Components\Field::class, 'visibleJs');
+    }
+    private static function showWhen(mixed $component, string $js, \Closure $server): mixed
+    {
+        return self::clientVisibility() ? $component->visibleJs($js) : $component->visible($server);
+    }
+    /** Fields that only reveal other fields stay local when the browser can do the toggling. */
+    private static function liveForVisibility(mixed $component): mixed
+    {
+        return self::clientVisibility() ? $component : $component->live();
+    }
+
     public function mount(): void
     {
         $this->nameExample=(new RandomWordService())->word();
@@ -231,8 +256,8 @@ class CreateMinecraftServer extends Page implements HasForms
             'start_on_completion' => false,
             'server_color'=>\Simplify\Panel\Services\ServerAppearance::defaultColor(),
             'change_backup_schedule'=>false,
-            'backup_interval_minutes'=>30,
-            'backup_retention'=>2,
+            'backup_interval_minutes'=>(int)\Simplify\Panel\Services\PerformanceSettings::get('backup_interval_minutes'),
+            'backup_retention'=>(int)\Simplify\Panel\Services\PerformanceSettings::get('backup_retention'),
             'accept_eula' => false,
             'swap' => 0,
             'io' => 500,
@@ -302,6 +327,16 @@ class CreateMinecraftServer extends Page implements HasForms
     public function hydrate(): void
     {
         if ($this->creationGame!=='') $this->data['game']=$this->creationGame;
+        $this->syncResourceChoices();
+    }
+
+    /** CPU/disk presets are plain radios; copy the chosen preset into the value fields once per request. */
+    private function syncResourceChoices(): void
+    {
+        foreach (['cpu_choice' => 'cpu', 'disk_choice' => 'disk_mb'] as $choice => $field) {
+            $value = $this->data[$choice] ?? 'custom';
+            if ($value !== 'custom' && is_numeric($value)) $this->data[$field] = (int) $value;
+        }
     }
 
     public function form(Schema $schema): Schema
@@ -396,20 +431,20 @@ class CreateMinecraftServer extends Page implements HasForms
                                 ->helperText('Internal reference only. The dashboard uses Server name.'),
                             Select::make('node_id')
                                 ->label('Node')->required()->searchable()->live()->dehydratedWhenHidden()
-                                ->options(fn () => CreatorAccess::nodes()->pluck('name', 'id')->all())
-                                ->visible(fn () => CreatorAccess::admin() && CreatorAccess::nodes()->count() > 1)
+                                ->options(fn () => $this->memo('node-options', fn () => CreatorAccess::nodes()->pluck('name', 'id')->all()))
+                                ->visible(fn () => $this->multipleNodes())
                                 ->afterStateUpdated(function ($state, Set $set): void {
                                     $set('allocation_id', Node::find($state)?->allocations()->whereNull('server_id')->orderBy('id')->value('id'));
                                 }),
                             Select::make('allocation_id')
-                                ->dehydratedWhenHidden()->label('Port / allocation')->visible(fn () => CreatorAccess::admin() && CreatorAccess::nodes()->count() > 1)
-                                ->required()->searchable()->live()
-                                ->options(fn (Get $get) => Allocation::query()
+                                ->dehydratedWhenHidden()->label('Port / allocation')->visible(fn () => $this->multipleNodes())
+                                ->required()->searchable()
+                                ->options(fn (Get $get) => $this->multipleNodes() ? $this->memo('allocations-'.$get('node_id'), fn () => Allocation::query()
                                     ->where('node_id', $get('node_id'))
                                     ->whereNull('server_id')
                                     ->get()->mapWithKeys(fn (Allocation $allocation) => [
                                         $allocation->id => $allocation->address ?? ($allocation->ip . ':' . $allocation->port),
-                                    ])->all())
+                                    ])->all()) : [])
                                 ->helperText('Only free allocations are shown. Create an allocation under Nodes if this is empty.'),
                             Hidden::make('owner_id'),
                         ])->columns(1)
@@ -424,8 +459,8 @@ class CreateMinecraftServer extends Page implements HasForms
                             Section::make('Minecraft content')->visible(fn (Get $get) => ($this->creationGame ?: $get('game')) === 'minecraft')->schema([
                             Select::make('minecraft_version')
                                 ->label('Minecraft version')
-                                ->searchable()->live()->required(fn (Get $get) => $get('server_type') !== 'modded')
-                                ->options(fn () => MinecraftCatalog::versions())
+                                ->searchable()->required(fn (Get $get) => $get('server_type') !== 'modded')
+                                ->options(fn () => $this->memo('minecraft-versions', fn () => MinecraftCatalog::versions()))
                                 ->visible(fn (Get $get) => $get('server_type') !== 'modded')
                                 ->helperText('Your chosen egg downloads this Minecraft version during installation.'),
                             Hidden::make('modpack_search')->dehydrated(false),
@@ -443,7 +478,7 @@ class CreateMinecraftServer extends Page implements HasForms
                             Select::make('modpack_version')
                                 ->label('Modpack version')
                                 ->options(fn (Get $get) => ModpackCatalog::versions($get('modpack_project')))
-                                ->searchable()->live()->required(fn (Get $get) => $get('server_type') === 'modded')
+                                ->searchable()->required(fn (Get $get) => $get('server_type') === 'modded')
                                 ->visible(fn (Get $get) => $get('server_type') === 'modded')
                                 ->helperText('The pack determines the Minecraft and modloader versions.'),
                             Section::make('Vanilla+ / Paper')
@@ -461,35 +496,36 @@ class CreateMinecraftServer extends Page implements HasForms
                                             ->rules($variable->rules ?? ['nullable']))->all() : [];
                                 }),
                             Section::make('Resources')->description('Starting values follow your server type. Choose a preset or enter your own allocation.')->schema([
-                            Radio::make('ram_gb')
+                            self::liveForVisibility(Radio::make('ram_gb')
                                 ->view('pelican-simplify::filament.admin.card-radio')
                                 ->label('RAM')
                                 ->options(['2' => '2 GB', '4' => '4 GB', '8' => '8 GB', '12' => '12 GB', 'custom' => 'Custom'])
                                 ->descriptions(['2' => 'Small worlds', '4' => 'Everyday play', '8' => 'More headroom', '12' => 'Larger modpacks', 'custom' => 'Choose your own'])
                                 ->extraAttributes(['class' => 'ssc-ram-options'])
-                                ->live()->required(),
-                            TextInput::make('ram_custom_gb')
+                                ->required()),
+                            self::showWhen(TextInput::make('ram_custom_gb')
                                 ->label('Custom RAM in GB')
                                 ->numeric()->minValue(1)->maxValue(fn () => CreatorAccess::admin() ? 128 : max(1, (int) floor(CreatorAccess::settings()['max_memory_mb'] / 1024)))->step(1)
-                                ->required(fn (Get $get) => $get('ram_gb') === 'custom')
-                                ->visible(fn (Get $get) => $get('ram_gb') === 'custom'),
-                            Radio::make('cpu_choice')->label('CPU allocation')
+                                ->required(fn (Get $get) => $get('ram_gb') === 'custom'),
+                                "\$get('ram_gb') === 'custom'", fn (Get $get) => $get('ram_gb') === 'custom'),
+                            // Presets fill the custom fields on every request (see syncResourceChoices); no round trip per click.
+                            self::liveForVisibility(Radio::make('cpu_choice')->label('CPU allocation')
                                 ->view('pelican-simplify::filament.admin.card-radio')->extraAttributes(['class'=>'ssc-ram-options'])
                                 ->options(fn (Get $get) => $this->resourceOptions('cpu', $get('server_type')))
-                                ->default(fn (Get $get) => (string) $get('cpu'))->live()->required()
-                                ->afterStateUpdated(function ($state, Set $set): void { if ($state !== 'custom') $set('cpu', (int) $state); }),
-                            TextInput::make('cpu')->label('Custom CPU (%)')->integer()->minValue(CreatorAccess::admin() ? 0 : 1)
+                                ->default(fn (Get $get) => (string) $get('cpu'))->required()),
+                            self::showWhen(TextInput::make('cpu')->label('Custom CPU (%)')->integer()->minValue(CreatorAccess::admin() ? 0 : 1)
                                 ->maxValue(fn () => CreatorAccess::admin() ? 1600 : (int) CreatorAccess::settings()['max_cpu'])
-                                ->required()->dehydratedWhenHidden()->visible(fn (Get $get) => $get('cpu_choice') === 'custom')
+                                ->required()->dehydratedWhenHidden()
                                 ->helperText('100% = one CPU core; administrators may use 0 for unlimited.'),
-                            Radio::make('disk_choice')->label('Disk allocation')
+                                "\$get('cpu_choice') === 'custom'", fn (Get $get) => $get('cpu_choice') === 'custom'),
+                            self::liveForVisibility(Radio::make('disk_choice')->label('Disk allocation')
                                 ->view('pelican-simplify::filament.admin.card-radio')->extraAttributes(['class'=>'ssc-ram-options'])
                                 ->options(fn (Get $get) => $this->resourceOptions('disk_mb', $get('server_type')))
-                                ->default(fn (Get $get) => (string) $get('disk_mb'))->live()->required()
-                                ->afterStateUpdated(function ($state, Set $set): void { if ($state !== 'custom') $set('disk_mb', (int) $state); }),
-                            TextInput::make('disk_mb')->label('Custom disk (MB)')->integer()->minValue(1024)
+                                ->default(fn (Get $get) => (string) $get('disk_mb'))->required()),
+                            self::showWhen(TextInput::make('disk_mb')->label('Custom disk (MB)')->integer()->minValue(1024)
                                 ->maxValue(fn () => CreatorAccess::admin() ? 10485760 : (int) CreatorAccess::settings()['max_disk_mb'])
-                                ->required()->dehydratedWhenHidden()->visible(fn (Get $get) => $get('disk_choice') === 'custom'),
+                                ->required()->dehydratedWhenHidden(),
+                                "\$get('disk_choice') === 'custom'", fn (Get $get) => $get('disk_choice') === 'custom'),
                             ]),
                         ])
                         ->afterValidation(fn () => $this->prepareEgg()),
@@ -498,7 +534,7 @@ class CreateMinecraftServer extends Page implements HasForms
                             Section::make('Server properties')->visible(fn (Get $get) => ($this->creationGame ?: $get('game')) === 'minecraft')
                                 ->description('Set common Minecraft options before creation. Applied after installation; other installer settings are preserved.')
                                 ->schema([
-                                    Toggle::make('properties_enabled')->label('Apply these settings')->live()->columnSpanFull(),
+                                    Toggle::make('properties_enabled')->label('Apply these settings')->columnSpanFull(),
                                     TextInput::make('max_players')->label('Maximum players')->integer()->minValue(1)->maxValue(1000)->required(),
                                     Textarea::make('motd')->label('MOTD')->rows(2)->maxLength(512)->required()->helperText('Server description. Minecraft § colour codes are supported.'),
                                     Select::make('difficulty')->options(['peaceful' => 'Peaceful', 'easy' => 'Easy', 'normal' => 'Normal', 'hard' => 'Hard'])->required(),
@@ -518,12 +554,12 @@ class CreateMinecraftServer extends Page implements HasForms
                     ... (\Simplify\Panel\Services\Extensions::webAdapter()?->creatorSteps($this) ?? []),
                     Step::make('Backups')->visible(fn()=>\Simplify\Panel\Services\FeatureSettings::enabled('backups'))->schema([
                         View::make('pelican-simplify::filament.admin.backup-defaults')->columnSpanFull(),
-                        Toggle::make('change_backup_schedule')->label('Change backup schedule')->default(false)->live()
-                            ->visible(fn () => user()?->isRootAdmin()),
-                        TextInput::make('backup_interval_minutes')->label('Interval (minutes)')->integer()->minValue(30)->maxValue(10080)->required()
-                            ->visible(fn (Get $get) => $get('change_backup_schedule')),
-                        TextInput::make('backup_retention')->label('Recovery points')->integer()->minValue(1)->maxValue(100)->required()
-                            ->visible(fn (Get $get) => $get('change_backup_schedule')),
+                        self::liveForVisibility(Toggle::make('change_backup_schedule')->label('Change backup schedule')->default(false)
+                            ->visible(fn () => user()?->isRootAdmin())),
+                        self::showWhen(TextInput::make('backup_interval_minutes')->label('Interval (minutes)')->integer()->minValue(30)->maxValue(10080)->required(),
+                            "\$get('change_backup_schedule')", fn (Get $get) => $get('change_backup_schedule')),
+                        self::showWhen(TextInput::make('backup_retention')->label('Recovery points')->integer()->minValue(1)->maxValue(100)->required(),
+                            "\$get('change_backup_schedule')", fn (Get $get) => $get('change_backup_schedule')),
                     ]),
                     Step::make('Review')
                         ->schema([
@@ -538,18 +574,17 @@ class CreateMinecraftServer extends Page implements HasForms
                                 ->schema([
                                     Select::make('egg_id')
                                         ->dehydratedWhenHidden()->label('Egg')->visible(fn () => CreatorAccess::admin())
-                                        ->options(fn () => Egg::query()->orderBy('name')->pluck('name', 'id')->all())
-                                        ->searchable()->required()->live()
+                                        ->options(fn () => $this->memo('eggs', fn () => Egg::query()->orderBy('name')->pluck('name', 'id')->all()))
+                                        ->searchable()->required()
                                         ->helperText('Automatically chosen and imported if missing. Existing eggs are kept. Only change if you know what you are doing.'),
                                     Select::make('java_version')->visible(fn (Get $get) => CreatorAccess::admin() && ($this->creationGame ?: $get('game')) === 'minecraft')->dehydratedWhenHidden()
                                         ->label('Java version')
                                         ->options(['auto' => 'Automatic (recommended)', '8' => 'Java 8', '11' => 'Java 11', '16' => 'Java 16', '17' => 'Java 17', '21' => 'Java 21', '25' => 'Java 25'])
-                                        ->required()->live()
+                                        ->required()
                                         ->helperText('Chosen automatically from Minecraft / the selected modpack. Override for packs with special requirements.'),
                                     TextInput::make('image')->visible(fn () => CreatorAccess::admin())
                                         ->label('Docker image override')
                                         ->placeholder('Empty = automatic Java image')
-                                        ->live(onBlur: true)
                                         ->helperText('Optional. A custom image takes priority over the Java selector.'),
                                     Textarea::make('startup')->visible(fn () => CreatorAccess::admin())
                                         ->label('Startup command override')
@@ -564,8 +599,8 @@ class CreateMinecraftServer extends Page implements HasForms
                                 ])->columns(2),
                         ]),
                 ])
-                    ->nextAction(fn (Action $action) => $action->label('Next')->color('gray')->extraAttributes(['class'=>'ssc-next-button','style'=>'background-color:var(--ssc-raised,#eeeef1)!important;background-image:none!important;color:var(--ssc-ink,#26262e)!important;opacity:1!important;transition-property:border-color,color,box-shadow']))
-                    ->previousAction(fn (Action $action) => $action->label('Back')->color('gray')->extraAttributes(['class'=>'ssc-back-button','style'=>'background-color:var(--ssc-raised,#eeeef1)!important;background-image:none!important;color:var(--ssc-ink,#26262e)!important;opacity:1!important;transition-property:border-color,color,box-shadow']))
+                    ->nextAction(fn (Action $action) => $action->label('Next')->color('gray')->extraAttributes(['class'=>'ssc-next-button']))
+                    ->previousAction(fn (Action $action) => $action->label('Back')->color('gray')->extraAttributes(['class'=>'ssc-back-button']))
                     ->startOnStep(fn () => $this->draftStep)
                     ->columnSpanFull()
                     ->submitAction(new HtmlString(view('pelican-simplify::filament.admin.create-action')->render())),
@@ -595,6 +630,7 @@ class CreateMinecraftServer extends Page implements HasForms
         }
 
         try {
+            $this->syncResourceChoices();
             $this->prepareEgg(false);
             $state = $this->form->getState();
             $state['start_on_completion']=false;

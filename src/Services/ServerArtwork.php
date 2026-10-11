@@ -3,27 +3,37 @@ declare(strict_types=1);
 namespace Simplify\Panel\Services;
 use App\Models\Server;
 use App\Repositories\Daemon\DaemonFileRepository;
-use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Storage;
 final class ServerArtwork
 {
     public const BACKGROUNDS=['valley'=>'minecraft-valley.jpg','harbor'=>'minecraft-harbor.jpg','village'=>'minecraft-village.jpg','survival'=>'preview-world.jpg','town'=>'preview-modpack.jpg','gaming'=>'gaming.svg'];
-    public static function serverIcon(Server $server): ?string
+    /** A valid 64×64 server-icon.png as ['png' => base64, 'hash' => short hash], cached (misses too). */
+    public static function iconFile(Server $server): ?array
     {
-        $icon=null;
-        if(ManagedSettings::minecraft($server) && $server->installed_at){
-            $icon=Cache::remember('simplify.server-icon.'.$server->uuid,30,function()use($server):?string {
-                try {
-                    // The overview exposes this one public image, never general file access.
-                    $bytes=app(DaemonFileRepository::class)->setServer($server)->getContent('/server-icon.png',102400);
-                    if(strlen($bytes)>102400 || strlen($bytes)<24 || substr($bytes,0,8)!=="\x89PNG\r\n\x1a\n" || substr($bytes,12,4)!=='IHDR')return null;
-                    $size=unpack('Nwidth/Nheight',substr($bytes,16,8));
-                    if($size['width']!==64 || $size['height']!==64)return null;
-                    return 'data:image/png;base64,'.base64_encode($bytes);
-                }catch(\Throwable){return null;}
-            });
-        }
-        return $icon;
+        if(!ManagedSettings::minecraft($server) || !$server->installed_at)return null;
+        return Remember::value('simplify.server-icon.v2.'.$server->uuid,900,function()use($server):?array {
+            // The overview exposes this one public image, never general file access.
+            $bytes=app(DaemonFileRepository::class)->setServer($server)->getContent('/server-icon.png',102400);
+            if(strlen($bytes)>102400 || strlen($bytes)<24 || substr($bytes,0,8)!=="\x89PNG\r\n\x1a\n" || substr($bytes,12,4)!=='IHDR')return null;
+            $size=unpack('Nwidth/Nheight',substr($bytes,16,8));
+            if($size['width']!==64 || $size['height']!==64)return null;
+            return ['png'=>base64_encode($bytes),'hash'=>substr(hash('sha256',$bytes),0,12)];
+        },300);
+    }
+    /** PNG bytes for the icon route: the server-icon.png file, else the favicon from the last status ping. */
+    public static function iconBytes(Server $server): ?string
+    {
+        $file=self::iconFile($server);
+        if($file)return base64_decode($file['png'],true)?:null;
+        $favicon=MinecraftStatus::favicon($server);
+        return $favicon?(base64_decode(substr($favicon,22),true)?:null):null;
+    }
+    /** Cacheable URL of the server icon; the browser downloads it once per change instead of every refresh. */
+    public static function serverIcon(Server $server,array $status=[]): ?string
+    {
+        $hash=self::iconFile($server)['hash']??null;
+        if(!$hash && ($favicon=MinecraftStatus::favicon($server)))$hash=substr(hash('sha256',$favicon),0,12);
+        return $hash?route('simplify.server-icon',['uuid'=>$server->uuid]).'?v='.$hash:null;
     }
     public static function softwareIcon(Server $server,array $meta=[]): ?string
     {
@@ -57,7 +67,11 @@ final class ServerArtwork
             }
             if(!isset(self::BACKGROUNDS[$id]) && !ManagedSettings::minecraft($server))$id='gaming';
         }
-        return isset(self::BACKGROUNDS[$id])?route('simplify.background',['id'=>$id]):null;
+        return isset(self::BACKGROUNDS[$id])?self::backgroundUrl($id):null;
+    }
+    public static function backgroundUrl(string $id): string
+    {
+        return route('simplify.background',['id'=>$id]).'?v='.BuildInfo::hash('core.css');
     }
     public static function selection(Server $server): ?string
     {

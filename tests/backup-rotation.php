@@ -1,7 +1,7 @@
 <?php
 declare(strict_types=1);
 namespace Illuminate\Support\Facades {
-    class Storage {public static array $records=[];public static function disk($d){return new self;}public function get($p){return self::$records[$p]??null;}public function put($p,$v){self::$records[$p]=$v;return true;}}
+    class Storage {public static array $records=[];public static function disk($d){return new self;}public function get($p){return self::$records[$p]??null;}public function exists($p){return isset(self::$records[$p]);}public function put($p,$v){self::$records[$p]=$v;return true;}}
     class Cache {public static function lock(...$args){return new self;}public function block($n,$fn){return $fn();}}
 }
 namespace App\Models {
@@ -31,18 +31,23 @@ namespace {
     function app($c){return new $c;}
     function now(){return new class{public function format($f){return date($f);}};}
     function check($c,$m){if(!$c)throw new \RuntimeException($m);echo "PASS $m\n";}
+    require __DIR__.'/../src/Services/PerformanceSettings.php';
     require __DIR__.'/../src/Services/AutomaticBackups.php';
     use Simplify\Panel\Services\AutomaticBackups as A;
     use App\Services\Backups\InitiateBackupService as Start;
     use App\Services\Backups\DeleteBackupService as Delete;
     $s=new \App\Models\Server;
-    check(A::settings($s)['interval_minutes']===30 && A::settings($s)['retention']===2,'default is every 30 minutes with two recovery points');
+    check(A::settings($s)['interval_minutes']===360 && A::settings($s)['retention']===2 && A::settings($s)['only_when_used']===true,'default is every six hours with two recovery points, skipped while unused');
     $items=[];foreach([1=>4000,2=>2500]as$id=>$age)$items[$id]=(object)['id'=>$id,'is_successful'=>true,'is_locked'=>false,'completed_at'=>'yes','created_at'=>date('Y-m-d H:i:s',time()-$age)];
+    \Illuminate\Support\Facades\Storage::$records['simplify/backups/test.json']=json_encode(['interval_minutes'=>30]);
     A::tick($s);check(Start::$started===1,'due automatic backup starts');check(count(Delete::$deleted)===0,'existing recovery points kept while new backup runs');check(Start::$temporaryLimit===3 && $s->backup_limit===2,'temporary in-flight slot does not change native allocation');
     A::tick($s);check(Start::$started===1,'running backup is not duplicated');
     $items[3]->completed_at='yes';A::tick($s);check(isset($items[1],$items[2]),'failed backup preserves both successful recovery points');
-    $items[3]->is_successful=true;A::tick($s);check(!isset($items[1]) && isset($items[2],$items[3]),'oldest successful backup removed only after replacement succeeds');
+    $f='simplify/backups/test.json';$r=json_decode(\Illuminate\Support\Facades\Storage::$records[$f],true);$r['last_attempt']=time()-1900;\Illuminate\Support\Facades\Storage::$records[$f]=json_encode($r);A::tick($s);check(Start::$started===2,'the next due backup starts after a failed one');$items[3]->completed_at='yes';$items[3]->is_successful=true;A::tick($s);check(!isset($items[1]) && isset($items[2],$items[3]),'oldest successful backup removed only after replacement succeeds');
     $items[2]->is_locked=true;$items[2]->created_at=date('Y-m-d H:i:s',time()-5000);$items[4]=(object)['id'=>4,'is_successful'=>true,'is_locked'=>false,'completed_at'=>'yes','created_at'=>date('Y-m-d H:i:s')];A::tick($s);check(isset($items[2]),'locked legacy backups are never deleted');
     $s->status='installing';$before=Start::$started;A::tick($s);check(Start::$started===$before,'installation skips automatic backup');$s->status=null;
-    $s->node->available=false;\Illuminate\Support\Facades\Storage::$records=[];A::tick($s);check(Start::$started===$before,'missing backup storage does not trigger a failed backup attempt');
+    $s->node->available=false;\Illuminate\Support\Facades\Storage::$records=['simplify/backups/test.json'=>json_encode(['interval_minutes'=>30])];A::tick($s);check(Start::$started===$before,'missing backup storage does not trigger a failed backup attempt');
+    $s->node->available=true;$items=[1=>(object)['id'=>1,'is_successful'=>true,'is_locked'=>false,'completed_at'=>'yes','created_at'=>date('Y-m-d H:i:s',time()-4000)]];
+    \Illuminate\Support\Facades\Storage::$records=['simplify/backups/test.json'=>json_encode(['interval_minutes'=>30,'last_probe'=>time(),'last_active'=>time()-5000])];A::tick($s);check(Start::$started===$before,'a server that has not run since its last backup is skipped');
+    $saved=json_decode(\Illuminate\Support\Facades\Storage::$records['simplify/backups/test.json'],true);check($saved['last_attempt']>time()-1800,'a skipped check waits before querying again');
 }

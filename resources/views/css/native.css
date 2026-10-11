@@ -1,0 +1,93 @@
+/* Simplify look for native Pelican/Filament pages.
+   .ps-theme: the shared theme is enabled for this page (Simplify settings → Shared appearance).
+   .ps-frame: the page is embedded in a Simplify popup; data-ps-frame names the workspace kind.
+   Filament ships its own utility CSS, so the colour overrides in this file use !important on purpose. */
+
+html.ps-theme { color-scheme: light; }
+html.ps-theme.dark { color-scheme: dark; }
+.ps-theme :is(body, .fi-body, .fi-layout, .fi-main-ctn) { background: var(--ps-bg) !important; color: var(--ps-ink) !important; }
+.ps-theme :is(.fi-section, .fi-ta-ctn, .fi-sc-wizard.fi-contained, .fi-modal-window, .fi-dropdown-panel, .fi-topbar > nav, .fi-sidebar, .fi-sc-tabs, .fi-in-entry-wrp, .fi-wi-stats-overview-stat) {
+  background: var(--ps-surface) !important;
+  color: var(--ps-ink) !important;
+  border-color: var(--ps-line) !important;
+  box-shadow: none !important;
+}
+.ps-theme :is(.fi-section, .fi-ta-ctn, .fi-sc-tabs, .fi-sc-wizard.fi-contained) { border: 1px solid var(--ps-line) !important; border-radius: var(--ps-radius-lg) !important; }
+.ps-theme .fi-modal-window { border: 1px solid var(--ps-line) !important; border-radius: var(--ps-radius-xl) !important; box-shadow: var(--ps-shadow-modal) !important; }
+.ps-theme .fi-dropdown-panel { border: 1px solid var(--ps-line) !important; border-radius: var(--ps-radius-lg) !important; box-shadow: var(--ps-shadow-lg) !important; }
+.ps-theme :is(.fi-section-header, .fi-ta-header, .fi-ta-header-toolbar, .fi-ta-content, .fi-ta-row, .fi-ta-header-cell, .fi-ta-empty-state, .fi-section-content-ctn, .fi-ta-footer) { background: var(--ps-surface) !important; border-color: var(--ps-line) !important; }
+.ps-theme .fi-ta-row:hover { background: var(--ps-raised) !important; }
+.ps-theme :is(.fi-header-heading, .fi-section-header-heading, .fi-fo-field-label-content, .fi-sc-wizard-step-label, .fi-ta-cell, .fi-ta-text-item-label, .fi-ta-header-cell-label, .fi-modal-heading, .fi-sc-text, .fi-dropdown-list-item, .fi-breadcrumbs-item-label) { color: var(--ps-ink) !important; }
+.ps-theme :is(.fi-fo-field-helper-text, .fi-section-header-description, .fi-ta-empty-state-description, .fi-modal-description) { color: var(--ps-muted) !important; }
+.ps-theme .fi-dropdown-list-item:hover { background: var(--ps-raised) !important; }
+
+/* Fields. */
+.ps-theme :is(.fi-input-wrp, .fi-fo-textarea, .fi-select-input, .fi-fo-rich-editor, .fi-fo-markdown-editor) {
+  background: var(--ps-field) !important;
+  color: var(--ps-ink) !important;
+  border: 1px solid var(--ps-line) !important;
+  border-radius: var(--ps-radius) !important;
+  box-shadow: none !important;
+}
+.ps-theme :is(.fi-input, .fi-select-input, .fi-fo-textarea textarea) { background: transparent !important; color: var(--ps-ink) !important; }
+.ps-theme .fi-input-wrp:focus-within { border-color: var(--ps-accent) !important; box-shadow: 0 0 0 3px color-mix(in srgb, var(--ps-accent) 20%, transparent) !important; }
+.ps-theme :is(input, textarea, select) { accent-color: var(--ps-accent); }
+
+/* Buttons follow .ps-btn: raised neutral by default, accent for primary actions, tinted for danger. */
+.ps-theme .fi-btn {
+  min-height: var(--ps-h);
+  border: 1px solid var(--ps-line) !important;
+  border-radius: var(--ps-radius) !important;
+  background: var(--ps-surface) !important;
+  color: var(--ps-ink) !important;
+  box-shadow: none !important;
+  font-weight: 600;
+  transition: background-color var(--ps-fast), border-color var(--ps-fast) !important;
+}
+.ps-theme .fi-btn:hover:not(:disabled) { background: var(--ps-raised) !important; border-color: var(--ps-accent) !important; }
+.ps-theme .fi-btn.fi-color-primary:not(:disabled) { background: var(--ps-accent) !important; border-color: var(--ps-accent) !important; color: var(--ps-on-accent) !important; }
+.ps-theme .fi-btn.fi-color-primary:hover:not(:disabled) { filter: brightness(1.07); }
+.ps-theme .fi-btn.fi-color-danger { color: var(--ps-danger) !important; background: color-mix(in srgb, var(--ps-danger) 8%, var(--ps-surface)) !important; border-color: color-mix(in srgb, var(--ps-danger) 35%, var(--ps-line)) !important; }
+.ps-theme :is(.fi-btn, .fi-icon-btn):focus-visible { outline: 2px solid var(--ps-accent) !important; outline-offset: 2px; }
+.ps-theme :is(.fi-btn, .fi-icon-btn):disabled { opacity: .45; cursor: not-allowed; }
+.ps-theme .fi-icon-btn { border-radius: var(--ps-radius) !important; }
+.ps-theme .fi-icon-btn:hover { background: var(--ps-raised) !important; color: var(--ps-accent) !important; }
+.ps-theme :is(.fi-btn.fi-color-primary, .fi-tabs-item-active, .fi-pagination-item-active, .fi-sc-tabs-tab-active, .fi-sc-wizard-step-active) .fi-icon { color: inherit !important; }
+.ps-theme :is(.fi-tabs-item-active, .fi-pagination-item-active, .fi-sc-tabs-tab-active) { color: var(--ps-ink) !important; background: color-mix(in srgb, var(--ps-accent) 14%, var(--ps-surface)) !important; }
+.ps-theme :is(.fi-ta-icon, .fi-ta-text-item-icon, .fi-section-header-icon, .fi-btn-icon) { color: var(--ps-accent) !important; }
+.ps-theme .fi-btn.fi-color-primary .fi-btn-icon { color: inherit !important; }
+.ps-theme .fi-color-danger .fi-icon { color: var(--ps-danger) !important; }
+.ps-theme .fi-badge { border-radius: var(--ps-radius-pill) !important; }
+
+/* Filament notifications use the Simplify toast look. */
+.ps-theme .fi-no-notification { border: 1px solid var(--ps-line) !important; border-radius: var(--ps-radius) !important; background: var(--ps-surface) !important; color: var(--ps-ink) !important; box-shadow: var(--ps-shadow-lg) !important; }
+
+/* Embedded workspaces ---------------------------------------------------------------------------
+   The popup gives the iframe a fixed size; only <body> scrolls inside it. */
+html.ps-frame { height: 100%; overflow: hidden; }
+html.ps-frame :is(body, .fi-body) { height: 100%; margin: 0; overflow: auto; overscroll-behavior: contain; background: var(--ps-surface) !important; color: var(--ps-ink); }
+.ps-frame :is(.fi-topbar, .fi-sidebar, .fi-breadcrumbs, .fi-layout-sidebar-toggle-btn-ctn, .fi-sidebar-close-overlay, .fi-footer, .fi-main-ctn > footer) { display: none !important; }
+.ps-frame :is(.fi-layout, .fi-main-ctn, .fi-main, .fi-page, .fi-page-header-main-ctn, .fi-page-main, .fi-page-content, .fi-page-content-ctn, .fi-simple-layout, .fi-simple-main-ctn, .fi-simple-main) {
+  min-width: 0 !important;
+  min-height: 0 !important;
+  max-width: none !important;
+  width: 100% !important;
+  margin: 0 !important;
+  background: transparent !important;
+}
+.ps-frame :is(.fi-layout, .fi-main-ctn, .fi-main, .fi-page-header-main-ctn, .fi-page-main, .fi-page-content-ctn, .fi-simple-layout, .fi-simple-main-ctn) { padding: 0 !important; }
+.ps-frame :is(.fi-simple-layout, .fi-simple-main-ctn) { align-items: stretch !important; justify-content: flex-start !important; }
+.ps-frame .fi-page { padding: 16px !important; }
+.ps-frame .fi-header-heading { font-size: 18px !important; }
+.ps-frame[data-ps-frame="native"] :is(.fi-header-heading, [data-ps-embed-navigation="overview"]) { display: none !important; }
+.ps-frame:is([data-ps-frame="create"], [data-ps-frame="settings"]) .fi-header { display: none !important; }
+.ps-frame:is([data-ps-frame="create"], [data-ps-frame="settings"]) .fi-page { padding: 0 !important; }
+.ps-frame:is([data-ps-frame="files"], [data-ps-frame="editor"]) .fi-page { padding: 12px !important; }
+.ps-frame[data-ps-frame="account"] .fi-header { display: flex !important; flex-wrap: wrap; gap: 12px; }
+.ps-frame[data-ps-frame="account"] .fi-simple-main { padding: 16px !important; }
+.ps-frame .fi-section { border-radius: var(--ps-radius-lg) !important; }
+
+/* Filament's own tooltips (Tippy) match .ps-tooltip. */
+:is(.ps-theme, html:has(.ssc-wizard)) .tippy-box { padding: 0; border-radius: 8px; background: var(--ps-ink) !important; color: var(--ps-surface) !important; box-shadow: var(--ps-shadow); font: 500 12px/1.4 var(--ps-font); }
+:is(.ps-theme, html:has(.ssc-wizard)) .tippy-box .tippy-content { padding: 7px 10px; }
+:is(.ps-theme, html:has(.ssc-wizard)) .tippy-box .tippy-arrow { color: var(--ps-ink) !important; }

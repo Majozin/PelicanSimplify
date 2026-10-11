@@ -1,164 +1,119 @@
-const fs=require('fs'),http=require('http'),assert=require('assert');
-const {chromium}=require('playwright');
-const root=__dirname+'/../resources/views/';
-const css=fs.readFileSync(root+'creator.css','utf8')+'\n'+fs.readFileSync(root+'global.css','utf8');
-const theme=fs.readFileSync(root+'theme.js','utf8');
-const frameCss=fs.readFileSync(root+'frame.css','utf8');
-const fileList='<html><body><div class="fi-page"><div class="fi-ta-ctn"><a id="edit-file" href="/files/edit/config.yml/">config.yml</a><a href="/files/folder/">Folder</a></div></div></body></html>';
-const fileEdit=`<html><body><div class="fi-page"><section class="fi-section"><p id="native-warning">Changes require a restart</p><div class="monaco-editor"><textarea aria-label="File content">before</textarea></div><button class="fi-btn" wire:click="mountAction(&quot;fm_save_and_close&quot;)" onclick="location.href='/files/'"><svg class="fi-btn-icon" viewBox="0 0 24 24"><path d="M1 1"/></svg>Save and close</button><button wire:click="mountAction(&quot;fm_save&quot;)">Save</button><button wire:click="mountAction(&quot;fm_cancel&quot;)">Cancel</button></section></div></body></html>`;
-const html=`<!doctype html><html><head><link rel="stylesheet" href="/global.css"></head><body><section class="fi-section"><button class="fi-btn">Save</button><input class="fi-input"></section><section class="ps-console">Console</section><iframe id="creator" src="/child"></iframe><iframe id="legacy" src="/child"></iframe><iframe id="settings" src="/child" style="width:100%;height:500px"></iframe><script>window.simplifyThemeConfig={global_theme:true,legacy_theme:true,console_dark:true,css_url:'/global.css',frame_css_url:'/frame.css'};</script><script src="/theme.js"></script></body></html>`;
-(async()=>{
- const server=http.createServer((req,res)=>{res.setHeader('Content-Type',['/global.css','/frame.css'].includes(req.url)?'text/css':req.url==='/theme.js'?'application/javascript':'text/html');res.end(req.url==='/frame.css'?frameCss:req.url.startsWith('/files/edit/')?fileEdit:req.url.startsWith('/files/')?fileList:req.url==='/global.css'?css:req.url==='/theme.js'?theme:req.url==='/child'?'<html><head></head><body style="min-height:100vh;background:yellow"><div class="fi-layout" style="min-height:100vh"><main class="fi-main" style="padding:48px"><div class="fi-page" style="padding:32px"><div class="fi-page-header-main-ctn" style="display:flex;flex-direction:column;gap:48px"><header class="fi-header">Page title</header><div class="ssc-wizard"><button class="fi-btn">Next</button><input class="fi-input"></div><div class="ps-settings-page"><section class="ps-setup-checks"><div class="ps-check-grid"><article class="ps-check-card">PHP runtime</article><article class="ps-check-card">Panel components</article></div></section></div></div></div></main></div></body></html>':html);});
- await new Promise(resolve=>server.listen(0,'127.0.0.1',resolve));
- const browser=await chromium.launch({headless:true});
- try{
-  const page=await browser.newPage();await page.goto('http://127.0.0.1:'+server.address().port);await page.waitForLoadState('networkidle');
-  await page.evaluate(()=>{SimplifyTheme.frame(document.querySelector('#settings'),'settings');SimplifyTheme.frame(document.querySelector('#creator'),'create');SimplifyTheme.frame(document.querySelector('#legacy'),'native');SimplifyTheme.set('dark');});
-  await page.waitForFunction(()=>{const doc=document.querySelector('#creator').contentDocument;return doc?.getElementById('simplify-frame-css')?.sheet&&getComputedStyle(doc.querySelector('.fi-btn')).backgroundColor===getComputedStyle(document.querySelector('.fi-btn')).backgroundColor;});
-  const colors=await page.evaluate(()=>{const f=document.querySelector('#creator').contentDocument;return {surface:getComputedStyle(document.querySelector('.fi-section')).backgroundColor,button:getComputedStyle(document.querySelector('.fi-btn')).backgroundColor,console:getComputedStyle(document.querySelector('.ps-console')).backgroundColor,creator:getComputedStyle(f.querySelector('.fi-btn')).backgroundColor,legacy:document.querySelector('#legacy').contentDocument.documentElement.classList.contains('dark')};});
-  assert.equal(colors.surface,'rgb(26, 26, 31)');assert.equal(colors.button,colors.creator);assert.equal(colors.console,'rgb(9, 9, 11)');assert.equal(colors.legacy,true);
-  await page.evaluate(()=>SimplifyTheme.set('light'));
-  const light=await page.evaluate(()=>({body:getComputedStyle(document.body).backgroundColor,console:getComputedStyle(document.querySelector('.ps-console')).backgroundColor,creator:document.querySelector('#creator').contentDocument.documentElement.classList.contains('dark')}));
-  assert.equal(light.body,'rgb(244, 244, 245)');assert.equal(light.console,'rgb(9, 9, 11)');assert.equal(light.creator,false);
-  await page.reload();assert.equal(await page.evaluate(()=>SimplifyTheme.preference()),'light');
-  await page.evaluate(()=>{SimplifyTheme.configure({...simplifyThemeConfig,legacy_theme:false,console_dark:false});SimplifyTheme.frame(document.querySelector('#settings'),'settings');SimplifyTheme.frame(document.querySelector('#creator'),'create');SimplifyTheme.frame(document.querySelector('#legacy'),'native');SimplifyTheme.set('dark');});
-  assert.equal(await page.evaluate(()=>document.querySelector('#legacy').contentDocument.documentElement.classList.contains('ps-theme')),false);
-  await page.evaluate(()=>SimplifyTheme.set('light'));assert.equal(await page.evaluate(()=>getComputedStyle(document.querySelector('.ps-console')).backgroundColor),'rgb(255, 255, 255)');
-  await page.waitForFunction(()=>{const doc=document.querySelector('#settings').contentDocument;return doc&&getComputedStyle(doc.querySelector('.fi-header')).display==='none';});
-  const settings=await page.evaluate(()=>{const doc=document.querySelector('#settings').contentDocument;return {themed:doc.documentElement.classList.contains('ps-theme'),header:getComputedStyle(doc.querySelector('.fi-header')).display,background:getComputedStyle(doc.body).backgroundColor,padding:getComputedStyle(doc.querySelector('.fi-page')).padding,columns:getComputedStyle(doc.querySelector('.ps-check-grid')).gridTemplateColumns.split(' ').length};});assert.equal(settings.background,'rgb(255, 255, 255)');assert.equal(settings.padding,'0px');assert.equal(settings.themed,true);assert.equal(settings.header,'none');assert.equal(settings.columns,2);await page.waitForFunction(()=>getComputedStyle(document.querySelector('#creator').contentDocument.querySelector('.fi-page-header-main-ctn')).rowGap==='0px');assert.equal(await page.evaluate(()=>getComputedStyle(document.querySelector('#creator').contentDocument.querySelector('.fi-page-header-main-ctn')).rowGap),'0px');
-  await page.setViewportSize({width:390,height:844});assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),true);
-  assert.equal(await page.evaluate(()=>{const frame=document.querySelector('#settings');return frame.contentDocument.documentElement.scrollWidth<=frame.contentWindow.innerWidth&&getComputedStyle(frame.contentDocument.querySelector('.ps-check-grid')).gridTemplateColumns.split(' ').length===1;}),true);
-  const leakPage=await browser.newPage();
-  await leakPage.setContent('<style>'+fs.readFileSync(root+'dashboard.css','utf8')+'</style><main class="ps"><section class="ps-modal"><div class="ps-iframe-wrap" style="display:none"><p>Hidden scheduled tasks</p><iframe></iframe></div><div class="ps-iframe-wrap" style="display:none"><p>Hidden activity</p><iframe></iframe></div></section></main>');
-  assert.equal(await leakPage.getByText('Hidden scheduled tasks').isVisible(),false);assert.equal(await leakPage.getByText('Hidden activity').isVisible(),false);await leakPage.close();
-  const healthPage=await browser.newPage({viewport:{width:1400,height:900}});await healthPage.setContent('<style>'+fs.readFileSync(root+'dashboard.css','utf8')+'</style><main class="ps"><section class="ps-overview" style="--grid-columns:1"><article class="ps-host-health"><div>Health</div><div>CPU</div><div>RAM</div><div>Storage</div><div>Network</div></article></section></main>');const healthWidth=await healthPage.locator('.ps-host-health').evaluate(el=>el.getBoundingClientRect().width);await healthPage.locator('.ps-overview').evaluate(el=>el.style.setProperty('--grid-columns','4'));assert.equal(await healthPage.locator('.ps-host-health').evaluate(el=>el.getBoundingClientRect().width),healthWidth);await healthPage.close();
-  const polishPage=await browser.newPage({viewport:{width:1100,height:900}});
-  await polishPage.setContent('<style>'+fs.readFileSync(root+'dashboard.css','utf8')+'</style><main class="ps"><article class="ps-host-health" role="button" tabindex="0"><div class="ps-host-state"><div><div class="ps-host-heading"><h3>Host health</h3></div><span class="ps-health-status healthy"><strong>Healthy</strong></span><small>2 / 2 hosts reporting</small></div></div></article><article class="ps-server-card" style="width:300px;height:260px"><span class="ps-offline-artwork"><svg viewBox="0 0 24 24"><path d="M12 3v18"/></svg></span></article><footer>© Panel</footer></main>');
-  const alignment=await polishPage.locator('.ps-host-state>div').evaluate(el=>({display:getComputedStyle(el).display,gap:getComputedStyle(el).rowGap,margins:[...el.children].map(c=>getComputedStyle(c).marginTop)}));assert.equal(alignment.display,'grid');assert.equal(alignment.gap,'4px');assert(alignment.margins.every(m=>m==='0px'));
-  const artwork=await polishPage.locator('.ps-offline-artwork').evaluate(el=>({mask:getComputedStyle(el).maskImage,icon:el.querySelector('svg').getBoundingClientRect().height,height:el.getBoundingClientRect().height}));assert(artwork.mask.includes('55%'));assert(artwork.icon>=artwork.height,'Dashboard artwork retains its large silhouette');
-  await polishPage.addScriptTag({content:fs.readFileSync(root+'dashboard.js','utf8')});await polishPage.evaluate(()=>pelicanSimplify({},{build_version:'test'}).enhanceCopyright());const credit=polishPage.locator('footer a');assert.equal(await credit.getAttribute('href'),'https://github.com/jerajerajerajera/PelicanSimplify');assert.equal(await credit.evaluate(el=>getComputedStyle(el).color===getComputedStyle(el.parentElement).color),true);assert((await credit.evaluate(el=>getComputedStyle(el).textDecorationLine)).includes('underline'));await polishPage.close();
-  const hoverPage=await browser.newPage({viewport:{width:1100,height:800}});
-  await hoverPage.setContent('<style>'+fs.readFileSync(root+'dashboard.css','utf8')+'</style><main class="ps"><div class="ps-server-grid"><div class="ps-create-tiles"><button class="ps-server-card ps-create-card is-minecraft"><span class="ps-create-plus"><svg><path d="M1 1h10v10H1Z"/></svg></span><h3>Create Minecraft server</h3></button><button class="ps-server-card ps-create-card is-other"><span class="ps-create-plus"><svg><path d="M1 1h10v10H1Z"/></svg></span><h3>Create Other server</h3></button></div><article class="ps-server-card" style="height:260px">Existing server</article></div></main>');
-  const choices=hoverPage.locator('.ps-create-card');
-  const snapshot=()=>hoverPage.evaluate(()=>[...document.querySelectorAll('.ps-create-card')].map(el=>({width:el.getBoundingClientRect().width,height:el.getBoundingClientRect().height,top:el.getBoundingClientRect().top,transform:getComputedStyle(el).transform,icon:getComputedStyle(el.querySelector('.ps-create-plus')).width,title:getComputedStyle(el.querySelector('h3')).opacity})));
-  const before=await snapshot();await choices.nth(0).hover();await hoverPage.waitForTimeout(350);const hovered=await snapshot();
-  assert.equal(hovered[0].transform,'none');assert.equal(hovered[0].width,before[0].width);assert.equal(hovered[0].height,before[0].height);assert.deepEqual(hovered[1],before[1]);assert.equal(await choices.nth(0).evaluate(el=>getComputedStyle(el.querySelector('.ps-create-plus>svg')).animationIterationCount),'infinite');assert.equal(await choices.nth(1).evaluate(el=>getComputedStyle(el.querySelector('.ps-create-plus>svg')).animationName),'none');assert.equal(await choices.nth(0).evaluate(el=>getComputedStyle(el.querySelector('.ps-create-plus'),'::after').animationIterationCount),'infinite');
-  await choices.nth(1).hover();await hoverPage.waitForTimeout(250);assert((await choices.nth(1).evaluate(el=>getComputedStyle(el).backgroundImage)).includes('repeating-linear-gradient'));assert.equal(await choices.nth(1).evaluate(el=>getComputedStyle(el).transform),'none');
-  await hoverPage.locator('article').hover();await hoverPage.waitForTimeout(250);assert.notEqual(await hoverPage.locator('article').evaluate(el=>getComputedStyle(el).transform),'none');await hoverPage.close();
-  const popup=await browser.newPage({viewport:{width:1200,height:900}});
-  await popup.goto('http://127.0.0.1:'+server.address().port);await popup.waitForLoadState('networkidle');
-  await popup.addStyleTag({content:fs.readFileSync(root+'dashboard.css','utf8')});
-  await popup.addScriptTag({content:fs.readFileSync(root+'dashboard.js','utf8')});
-  await popup.evaluate(()=>{document.body.innerHTML='<main class="ps"><div class="ps-modal-layer is-create"><section class="ps-modal is-create is-native"><header><h2>Settings</h2><button class="ps-close">×</button></header><div class="ps-modal-content"><iframe src="/child" title="Test workspace"></iframe></div></section></div></main>';});
-  const embedded=popup.frames().find(f=>f.parentFrame());await embedded.waitForSelector('.ps-settings-page');
-  await popup.evaluate(()=>{const frame=document.querySelector('iframe');const workspace=pelicanSimplify({},{});workspace.$root=document.querySelector('.ps');workspace.styleFrame(frame,'settings');window.testWorkspace=workspace;});
-  await popup.waitForTimeout(150);
-  const geometry=()=>popup.evaluate(()=>{const iframe=document.querySelector('iframe'),content=document.querySelector('.ps-modal-content'),modal=document.querySelector('.ps-modal');return {scroll:content.scrollHeight>content.clientHeight+1,innerScroll:iframe.contentDocument.body.scrollHeight>iframe.clientHeight+1,width:modal.getBoundingClientRect().width,height:modal.getBoundingClientRect().height};});
-  assert.equal((await geometry()).scroll,false);assert.equal((await geometry()).innerScroll,false);
-  await embedded.evaluate(()=>{document.querySelector('.ps-settings-page').style.height='1600px';});await popup.waitForTimeout(150);
-  assert.equal((await geometry()).scroll,true);assert.equal((await geometry()).innerScroll,false);
-  await popup.locator('iframe').hover();await popup.mouse.wheel(0,450);await popup.waitForTimeout(200);
-  assert(await popup.locator('.ps-modal-content').evaluate(el=>el.scrollTop)>0,'Mouse-wheel scrolling over an embedded workspace must scroll the popup');
-  await popup.locator('.ps-modal-content').evaluate(el=>el.scrollTop=500);
-  await embedded.evaluate(()=>document.querySelector('.ps-settings-page').setAttribute('data-test-update','1'));
-  await popup.waitForTimeout(200);
-  assert.equal(await popup.locator('.ps-modal-content').evaluate(el=>el.scrollTop),500,'Frame resizing must preserve the popup scroll position');
-  await popup.setViewportSize({width:390,height:844});await popup.waitForTimeout(150);const mobile=await geometry();assert(mobile.width<=390&&mobile.height<=828);assert.equal(mobile.innerScroll,false);
-  // A viewport-dependent body used to gain two pixels on every observer callback.
-  await embedded.evaluate(()=>{document.body.innerHTML='<div style="min-height:100vh;padding:16px;box-sizing:border-box"><section id="intrinsic" style="height:180px">Profile content</section></div>';});
-  await popup.waitForTimeout(250);
-  const stableHeight=await popup.locator('iframe').evaluate(el=>el.clientHeight);
-  await popup.evaluate(()=>{window.heightWrites=0;new MutationObserver(records=>window.heightWrites+=records.filter(r=>r.attributeName==='style').length).observe(document.querySelector('iframe'),{attributes:true});});await popup.waitForTimeout(800);assert(await popup.evaluate(()=>window.heightWrites)<3,'Stable creator must not repeatedly collapse and remeasure its iframe');
-  assert.equal(await popup.locator('iframe').evaluate(el=>el.clientHeight),stableHeight);
-  assert(stableHeight<250,'Viewport-dependent body should fit intrinsic content');
-  await embedded.evaluate(()=>document.querySelector('#intrinsic').style.height='1400px');await popup.waitForTimeout(200);
-  assert.equal((await geometry()).scroll,true);assert.equal((await geometry()).innerScroll,false);
-  await embedded.evaluate(()=>document.querySelector('#intrinsic').style.height='120px');await popup.waitForTimeout(200);
-  assert.equal((await geometry()).scroll,false);assert(await popup.locator('iframe').evaluate(el=>el.clientHeight)<200);
-  await popup.evaluate(()=>testWorkspace.releaseCreatorFrame());await popup.close();
-  const markup=fs.readFileSync(root+'dashboard.blade.php','utf8');assert(!markup.includes('keydown.escape.window="close()"'));assert(!markup.includes('click.self='));assert.equal((markup.match(/x-on:click="close\(\)"/g)||[]).length,1);
-  const menuPage=await browser.newPage({viewport:{width:390,height:844}});
-  await menuPage.goto('http://127.0.0.1:'+server.address().port);
-  await menuPage.addStyleTag({content:fs.readFileSync(root+'dashboard.css','utf8')});
-  // Render the actual navigation markup with the mobile and account menus open.
-  const navigation=markup.match(/<header class="ps-top">[\s\S]*?<\/nav><\/header>/)[0].replace(/@if[\s\S]*?@endif/g,'').replace(/@csrf/g,'').replace(/x-cloak/g,'');
-  await menuPage.evaluate(html=>{document.body.innerHTML='<main class="ps">'+html+'<article class="ps-server-card" style="height:500px">Server</article></main>';document.querySelector('.ps-panel-name').textContent='Panel';document.querySelector('.ps-top-actions').classList.add('nav-open');document.querySelector('.ps-account').classList.add('account-open');document.querySelector('.ps-back-overview').style.display='none';},navigation);
-  const menu=menuPage.locator('.ps-nav-items');assert(await menu.isVisible());
-  for(const label of ['Simplify settings']){
-   const button=menuPage.getByRole('button',{name:label,exact:true});const box=await button.boundingBox();assert(box.height>=44&&box.width>200,'Mobile actions need full touch-sized rows');
-   assert(await button.evaluate(el=>{const r=el.getBoundingClientRect();return el.contains(document.elementFromPoint(r.x+r.width/2,r.y+r.height/2));}),'Menu action was covered by server content');
+// Browser checks for the shared Simplify look: one component style everywhere, popups that never
+// jump, single scroll containers in embedded workspaces and no native browser dialogs or hover text.
+const assert = require('assert');
+const { chromium } = require('playwright');
+const { start } = require('./browser-harness');
+
+(async () => {
+  const server = await start();
+  const base = 'http://127.0.0.1:' + server.address().port;
+  const browser = await chromium.launch({ headless: true, executablePath: process.env.PW_CHROMIUM || undefined });
+  const errors = [];
+  const open = async (url, viewport = { width: 1440, height: 900 }) => {
+    const page = await browser.newPage({ viewport });
+    page.on('pageerror', (e) => errors.push(url + ': ' + e.message));
+    // Native dialogs must never appear.
+    page.on('dialog', (dialog) => {
+      errors.push(url + ': native ' + dialog.type() + ' dialog');
+      dialog.dismiss();
+    });
+    await page.goto(base + url);
+    await page.waitForFunction(() => window.Alpine && document.querySelector('.ps') && !document.querySelector('.ps').hasAttribute('x-cloak'));
+    return page;
+  };
+  const data = (page, fn, arg) => page.evaluate(([source, value]) => new Function('d', 'arg', 'return (' + source + ')(d, arg)')(Alpine.$data(document.querySelector('.ps')), value), [fn.toString(), arg]);
+  try {
+    // 1. Theme tokens drive the page in both themes.
+    const light = await open('/?mode=overview&theme=light');
+    assert.equal(await light.evaluate(() => getComputedStyle(document.body).backgroundColor), 'rgb(244, 244, 245)');
+    assert.equal(await light.evaluate(() => document.documentElement.classList.contains('dark')), false);
+    const dark = await open('/?mode=server&theme=dark');
+    assert.equal(await dark.evaluate(() => getComputedStyle(document.body).backgroundColor), 'rgb(16, 16, 18)');
+    assert.equal(await dark.evaluate(() => getComputedStyle(document.querySelector('.ps-console')).backgroundColor), 'rgb(9, 9, 11)', 'console stays black by default');
+    console.log('PASS light and dark tokens, always-dark console');
+
+    // 2. No browser hover text: titles only remain on iframes (accessible names).
+    const titled = await dark.evaluate(() => [...document.querySelectorAll('[title]')].filter((el) => el.tagName !== 'IFRAME').map((el) => el.outerHTML.slice(0, 80)));
+    assert.deepEqual(titled, []);
+    await dark.hover('.ps-alias-button');
+    await dark.waitForSelector('.ps-tooltip.is-visible');
+    assert.equal(await dark.textContent('.ps-tooltip'), 'Change alias');
+    console.log('PASS custom tooltips instead of browser hover text');
+
+    // 3. One button style: dashboard buttons and embedded Filament buttons share height, radius and border.
+    await data(dark, (d) => d.open('schedules'));
+    const frame = await dark.waitForSelector('iframe[title="Scheduled tasks"]');
+    const native = await frame.contentFrame();
+    await native.waitForFunction(() => document.documentElement.classList.contains('ps-frame') && getComputedStyle(document.querySelector('.fi-btn')).borderTopLeftRadius === '10px');
+    const style = (el) => ({ radius: getComputedStyle(el).borderTopLeftRadius, height: Math.round(el.getBoundingClientRect().height), border: getComputedStyle(el).borderTopColor });
+    const outer = await dark.evaluate((fn) => new Function('return ' + fn)()(document.querySelector('.ps-back-overview')), style.toString());
+    const inner = await native.evaluate((fn) => new Function('return ' + fn)()(document.querySelector('.fi-btn:not(.fi-color-danger)')), style.toString());
+    assert.deepEqual(inner, outer, 'embedded buttons match dashboard buttons');
+    assert.equal(await native.evaluate(() => document.documentElement.classList.contains('dark')), true, 'embedded page follows the dark theme');
+    console.log('PASS shared button style inside embedded workspaces');
+
+    // 4. Popups keep their size while content changes, and only the body scrolls.
+    await data(dark, (d) => d.close());
+    await data(dark, (d) => d.open('settings'));
+    await dark.waitForSelector('.ps-tabs');
+    await dark.waitForTimeout(300); // opening fade
+    const size = () => dark.evaluate(() => {
+      const box = document.querySelector('.ps-modal').getBoundingClientRect();
+      return [Math.round(box.width), Math.round(box.height), Math.round(box.top)];
+    });
+    const before = await size();
+    await dark.click('.ps-tabs button:nth-child(2)');
+    await dark.click('.ps-tabs button:nth-child(3)');
+    assert.deepEqual(await size(), before, 'switching tabs does not resize or move the popup');
+    await dark.evaluate(() => (document.querySelector('.ps-tab-panels').style.height = '3000px'));
+    assert.deepEqual(await size(), before, 'long content scrolls inside the popup');
+    assert.equal(await dark.evaluate(() => getComputedStyle(document.querySelector('.ps-modal-body')).overflowY), 'auto');
+    console.log('PASS fixed popup size with a scrolling body');
+
+    // 5. Files: the iframe fills the popup and scrolls on its own; no outer scrollbar.
+    await data(dark, (d) => d.close());
+    await data(dark, (d) => d.open('files'));
+    const filesFrame = await (await dark.waitForSelector('iframe[title="Server file manager"]')).contentFrame();
+    await filesFrame.waitForFunction(() => document.documentElement.classList.contains('ps-frame'));
+    const scroll = await filesFrame.evaluate(() => ({
+      html: getComputedStyle(document.documentElement).overflowY,
+      body: getComputedStyle(document.body).overflowY,
+      scrolls: document.body.scrollHeight > document.body.clientHeight,
+    }));
+    assert.deepEqual(scroll, { html: 'hidden', body: 'auto', scrolls: true });
+    const outerScroll = await dark.evaluate(() => {
+      const body = document.querySelector('.ps-modal-body');
+      return body.scrollHeight > body.clientHeight + 1;
+    });
+    assert.equal(outerScroll, false, 'the popup itself never scrolls around the file manager');
+    console.log('PASS file workspace uses a single scroll container');
+
+    // 6. Confirmations use the Simplify dialog; Cancel keeps the server running.
+    await data(dark, (d) => d.close());
+    await dark.waitForSelector('.ps-modal-layer[data-open="false"]', { state: 'hidden' });
+    await data(dark, (d) => { d.status = 'running'; d.power('kill'); });
+    await dark.waitForSelector('[role="alertdialog"]');
+    assert.equal(await dark.textContent('#ps-dialog-title'), 'Force stop this server?');
+    await dark.keyboard.press('Escape');
+    await dark.waitForSelector('[role="alertdialog"]', { state: 'detached' });
+    await data(dark, (d) => d.toast('Saved', 'ok'));
+    await dark.waitForSelector('.ps-toast.is-ok');
+    console.log('PASS Simplify confirmation dialog and toast');
+
+    // 7. Phones: no horizontal scrolling on overview or server pages.
+    for (const url of ['/?mode=overview&theme=light', '/?mode=server&theme=dark']) {
+      const phone = await open(url, { width: 390, height: 844 });
+      assert.equal(await phone.evaluate(() => document.documentElement.scrollWidth <= innerWidth), true, url + ' fits a phone');
+      await phone.close();
+    }
+    console.log('PASS phone layouts without horizontal scrolling');
+
+    assert.deepEqual(errors, []);
+  } finally {
+    await browser.close();
+    server.close();
   }
-  const profileButton=menuPage.getByRole('button',{name:'Profile settings',exact:true});assert(await profileButton.isVisible());assert.equal(await profileButton.locator('use').getAttribute('href'),'#ps-account');
-  assert(await menuPage.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),'Mobile menu overflowed horizontally');await menuPage.close();
-  const filesPage=await browser.newPage({viewport:{width:1200,height:900}});
-  await filesPage.goto('http://127.0.0.1:'+server.address().port);await filesPage.addStyleTag({content:fs.readFileSync(root+'dashboard.css','utf8')});await filesPage.addScriptTag({content:fs.readFileSync(root+'dashboard.js','utf8')});
-  await filesPage.evaluate(()=>{document.body.innerHTML='<main class="ps"><section class="ps-modal is-files"><header>Files</header><div class="ps-modal-content"><div class="ps-files-workspace has-editor"><div class="ps-files-list"><iframe id="list" src="/files/"></iframe></div><section class="ps-file-editor" id="editor-pane"></section></div></div></section><span class="ps-status offline">Offline</span></main>';window.fileWorkspace=pelicanSimplify({fileRevision:async()=> 'revision',fileChanged:async()=>({pending:{file_only:true}})},{server:{uuid:'server-a',files_url:location.origin+'/files',color:'#b86677'}});fileWorkspace.modal='files';fileWorkspace.$root=document.querySelector('.ps');fileWorkspace.$refs={filesFrame:document.querySelector('#list')};fileWorkspace.toast=()=>{};});
-  await filesPage.waitForFunction(()=>document.querySelector('#list').contentDocument?.querySelector('#edit-file'));const listFrame=await (await filesPage.locator('#list').elementHandle()).contentFrame();await listFrame.waitForSelector('#edit-file');await filesPage.evaluate(()=>fileWorkspace.filesFrameLoaded(document.querySelector('#list')));
-  await listFrame.locator('#edit-file').click();assert.equal(listFrame.url(),'http://127.0.0.1:'+server.address().port+'/files/');
-  await filesPage.evaluate(()=>{const frame=document.createElement('iframe');frame.id='edit';frame.title='File editor';frame.src=fileWorkspace.fileEditorUrl;frame.onload=()=>fileWorkspace.fileEditorLoaded(frame);document.querySelector('#editor-pane').append(frame);});
-  await filesPage.waitForFunction(()=>document.querySelector('#edit').contentDocument?._psEditorBound);
-  const fixedHeight=await filesPage.locator('#list').evaluate(el=>el.clientHeight);assert(fixedHeight>200,'The file frame must have usable height');await listFrame.evaluate(()=>{const filler=document.createElement('div');filler.style.height='1800px';document.body.append(filler);});await filesPage.waitForTimeout(200);assert.equal(await filesPage.locator('#list').evaluate(el=>el.clientHeight),fixedHeight);assert(await listFrame.evaluate(()=>{document.body.scrollTop=100;return document.body.scrollHeight>document.body.clientHeight&&document.body.scrollTop>0;}),'The fixed file viewer must scroll inside its own document body');
-  const editorFrame=filesPage.frames().find(f=>f.url().includes('/files/edit/'));assert(await editorFrame.locator('#native-warning').isVisible());await editorFrame.waitForSelector('[data-ps-icon=save]');assert.equal(await editorFrame.locator('[data-ps-icon=save] path').getAttribute('d'),'M5 3h12l4 4v14H3V3h2Z M7 3v6h10V3M7 21v-8h10v8');
-  await editorFrame.getByRole('textbox',{name:'File content'}).fill('edited text');assert.equal(await filesPage.evaluate(()=>fileWorkspace.fileEditorDirty),true);
-  await editorFrame.waitForFunction(()=>document.getElementById('simplify-frame-css')?.sheet);
-  assert.equal(await editorFrame.evaluate(()=>getComputedStyle(document.documentElement).getPropertyValue('--ps-accent').trim()),'#b86677');
-  await editorFrame.getByRole('button',{name:'Save and close',exact:true}).click();await filesPage.waitForFunction(()=>fileWorkspace.fileEditorUrl===null);
-  assert.equal(await filesPage.evaluate(()=>fileWorkspace.fileEditorDirty),false);assert.equal(await filesPage.evaluate(()=>fileWorkspace.fileSavedNotice),'');await filesPage.waitForFunction(()=>fileWorkspace.server.pending?.file_only);
-  assert.equal(await filesPage.locator('.ps-status.offline').evaluate(el=>getComputedStyle(el).backgroundColor),'rgb(251, 234, 236)');
-  await filesPage.setViewportSize({width:390,height:844});assert.equal(await filesPage.locator('.ps-files-workspace').evaluate(el=>getComputedStyle(el).gridTemplateColumns.split(' ').length),1);await filesPage.close();
-  const loadingPage=await browser.newPage();
-  let releaseStyle;const styleGate=new Promise(resolve=>{releaseStyle=resolve;});
-  await loadingPage.route('**/delayed.css',async route=>{await styleGate;await route.fulfill({contentType:'text/css',body:'.fi-layout{display:block}'});});
-  await loadingPage.goto('http://127.0.0.1:'+server.address().port);await loadingPage.waitForLoadState('networkidle');
-  const critical=fs.readFileSync(root+'shared-assets.blade.php','utf8').match(/<style>([\s\S]*?)<\/style>/)[1];await loadingPage.addStyleTag({content:critical});
-  await loadingPage.evaluate(()=>{document.documentElement.classList.add('ps-page-loading');document.body.innerHTML='<main class="fi-layout"><section data-simplify-root>Ready content</section></main>';const global=document.querySelector('link');global.id='simplify-global-css';const delayed=document.createElement('link');delayed.id='simplify-dashboard-css';delayed.rel='stylesheet';delayed.href='/delayed.css';document.head.append(delayed);});
-  await loadingPage.addScriptTag({content:fs.readFileSync(root+'page-load.js','utf8')});
-  await loadingPage.evaluate(()=>{void SimplifyPageReady(document.querySelector('[data-simplify-root]'));});
-  assert.equal(await loadingPage.locator('.fi-layout').evaluate(el=>getComputedStyle(el).visibility),'hidden');
-  releaseStyle();await loadingPage.waitForFunction(()=>!document.documentElement.classList.contains('ps-page-loading'));
-  assert.equal(await loadingPage.locator('.fi-layout').evaluate(el=>getComputedStyle(el).visibility),'visible');assert.equal(await loadingPage.locator('#simplify-page-loading').count(),0);await loadingPage.close();
-  const dockPage=await browser.newPage();
-  for(const viewport of [{width:390,height:844},{width:390,height:667},{width:850,height:480},{width:1400,height:1080}]){
-   await dockPage.setViewportSize(viewport);
-   await dockPage.setContent('<style>'+fs.readFileSync(root+'dashboard.css','utf8')+'</style><div class="fi-layout"><div class="fi-main-ctn"><main class="fi-main"><div class="fi-page"><div class="fi-page-content"><div class="ps"><main class="ps-main"><header class="ps-top">Panel</header><section class="ps-overview"><div class="ps-server-scroll" style="padding-right:22px"><div class="ps-server-stage"><div class="ps-server-grid">'+Array.from({length:40},()=>'<article style="height:120px">Server</article>').join('')+'</div></div></div><section class="ps-health-panel"><article class="ps-host-health" style="height:100px">Host health</article></section></section></main></div></div></div></main><div class="footer-hook" style="background:#111;min-height:120px;padding:24px"><footer class="flex flex-col p-4" style="background:#111">© Panel</footer></div></div></div>');
-   await dockPage.addScriptTag({content:fs.readFileSync(root+'dashboard.js','utf8')});await dockPage.evaluate(()=>{const state=pelicanSimplify({},{build_version:'test'});state.$root=document.querySelector('.ps');state.enhanceCopyright();state.initOverviewDock();window.dockState=state;});await dockPage.waitForTimeout(100);
-   const layout=await dockPage.evaluate(()=>{const list=document.querySelector('.ps-server-scroll'),health=document.querySelector('.ps-health-panel'),footer=document.querySelector('[data-ps-footer]');return {footer:footer.getBoundingClientRect().bottom,health:health.getBoundingClientRect().bottom,footerTop:footer.getBoundingClientRect().top,dockGap:health.getBoundingClientRect().top-list.getBoundingClientRect().bottom,stageLeft:document.querySelector('.ps-server-grid').getBoundingClientRect().left,stageWidth:document.querySelector('.ps-server-grid').getBoundingClientRect().width,healthLeft:health.getBoundingClientRect().left,healthWidth:health.getBoundingClientRect().width,background:getComputedStyle(footer).backgroundColor,creditInline:getComputedStyle(footer.querySelector('[data-ps-attribution]')).display,overflow:getComputedStyle(list).overflowY,listHeight:list.clientHeight,listContent:list.scrollHeight,body:document.documentElement.scrollHeight};});
-   assert(Math.abs(layout.footer-viewport.height)<2,'Copyright remains at viewport bottom');assert(layout.health<=layout.footerTop,'Health stays above copyright');assert(Math.abs(layout.dockGap)<1,'No empty dark strip above health');assert.equal(layout.background,'rgba(0, 0, 0, 0)');assert(Math.abs(layout.healthLeft-layout.stageLeft)<1&&Math.abs(layout.healthWidth-layout.stageWidth)<1,'Health edges align with the server stage '+JSON.stringify({viewport,layout}));assert.equal(layout.creditInline,'inline','Attribution stays beside copyright');assert.equal(layout.overflow,'auto');assert(layout.listHeight>40&&layout.listContent>layout.listHeight,'Only the server list scrolls');assert(layout.body<=viewport.height+1,'Overview does not scroll as a whole');
-  }
-  await dockPage.evaluate(()=>dockState.overviewDockObserver.disconnect());await dockPage.close();
-  // Exercise the production card markup, including title, MOTD, metrics and player footer.
-  const cardPage=await browser.newPage({viewport:{width:1400,height:1080}});
-  const cardMarkup=fs.readFileSync(root+'dashboard.blade.php','utf8').split('<template x-for="s in visibleServers()" :key="s.uuid">')[1].split('</template></div><!-- Overview cards end -->')[0].replace(/<\/?template[^>]*>/g,'').replace(/\s(?:x-[^\s=]+|:[^\s=]+)="[^"]*"/g,'').replace(/@if[\s\S]*?@endif/g,'');
-  for(const list of [false,true]){
-   await cardPage.setContent('<style>'+fs.readFileSync(root+'dashboard.css','utf8')+'</style><main class="ps"><div class="ps-server-grid '+(list?'is-list':'')+'" style="width:'+(list?'1088':'260')+'px">'+cardMarkup+'</div></main>');
-   await cardPage.evaluate(()=>{document.querySelector('.ps-server-entry').classList.add('has-power');document.querySelector('.ps-card-title h3').textContent='Example server';document.querySelector('.ps-card-motd').style.display='none';document.querySelector('.ps-card-real-name').textContent='(Original name)';document.querySelector('.ps-card-usage').innerHTML='<div class="ps-card-mini-metric"><span>CPU 20%</span><svg class="ps-card-graph"></svg></div><div class="ps-card-mini-metric"><span>RAM 2 GB</span><svg class="ps-card-graph"></svg></div>';document.querySelector('.ps-card-game').textContent='Minecraft · offline';document.querySelector('.ps-overview-power').innerHTML='<button>Start</button><button>Stop</button><button>Reload</button><button>Kill</button>';document.querySelector('.ps-list-player-count').textContent='0 / 0';if(document.querySelector('.ps-card-bottom'))document.querySelector('.ps-card-bottom').textContent='0 / 0';});
-   if(!list)await cardPage.locator('.ps-card-footer').evaluate(el=>el.style.display='none');const entry=cardPage.locator('.ps-server-entry'),card=cardPage.locator('.ps-server-card');const before=await card.boundingBox(),beforeTitle=await cardPage.locator('.ps-card-title').boundingBox(),beforeIcon=await cardPage.locator('.ps-card-head').boundingBox();await cardPage.locator('.ps-server-open').hover();await cardPage.waitForTimeout(350);const after=await card.boundingBox();assert(Math.abs(after.height-before.height)<1&&Math.abs(after.width-before.width)<1,'Production card dimensions remain stable');assert.equal(await card.evaluate(el=>getComputedStyle(el).transform),'none','Server cards do not bump on hover');if(list){const alias=await cardPage.locator('.ps-card-real-name').boundingBox(),name=await cardPage.locator('.ps-card-title h3').boundingBox();assert(alias.x>=name.x+name.width-1&&Math.abs(alias.y+alias.height/2-name.y-name.height/2)<2,'Original name sits beside its alias in desktop lists');assert(before.height<140,'Desktop list rows stay compact');const titleAfter=await cardPage.locator('.ps-card-title').boundingBox(),iconAfter=await cardPage.locator('.ps-card-head').boundingBox();assert(Math.abs(titleAfter.x-beforeTitle.x)<1&&Math.abs(titleAfter.y-beforeTitle.y)<1&&Math.abs(iconAfter.x-beforeIcon.x)<1&&Math.abs(iconAfter.y-beforeIcon.y)<1,'List title and icons do not move on hover');}if(!list){assert.equal(await cardPage.locator('.ps-card-head').evaluate(el=>getComputedStyle(el).opacity),'1','Logo stays visible above quick controls');const head=await cardPage.locator('.ps-card-head').boundingBox(),title=await cardPage.locator('.ps-card-title').boundingBox();assert(title.y>=head.y+head.height,'Title stays below the logo');}if(!list){const usage=await cardPage.locator('.ps-card-usage').boundingBox(),bottom=await cardPage.locator('.ps-card-bottom').boundingBox();assert(Math.abs(bottom.y-usage.y-usage.height-6)<1,'Grid metrics sit directly above the player separator during quick actions');await cardPage.mouse.move(1300,1000);await cardPage.waitForTimeout(350);const normalUsage=await cardPage.locator('.ps-card-usage').boundingBox(),normalBottom=await cardPage.locator('.ps-card-bottom').boundingBox();assert(Math.abs(normalBottom.y-normalUsage.y-normalUsage.height-6)<1,'Grid metrics remain anchored above the player separator');await cardPage.locator('.ps-server-open').hover();await cardPage.waitForTimeout(350);}const actions=await cardPage.locator('.ps-overview-power').boundingBox();assert(actions.x>=after.x&&actions.y>=after.y&&actions.x+actions.width<=after.x+after.width&&actions.y+actions.height<=after.y+after.height,'Production actions stay inside their server card');
-   await cardPage.evaluate(()=>{document.querySelector('.ps-server-grid').classList.add('has-motd');document.querySelector('.ps-server-entry').classList.add('has-card-motd');document.querySelector('.ps-card-motd').style.display='';document.querySelector('.ps-card-motd').textContent='First line\nSecond line';document.querySelector('.ps-card-icons').classList.add('egg-primary');});await cardPage.waitForTimeout(300);const primaryEgg=await cardPage.locator('.ps-card-egg-icon').boundingBox(),secondaryServer=await cardPage.locator('.ps-card-icon').boundingBox();assert(primaryEgg.width>secondaryServer.width,'Chosen egg icon becomes the large primary icon');assert((await card.boundingBox()).height>=after.height+30,'MOTD preference reserves space in both layouts');const bar=cardPage.locator('.ps-overview-power');assert.equal(await bar.evaluate(el=>getComputedStyle(el).borderTopLeftRadius),'0px','Power bar has square inside corners');assert.equal(await bar.evaluate(el=>getComputedStyle(el).backgroundColor),'rgb(244, 244, 245)','Power bar uses the page background');if(!list){const spacing=await cardPage.evaluate(()=>{const row=document.querySelector('.ps-card-title-row').getBoundingClientRect(),motd=document.querySelector('.ps-card-motd').getBoundingClientRect(),usage=document.querySelector('.ps-card-usage').getBoundingClientRect();return {above:motd.top-row.bottom,below:usage.top-motd.bottom};});assert(Math.abs(spacing.above-spacing.below)<2&&spacing.above>=4,'MOTD free space is balanced above and below');await cardPage.evaluate(()=>{document.querySelector('.ps-server-grid').classList.remove('has-motd');document.querySelector('.ps-server-grid').classList.add('no-metrics');document.querySelector('.ps-server-entry').classList.remove('has-card-motd');document.querySelector('.ps-card-motd').style.display='none';document.querySelector('.ps-card-usage').style.display='none';});await cardPage.waitForTimeout(300);const compact=await card.boundingBox(),controls=await bar.boundingBox(),title=await cardPage.locator('.ps-card-title').boundingBox(),bottom=await cardPage.locator('.ps-card-bottom').boundingBox();assert(compact.height<270&&compact.height>220,'Cards without extra information become compact');assert(bottom.y>=title.y+title.height&&controls.y>=bottom.y+bottom.height,'Compact cards retain room for the title, players and power actions');await cardPage.evaluate(()=>{document.querySelector('.ps-server-grid').classList.add('no-quick-actions');document.querySelector('.ps-server-entry').classList.remove('has-power');document.querySelector('.ps-overview-power-wrap').style.display='none';});assert((await card.boundingBox()).height<compact.height-30,'Disabling all extras reduces card height further');}
-  }
-  await cardPage.close();
-  const resourcePage=await browser.newPage({viewport:{width:1100,height:900}});
-  await resourcePage.setContent('<style>'+fs.readFileSync(root+'creator.css','utf8')+fs.readFileSync(root+'dashboard.css','utf8')+'</style><main class="ps"><div class="ssc-wizard"><div class="ssc-cards ssc-cards--ram">'+Array.from({length:5},()=>'<label class="ssc-card"><input class="ssc-card-input" type="radio"><span class="ssc-card-content"><svg class="ssc-outline-icon"><path d="M3 3h18v18H3Z"/></svg><span class="ssc-card-title">200%</span><span class="ssc-card-description">2 CPU cores</span></span></label>').join('')+'</div></div><div class="ps-motd-preview ps-motd-display">First line\nSecond line</div><div class="ps-server-grid is-list"><span class="ps-card-icons"><span class="ps-card-icon">Server</span><span class="ps-card-egg-icon">Egg</span></span></div></main>');
-  const preset=await resourcePage.locator('.ssc-card-content').first().boundingBox(),icon=await resourcePage.locator('.ssc-outline-icon').first().boundingBox(),value=await resourcePage.locator('.ssc-card-title').first().boundingBox(),description=await resourcePage.locator('.ssc-card-description').first().boundingBox();assert(preset.height<100&&icon.width>=32);assert(Math.abs(icon.y+icon.height/2-value.y-value.height/2)<2&&value.x>icon.x,'Resource icon sits beside value');assert(description.y>=icon.y+icon.height,'Description sits below icon and value');assert(await resourcePage.locator('.ps-motd-display').evaluate(el=>el.clientWidth<=420&&el.clientHeight>=parseFloat(getComputedStyle(el).lineHeight)*2),'MOTD keeps a narrow two-line canvas');const egg=await resourcePage.locator('.ps-card-egg-icon').boundingBox(),serverIcon=await resourcePage.locator('.ps-card-icon').boundingBox();assert(egg.x>=serverIcon.x+serverIcon.width,'List egg icon sits beside server icon');await resourcePage.close();
-  const detailsPage=await browser.newPage({viewport:{width:1400,height:1080}});
-  await detailsPage.setContent('<style>'+fs.readFileSync(root+'dashboard.css','utf8')+'</style><main class="ps"><section class="ps-overview" style="height:800px;flex:none"><div class="ps-server-scroll"><div class="ps-server-grid"><div class="ps-server-entry has-power"><article class="ps-server-card" style="height:260px">Server<span class="ps-offline-artwork"><svg viewBox="0 0 24 24"><path d="M2 2h20v20H2Z"/></svg></span><button class="ps-server-open">Open</button><div class="ps-overview-power-wrap"><div class="ps-overview-power"><button>Start</button><button>Stop</button><button>Restart</button><button>Kill</button></div></div></article></div></div></div><section class="ps-health-panel"><article class="ps-host-health" style="height:120px">All hosts</article><div class="ps-health-drawer"><div><div class="ps-node-health-list"><article class="ps-node-health" style="height:240px">Node information</article></div></div></div></section></section></main>');
-  const dock=detailsPage.locator('.ps-health-panel'),entry=detailsPage.locator('.ps-server-entry');const collapsedDock=await dock.boundingBox(),beforeEntry=await entry.boundingBox();
-  await dock.evaluate(el=>el.classList.add('expanded'));await detailsPage.waitForTimeout(400);const expandedDock=await dock.boundingBox();assert(expandedDock.y<collapsedDock.y);assert(Math.abs(expandedDock.y+expandedDock.height-collapsedDock.y-collapsedDock.height)<2,'Health card should expand upward from its bottom edge');assert(await detailsPage.getByText('All hosts').isVisible());
-  const fixedDrawer=await detailsPage.locator('.ps-health-drawer').boundingBox();
-  await detailsPage.locator('.ps-node-health-list').evaluate(el=>{el.innerHTML='<article class="ps-node-health"><header><button class="ps-node-toggle">Node one</button></header><div class="ps-node-metrics">CPU · RAM · Storage · Network</div><div class="ps-node-server-drawer"><div><div class="ps-node-servers"><div style="height:700px">Servers on node one</div></div></div></div></article><article class="ps-node-health">Node two</article>';});
-  const nodeDrawer=detailsPage.locator('.ps-node-server-drawer');assert((await nodeDrawer.boundingBox()).height<1);await nodeDrawer.evaluate(el=>el.classList.add('expanded'));await detailsPage.waitForTimeout(350);assert((await nodeDrawer.boundingBox()).height>600);assert((await detailsPage.locator('.ps-health-drawer').boundingBox()).height<=320,'Expanding servers stays within the maximum health height');assert.equal(await detailsPage.getByText('Node two').count(),1,'Other nodes stay in the list');assert(await detailsPage.locator('.ps-node-health-list').evaluate(el=>el.scrollHeight>el.clientHeight&&getComputedStyle(el).overflowY==='auto'),'Node details scroll inside the fixed workspace');await nodeDrawer.evaluate(el=>el.classList.remove('expanded'));await detailsPage.waitForTimeout(350);assert((await nodeDrawer.boundingBox()).height<1);
-  await detailsPage.locator('.ps-server-open').hover();await detailsPage.waitForTimeout(350);assert(Math.abs((await entry.boundingBox()).height-beforeEntry.height)<1,'Power actions must keep the card height');const controlBox=await detailsPage.locator('.ps-overview-power').boundingBox(),cardBox=await detailsPage.locator('.ps-server-card').boundingBox();assert(controlBox.y>=cardBox.y&&controlBox.y+controlBox.height<=cardBox.y+cardBox.height,'Actions must be inside the card');assert.equal(await detailsPage.locator('.ps-overview-power').evaluate(el=>getComputedStyle(el).gridTemplateColumns.split(' ').length),4);
-  const gridArt=await detailsPage.locator('.ps-offline-artwork').evaluate(el=>({height:el.getBoundingClientRect().height,icon:el.querySelector('svg').getBoundingClientRect().height,center:el.querySelector('svg').getBoundingClientRect().y+el.querySelector('svg').getBoundingClientRect().height/2,expected:el.getBoundingClientRect().y+el.getBoundingClientRect().height/2}));assert(gridArt.icon<gridArt.height);assert(Math.abs(gridArt.center-gridArt.expected)<2,'Grid heart must stay vertically centered');
-  await detailsPage.locator('.ps-server-grid').evaluate(el=>el.classList.add('is-list'));await detailsPage.locator('.ps-server-open').hover();await detailsPage.waitForTimeout(350);assert(Math.abs((await entry.boundingBox()).height-beforeEntry.height)<1,'List card height remains unchanged');const listControls=await detailsPage.locator('.ps-overview-power').boundingBox(),listCard=await detailsPage.locator('.ps-server-card').boundingBox();assert(listControls.x>=listCard.x&&listControls.x+listControls.width<=listCard.x+listCard.width,'List actions are inside the card');assert.equal(await detailsPage.locator('.ps-overview-power').evaluate(el=>getComputedStyle(el).gridTemplateColumns.split(' ').length),2);
-  await detailsPage.setContent('<style>'+fs.readFileSync(root+'dashboard.css','utf8')+'</style><main class="ps"><section class="ps-overview is-list"><div class="ps-server-scroll"><div class="ps-server-stage is-list">List</div></div></section></main>');const largeMargin=await detailsPage.locator('.ps-server-stage').evaluate(el=>parseFloat(getComputedStyle(el).marginTop));await detailsPage.setViewportSize({width:1400,height:720});const smallMargin=await detailsPage.locator('.ps-server-stage').evaluate(el=>parseFloat(getComputedStyle(el).marginTop));assert(smallMargin<largeMargin&&smallMargin>=4&&largeMargin<=24,'List top spacing follows viewport height within bounds');
-  await detailsPage.setContent('<style>'+fs.readFileSync(root+'dashboard.css','utf8')+'</style><main class="ps"><section class="ps-health-panel expanded"><article class="ps-host-health">Host health</article><div class="ps-health-drawer"><div><div class="ps-health-detail-toolbar">Nodes</div><div class="ps-node-health-list"></div></div></div></section></main>');
-  await detailsPage.locator('.ps-node-health-list').evaluate(el=>{el.innerHTML='<article class="ps-node-health"><div class="ps-node-summary"><header><button class="ps-node-toggle"><svg class="ps-node-symbol"></svg><strong class="ps-node-name">Node one</strong></button></header><div class="ps-node-metrics">'+Array.from({length:4},()=>'<div class="ps-host-metric"><div class="ps-host-heading">CPU</div><strong>20%</strong></div>').join('')+'</div></div></article>';});
-  assert((await detailsPage.locator('.ps-health-drawer').boundingBox()).height<160,'A short node list uses its content height');const node=detailsPage.locator('.ps-node-health'),summary=detailsPage.locator('.ps-node-summary');assert((await summary.boundingBox()).height<100,'Node summary is compact');assert.equal(await detailsPage.locator('.ps-node-metrics').evaluate(el=>getComputedStyle(el).gridTemplateColumns.split(' ').length),4,'Four node metrics share one row');assert.equal(await node.evaluate(el=>getComputedStyle(el).borderTopWidth),'0px');await node.hover();await detailsPage.waitForTimeout(250);const nodeHover=await node.evaluate(el=>getComputedStyle(el).backgroundColor);await node.evaluate(el=>el.classList.add('expanded'));await detailsPage.mouse.move(0,0);await detailsPage.waitForTimeout(250);assert.equal(await node.evaluate(el=>getComputedStyle(el).backgroundColor),nodeHover,'Expanded node retains its hover background');
-  await detailsPage.close();
-  const accentPage=await browser.newPage({viewport:{width:1400,height:1080}});
-  for(const dark of [false,true]){await accentPage.setContent('<style>'+fs.readFileSync(root+'dashboard.css','utf8')+'</style><main class="ps '+(dark?'dark':'')+'" style="--accent:#b56699"><section class="ps-health-panel"><article class="ps-host-health"><div class="ps-host-state"><span class="ps-host-emblem"><svg class="ps-host-heart"></svg></span><div><div class="ps-host-heading"><h3>Host health</h3></div><span class="ps-health-status healthy"><strong>Healthy</strong></span><small>2 / 2 hosts reporting</small></div></div><div class="ps-host-metric"><span class="ps-card-meter"><span style="width:50%"></span></span></div></article></section><div class="ps-create-card is-other">Other game</div><div class="ps-overview-power"><button>Start</button></div><article class="ps-server-entry"><div class="ps-card-title-row"><h3>Name</h3></div></article></main>');assert.equal(await accentPage.locator('.ps-card-meter>span').evaluate(el=>getComputedStyle(el).backgroundColor),'rgb(181, 102, 153)','Health inherits the global accent in both themes');assert.equal(await accentPage.locator('.is-other').evaluate(el=>getComputedStyle(el).getPropertyValue('--accent').trim()),'#b56699','Other game uses the global accent');const top=await accentPage.locator('.ps-host-heading').boundingBox(),status=await accentPage.locator('.ps-health-status').boundingBox(),reporting=await accentPage.locator('.ps-host-state small').boundingBox();assert(Math.abs(status.y-top.y-top.height-(reporting.y-status.y-status.height))<1,'Healthy has equal spacing above and below');assert((await accentPage.locator('.ps-host-heart').boundingBox()).width>=60,'Host heart has a prominent size');assert.equal(await accentPage.locator('.ps-overview-power button').evaluate(el=>getComputedStyle(el).backgroundColor),'rgb(29, 29, 36)','Quick action buttons use the darker surface');const gradient=await accentPage.locator('.ps-card-title-row h3').evaluate(el=>getComputedStyle(el).backgroundImage);assert(gradient.includes('181')||gradient.includes('0.709'),'Title gradient includes its accent');}await accentPage.close();
-  const accountPage=await browser.newPage();
-  const accountMarkup=fs.readFileSync(root+'dashboard.blade.php','utf8').split('<div class="ps-account"')[1].split('</nav>')[0].replace(/\s(?:x-[^\s=]+|:[^\s=]+)="[^"]*"/g,'').replace(/@csrf/g,'');
-  for(const width of [1400,390]){await accountPage.setViewportSize({width,height:844});await accountPage.setContent('<style>'+fs.readFileSync(root+'dashboard.css','utf8')+'</style><main class="ps"><nav class="ps-top-actions nav-open"><div class="ps-nav-items"><div class="ps-account"'+accountMarkup+'</div></nav></main>');await accountPage.locator('.ps-account-username').evaluate(el=>el.textContent='A very long username for testing');const actions=accountPage.locator('.ps-account-menu');assert((await actions.boundingBox()).width<1,'Account actions start collapsed');await accountPage.locator('.ps-account').evaluate(el=>el.classList.add('account-open'));await accountPage.waitForTimeout(300);assert.equal(await actions.locator('button').count(),2);assert.equal(await actions.evaluate(el=>getComputedStyle(el).position),'static','Profile actions stay inline');const button=await accountPage.locator('.ps-account-button').boundingBox(),icons=await actions.boundingBox();assert(Math.abs(button.y+button.height/2-icons.y-icons.height/2)<1,'Profile actions slide beside the avatar and remain vertically centered '+JSON.stringify({width,button,icons}));assert(button.width>55,'Profile button has room for avatar and username');assert.equal(await accountPage.locator('.ps-account-actions-inner form').getAttribute('method'),'post','Logout retains the protected POST form');assert(await accountPage.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),'Profile actions fit on mobile');}await accountPage.close();
-  console.log('PASS shared dark/light controls, creator and native frames, black console, persistence, legacy opt-out, adaptive console and mobile theme');
- }finally{await browser.close();await new Promise(resolve=>server.close(resolve));}
-})().catch(e=>{console.error(e);process.exit(1)});
+})().catch((e) => {
+  console.error(e);
+  process.exit(1);
+});

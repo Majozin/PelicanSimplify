@@ -39,13 +39,20 @@ final class Dashboard extends Page
         if(is_string($uuid) && $uuid!==''){Access::server($uuid);$this->serverUuid=$uuid;}
     }
     private function server(): Server { abort_unless($this->serverUuid,404);return Access::server($this->serverUuid); }
+    private ?array $initialData=null;
+    /** Everything the page needs on first paint. Computed once per request; actions never re-render it. */
     public function initial(): array
+    {
+        return $this->initialData ??= $this->buildInitial();
+    }
+    private function buildInitial(): array
     {
         $admin=user()->canAccessPanel(\Filament\Facades\Filament::getPanel('admin'));
         $base=['banner_upload_bytes'=>\Simplify\Panel\Services\UploadLimits::bannerBytes(),'build_version'=>\Simplify\Panel\Services\BuildInfo::version(),'admin_url'=>$admin?\Filament\Facades\Filament::getPanel('admin')->getUrl():(\Simplify\Panel\Services\FeatureSettings::enabled('user_legacy')?route('filament.app.resources.servers.index',['simplify_legacy'=>1]):null),
             'legacy_create_url'=>\App\Filament\Admin\Resources\Servers\ServerResource::canCreate()?\App\Filament\Admin\Resources\Servers\ServerResource::getUrl('create',panel:'admin'):null,'create_url'=>Extensions::createUrl(),'can_create'=>Extensions::canCreate(),'create_games'=>Extensions::createGames(),'web'=>Extensions::web(),
             'native_list_url'=>\Filament\Facades\Filament::getPanel('app')->getUrl(),
-            'profile_url'=>\App\Filament\Pages\Auth\EditProfile::getUrl(panel:'app'),'appearance'=>\Simplify\Panel\Services\AppearanceSettings::all(),'panel_name'=>(string)config('app.name','Pelican'),'features'=>array_replace(\Simplify\Panel\Services\FeatureSettings::all(),array_combine(['settings','files','players','backups','packages','software','resources','advanced','activity','schedules'],array_map(fn($key)=>Access::feature($key),['settings','files','players','backups','packages','software','resources','advanced','activity','schedules']))),'settings_url'=>user()?->isRootAdmin()?\Simplify\Panel\Filament\Admin\Pages\SimplifySettings::getUrl(panel:'app'):null,'website_url'=>Extensions::webAdapter()?->url(),'list_url'=>self::getUrl(panel:'app'),'server'=>null,'servers'=>[],'user'=>user()->username,'avatar'=>user()->getFilamentAvatarUrl(),'favicon_url'=>route('simplify.favicon').'?v=0.2.0-alpha.26'];
+            'profile_url'=>\App\Filament\Pages\Auth\EditProfile::getUrl(panel:'app'),'appearance'=>\Simplify\Panel\Services\AppearanceSettings::all(),'panel_name'=>(string)config('app.name','Pelican'),'features'=>array_replace(\Simplify\Panel\Services\FeatureSettings::all(),array_combine(['settings','files','players','backups','packages','software','resources','advanced','activity','schedules'],array_map(fn($key)=>Access::feature($key),['settings','files','players','backups','packages','software','resources','advanced','activity','schedules']))),'settings_url'=>user()?->isRootAdmin()?\Simplify\Panel\Filament\Admin\Pages\SimplifySettings::getUrl(panel:'app'):null,'website_url'=>Extensions::webAdapter()?->url(),'list_url'=>self::getUrl(panel:'app'),'server'=>null,'servers'=>[],'user'=>user()->username,'avatar'=>user()->getFilamentAvatarUrl(),'favicon_url'=>route('simplify.favicon').'?v='.\Simplify\Panel\Services\BuildInfo::hash('core.css'),
+            'performance'=>\Simplify\Panel\Services\PerformanceSettings::client(),'update'=>user()?->isRootAdmin()?\Simplify\Panel\Services\UpdateCheck::status():null];
         if(!$this->serverUuid){$base['servers']=$this->listing();$base['host_health']=$this->hostHealth();return$base;}
         $s=$this->server();$base['available_colors']=ServerAppearance::choices($s->uuid);$permissions=[];foreach(P::cases() as $p)$permissions[$p->value]=user()->can($p,$s);
         $meta=ManagedSettings::content($s);$mc=MinecraftStatus::get($s);
@@ -59,7 +66,7 @@ final class Dashboard extends Page
             $pending=PendingChanges::read($s);
         }
         $artworkMeta=Extensions::web()?Extensions::webAdapter()->metadata($s):$meta;
-        $base['background_choices']=array_map(fn($id)=>['id'=>$id,'name'=>ucfirst($id),'url'=>route('simplify.background',['id'=>$id])],array_keys(ServerArtwork::BACKGROUNDS));
+        $base['background_choices']=array_map(fn($id)=>['id'=>$id,'name'=>ucfirst($id),'url'=>ServerArtwork::backgroundUrl($id)],array_keys(ServerArtwork::BACKGROUNDS));
         $base['uploaded_backgrounds']=\Simplify\Panel\Services\ServerBanners::entries($s);
         $base['server']=['background_id'=>ServerArtwork::selection($s) ?? ($artworkMeta['background_id'] ?? 'auto'),'color'=>ServerAppearance::color($s),'uuid'=>$s->uuid,'short'=>$s->uuid_short,'name'=>$s->name,'address'=>$s->allocation?->address,
             'memory'=>$s->memory,'disk'=>$s->disk,'cpu'=>$s->cpu,'software'=>$s->egg?->name,'image'=>user()->can(P::StartupRead,$s)?$s->image:'Restricted','startup'=>user()->can(P::StartupRead,$s)?$s->startup:'Restricted',
@@ -69,8 +76,8 @@ final class Dashboard extends Page
             'properties_available'=>!ManagedSettings::minecraft($s) || !empty($properties),'pending'=>$pending?['properties'=>user()->can(P::FileReadContent,$s)?($pending['properties']??[]):[],'resources'=>$pending['resources']??[],'pending'=>true,'file_only'=>!empty($pending['file_only']),'file_changes'=>!empty($pending['file_changes']),'restart_at'=>$pending['restart_at'],'restart_requested'=>$pending['restart_requested'],'error'=>$pending['error']??null]:null,
             'pack'=>array_intersect_key($meta,array_flip(['modpack_name','modpack_version','modpack_description','modpack_icon_url','modpack_url','plugins','version','motd','icon_url'])),
             'reported_version'=>$mc['version']??'','status'=>$s->retrieveStatus()->value,'players'=>$mc['players']??null,'max_players'=>$mc['max_players']??null,'player_names'=>$mc['names']??[],
-            'software_icon'=>ServerArtwork::softwareIcon($s,$meta),'server_icon'=>ServerArtwork::serverIcon($s)??($mc['icon']??null),
-            'icon'=>ServerArtwork::icon($s,$meta)??($mc['icon']??null),'background'=>ServerArtwork::background($s,$artworkMeta),'backup_options'=>AutomaticBackups::settings($s),'root_admin'=>user()->isRootAdmin(),
+            'software_icon'=>ServerArtwork::softwareIcon($s,$meta),'server_icon'=>ServerArtwork::serverIcon($s),
+            'icon'=>ServerArtwork::icon($s,$meta),'background'=>ServerArtwork::background($s,$artworkMeta),'backup_options'=>AutomaticBackups::settings($s),'root_admin'=>user()->isRootAdmin(),
             'files_url'=>\App\Filament\Server\Resources\Files\FileResource::getUrl('index',panel:'server',tenant:$s),
             'backups_url'=>\App\Filament\Server\Resources\Backups\BackupResource::getUrl('index',panel:'server',tenant:$s),
             'admin_server_url'=>$admin?\App\Filament\Admin\Resources\Servers\ServerResource::getUrl('edit',['record'=>$s],panel:'admin'):null];
@@ -108,12 +115,13 @@ final class Dashboard extends Page
         foreach($query->get() as $s){
             $linked=user()->isAdmin()||(int)$s->owner_id===(int)user()->id||(bool)$s->simplify_assigned;$m=Extensions::web()?Extensions::webAdapter()->metadata($s):[];
             $status=$s->retrieveStatus()->value;$mc=$status==='offline'?['players'=>0]:MinecraftStatus::get($s);
-            $list[]=['alias'=>\Simplify\Panel\Services\ServerMetadata::read($s)['server_alias']??'','color'=>ServerAppearance::color($s),'uuid'=>$s->uuid,'name'=>$s->name,'software'=>$s->egg?->name,'game'=>ManagedSettings::minecraft($s)?'minecraft':'other','game_label'=>ManagedSettings::minecraft($s)?'Minecraft':($s->egg?->name ?: 'Other game'),'status'=>$status,'linked'=>$linked,
+            $metadata=\Simplify\Panel\Services\ServerMetadata::read($s);$minecraft=ManagedSettings::minecraft($s);$serverIcon=ServerArtwork::serverIcon($s);
+            $list[]=['alias'=>$metadata['server_alias']??'','color'=>ServerAppearance::color($s),'uuid'=>$s->uuid,'name'=>$s->name,'software'=>$s->egg?->name,'game'=>$minecraft?'minecraft':'other','game_label'=>$minecraft?'Minecraft':($s->egg?->name ?: 'Other game'),'status'=>$status,'linked'=>$linked,
                 'node_id'=>(int)$s->node_id,'permissions'=>array_combine(['control.start','control.stop','control.restart'],array_map(fn($permission)=>$linked&&user()->can($permission,$s),[P::ControlStart,P::ControlStop,P::ControlRestart])),
                 'url'=>$linked?self::getUrl(['server'=>$s->uuid],panel:'app'):null,
-                'server_icon'=>ServerArtwork::serverIcon($s)??($mc['icon']??null),'software_icon'=>ServerArtwork::softwareIcon($s,$m),'egg_icon'=>$s->egg?->icon,
-                'icon'=>ServerArtwork::icon($s,$m)??($mc['icon']??null),'background'=>ServerArtwork::background($s,$m),'players'=>$mc['players']??null,'max_players'=>$mc['max_players']??null,
-                'reported_version'=>$mc['version']??'','minecraft_version'=>\Simplify\Panel\Services\ServerMetadata::read($s)['modpack']['version']??'','pack'=>$m['modpack_name']??'','motd'=>\Simplify\Panel\Services\MinecraftMotd::forServer($s,$mc['motd']??null),'visible'=>$m['visible']??false,'usage'=>OverviewUsage::get($s,$status),
+                'server_icon'=>$serverIcon,'software_icon'=>ServerArtwork::softwareIcon($s,$m),'egg_icon'=>$s->egg?->icon,
+                'icon'=>$serverIcon ?: ServerArtwork::icon($s,$m),'background'=>ServerArtwork::background($s,$m),'players'=>$mc['players']??null,'max_players'=>$mc['max_players']??null,
+                'reported_version'=>$mc['version']??'','minecraft_version'=>$metadata['modpack']['version']??'','pack'=>$m['modpack_name']??'','motd'=>\Simplify\Panel\Services\MinecraftMotd::forServer($s,$mc['motd']??null),'visible'=>$m['visible']??false,'usage'=>OverviewUsage::get($s,$status),
                 'can_web'=>Extensions::web() && $linked && ((int)$s->owner_id===(int)user()->id || user()->isRootAdmin())];
         }
         return$list;
@@ -128,6 +136,7 @@ final class Dashboard extends Page
             ->handle($s->node,user()->id.$s->uuid)->toString();
         return['token'=>$token,'url'=>str_replace(['https://','http://'],['wss://','ws://'],$s->node->getConnectionAddress()).'/api/servers/'.$s->uuid.'/ws'];
     }
+    #[Renderless]
     public function power(string $action): void
     {
         $this->performPower($this->server(),$action);
@@ -155,6 +164,7 @@ final class Dashboard extends Page
         abort_if($limit>0 && strlen($content)>$limit,413,'This file is too large to edit.');
         return hash('sha256',$content);
     }
+    #[Renderless]
     public function saveAlias(string $alias): array
     {
         $s=$this->server();Access::permission($s,P::SettingsRename);
@@ -162,7 +172,9 @@ final class Dashboard extends Page
         \Simplify\Panel\Services\ServerMetadata::save($s,['server_alias'=>$state['alias']??'']);
         return ['alias'=>$state['alias']??''];
     }
+    #[Renderless]
     public function saveSettings(array $state): array { abort_unless(Access::feature('settings'),404);return PendingChanges::stage($this->server(),$state,$this->iconUpload); }
+    #[Renderless]
     public function saveResourceLimits(array $state): array
     {abort_unless(Access::feature('resources'),404);
         $s=$this->server();Access::owner($s);abort_unless(ManagedResources::canEdit($s),403);
@@ -170,6 +182,7 @@ final class Dashboard extends Page
         abort_unless(isset($state['memory_gb'],$state['cpu'],$state['disk_mb']),422,'Provide all three resource limits.');
         return PendingChanges::stage($s,$state,null,true);
     }
+    #[Renderless]
     public function discard(): void { PendingChanges::discard($this->server()); }
     #[Renderless]
     public function fileChanged(string $path,string $previousHash): array
@@ -181,11 +194,13 @@ final class Dashboard extends Page
     }
     #[Renderless]
     public function restartChanges(int $minutes=0): void { PendingChanges::requestRestart($this->server(),$minutes); }
+    #[Renderless]
     public function rename(string $name): void
     {
         $s=$this->server();Access::permission($s,P::SettingsRename);
         $name=trim($name);validator(['name'=>$name],['name'=>'required|string|max:255'])->validate();$s->update(['name'=>$name]);
     }
+    #[Renderless]
     public function saveServerBackground(string $id): array
     {
         return ServerArtwork::save($this->server(), $id);
@@ -196,6 +211,7 @@ final class Dashboard extends Page
         $this->bannerUpload=null;
         return [...ServerArtwork::save($server,$data['id']),'uploaded_backgrounds'=>\Simplify\Panel\Services\ServerBanners::entries($server)];
     }
+    #[Renderless]
     public function deleteServerBanner(string $id): array
     {
         $server=$this->server();\Simplify\Panel\Services\ServerBanners::delete($id,$server);
@@ -210,18 +226,20 @@ final class Dashboard extends Page
             $p=PendingChanges::read($s);
         }
         $data=MinecraftStatus::get($s);
-        return['color'=>ServerAppearance::color($s),'name'=>$s->name,'server_icon'=>ServerArtwork::serverIcon($s)??($data['icon']??null),'reported_version'=>$data['version']??'','players'=>$data['players']??null,'max_players'=>$data['max_players']??null,'player_names'=>$data['names']??[],
+        return['color'=>ServerAppearance::color($s),'name'=>$s->name,'server_icon'=>ServerArtwork::serverIcon($s),'reported_version'=>$data['version']??'','players'=>$data['players']??null,'max_players'=>$data['max_players']??null,'player_names'=>$data['names']??[],
             'pending'=>$p?['pending'=>true,'file_only'=>!empty($p['file_only']),'file_changes'=>!empty($p['file_changes']),'restart_at'=>$p['restart_at'],'restart_requested'=>$p['restart_requested'],'error'=>$p['error']??null]:null];
     }
     #[Renderless]
     public function availableServerColors(): array { return ServerAppearance::choices($this->server()->uuid); }
     #[Renderless]
     public function saveServerColor(string $color): string { return ServerAppearance::save($this->server(),$color); }
+    #[Renderless]
     public function website(?string $uuid=null): array
     {
         abort_unless(Extensions::web(),404);$s=$uuid?Access::server($uuid):$this->server();Access::owner($s);
         return Extensions::webAdapter()->metadata($s);
     }
+    #[Renderless]
     public function saveWebsite(array $input,?string $uuid=null): void
     {
         abort_unless(Extensions::web(),404);$s=$uuid?Access::server($uuid):$this->server();Access::owner($s);
@@ -229,16 +247,22 @@ final class Dashboard extends Page
         $old=Extensions::webAdapter()->metadata($s);
         Extensions::webAdapter()->save($s,array_replace($old,array_intersect_key($input,array_flip($fields))));
     }
+    #[Renderless]
     public function packageSearch(string $query,string $version): array {abort_unless(Access::feature('packages'),404); return Packages::search($this->server(),$query,$version); }
+    #[Renderless]
     public function installedPackages(): array {abort_unless(Access::feature('packages'),404); return Packages::installed($this->server()); }
+    #[Renderless]
     public function installPackage(string $id,string $version): void {abort_unless(Access::feature('packages'),404); Packages::install($this->server(),$id,$version); }
+    #[Renderless]
     public function removePackage(string $filename): void {abort_unless(Access::feature('packages'),404); Packages::remove($this->server(),$filename); }
+    #[Renderless]
     public function players(): array
     {abort_unless(Access::feature('players'),404);
         $s=$this->server();Access::permission($s,P::FileReadContent);$files=app(DaemonFileRepository::class)->setServer($s);$lists=[];
         foreach(['whitelist','ops','banned-players'] as $key){try{$list=json_decode($files->getContent('/'.$key.'.json',1048576),true);$lists[$key]=is_array($list)?$list:[];}catch(\Throwable){$lists[$key]=[];}}
         return$lists;
     }
+    #[Renderless]
     public function subdomain(string $name): void
     {
         $s=$this->server();Access::owner($s);
@@ -253,7 +277,9 @@ final class Dashboard extends Page
         $this->serverUuid=null;
         $this->redirect(self::getUrl(panel:'app'));
     }
+    #[Renderless]
     public function backupOptions(array $state): void {abort_unless(Access::feature('backups'),404); AutomaticBackups::save($this->server(),$state); }
+    #[Renderless]
     public function backupList(): array
     {abort_unless(Access::feature('backups'),404);
         $s=$this->server();Access::permission($s,P::BackupRead);
@@ -261,12 +287,14 @@ final class Dashboard extends Page
             'items'=>$s->backups()->orderByDesc('created_at')->get()->map(fn($b)=>['uuid'=>$b->uuid,'name'=>$b->name,'bytes'=>$b->bytes,
                 'created_at'=>$b->created_at?->toIso8601String(),'successful'=>$b->is_successful,'completed'=>(bool)$b->completed_at])->all()];
     }
+    #[Renderless]
     public function downloadBackup(string $uuid): string
     {abort_unless(Access::feature('backups'),404);
         $s=$this->server();Access::permission($s,P::BackupDownload);$b=$s->backups()->where('uuid',$uuid)->firstOrFail();
         abort_unless($b->is_successful && $b->completed_at,409);
         return app(\App\Services\Backups\DownloadLinkService::class)->handle($b,user());
     }
+    #[Renderless]
     public function restoreBackup(string $uuid,string $confirm): void
     {abort_unless(Access::feature('backups'),404);
         $s=$this->server();Access::permission($s,P::BackupRestore);Access::offline($s);abort_unless(hash_equals($s->name,$confirm),422,'Enter the server name.');
@@ -276,9 +304,14 @@ final class Dashboard extends Page
         try{app(\App\Repositories\Daemon\DaemonBackupRepository::class)->setServer($s)->restore($b,$url,false)->throw();}
         catch(\Throwable $e){$s->update(['status'=>null]);throw$e;}
     }
+    #[Renderless]
     public function connectionData(): array { $s=$this->server();Access::permission($s,P::StartupRead);return ['requested_subdomain'=>Extensions::web()?Extensions::webAdapter()->metadata($s)['requested_subdomain']??'':'']; }
+    #[Renderless]
     public function advancedData(): array { abort_unless(Access::feature('advanced')||Access::feature('software'),404);return \Simplify\Panel\Services\Software::data($this->server()); }
+    #[Renderless]
     public function packSearch(string $query): array {abort_unless(Access::feature('software'),404); $this->server();return \Simplify\Panel\Services\ModpackCatalog::results($query); }
+    #[Renderless]
     public function packVersions(string $key): array {abort_unless(Access::feature('software'),404); $this->server();return \Simplify\Panel\Services\ModpackCatalog::versions($key); }
+    #[Renderless]
     public function changeSoftware(array $state,string $confirmation): void {abort_unless(Access::feature('software'),404); \Simplify\Panel\Services\Software::change($this->server(),$state,$confirmation); }
 }

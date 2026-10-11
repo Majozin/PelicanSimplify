@@ -13,7 +13,8 @@ final class MinecraftStatus
     public static function get(Server $s): array
     {
         if(!ManagedSettings::minecraft($s))return[];
-        return \Illuminate\Support\Facades\Cache::remember('simplify.mcstatus.'.$s->uuid,10,function()use($s):array {
+        $ttl=max(10,(int)PerformanceSettings::get('overview_seconds')-2);
+        return \Illuminate\Support\Facades\Cache::remember('simplify.mcstatus.'.$s->uuid,$ttl,function()use($s):array {
             $host=$s->allocation?->ip;$port=(int)$s->allocation?->port;
             if(in_array($host,['','0.0.0.0','::',null],true))$host=parse_url($s->node->getConnectionAddress(),PHP_URL_HOST);
             if(!$host||!$port)return[];
@@ -29,10 +30,18 @@ final class MinecraftStatus
                 $data=json_decode(self::read($socket,$jsonLen),true,512,JSON_THROW_ON_ERROR);
                 $motd=mb_substr(MinecraftMotd::legacy($data['description']??''),0,2048);
                 \Illuminate\Support\Facades\Cache::put('simplify.public-motd.'.$s->uuid,$motd,86400);
+                $favicon=$data['favicon']??'';
+                if(is_string($favicon)&&str_starts_with($favicon,'data:image/png;base64,')&&strlen($favicon)<=150000)\Illuminate\Support\Facades\Cache::put('simplify.mcstatus-icon.'.$s->uuid,$favicon,86400);
                 return ['motd'=>$motd,'online'=>true,'players'=>$data['players']['online']??0,'max_players'=>$data['players']['max']??0,
                     'names'=>array_values(array_filter($data['players']['sample']??[],fn($p)=>preg_match('/^[A-Za-z0-9_]{1,16}$/',$p['name']??''))),
-                    'version'=>$data['version']['name']??'','icon'=>str_starts_with($data['favicon']??'','data:image/png;base64,')?mb_substr($data['favicon'],0,150000):null];
+                    'version'=>$data['version']['name']??''];
             }catch(\Throwable){return[];}finally{fclose($socket);}
         });
+    }
+    /** The favicon from the latest status ping (data URI), kept for the icon route. */
+    public static function favicon(Server $s): ?string
+    {
+        $icon=\Illuminate\Support\Facades\Cache::get('simplify.mcstatus-icon.'.$s->uuid);
+        return is_string($icon)?$icon:null;
     }
 }

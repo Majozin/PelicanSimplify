@@ -1,5 +1,23 @@
 # Changes
 
+## 0.3.0-beta.1
+- Rebuild the frontend on one design system: shared tokens, buttons, fields, switches, badges, dropdowns, popups, tooltips and toasts, used by the dashboard, creator, settings and embedded Pelican pages.
+- Replace every browser confirm, prompt and hover text with Simplify dialogs and tooltips; add a notification bell for pending changes, health warnings, updates and notices.
+- Give popups fixed sizes with a fixed header and footer; only the body scrolls, and the file manager uses a single scroll container that fits the popup.
+- Style embedded Pelican pages before they paint, in the current theme and accent.
+- Reorganise server settings into General, Gameplay and MOTD tabs.
+- Show plugin updates in Simplify style in the notification bell and Simplify settings.
+- Add Performance settings for overview, server, scheduled-restart and host-health intervals and for automatic backup defaults.
+- Pause refreshes while a popup is open or the tab is hidden; back off websocket reconnects up to five minutes.
+- Cache missing icons, MOTDs, failed lookups and host health; send server icons as cached URLs instead of base64 on every refresh.
+- Serve assets and backgrounds as versioned, long-cached files with ETags.
+- Make read-only dashboard actions renderless and build the initial dashboard state once per request.
+- Automatic backups default to every 6 hours and skip servers that have not run since the last backup.
+- Speed up the server creator: fewer live fields, memoised lookups, debounced draft saves and reactive step tracking.
+- Keep only the current release archive in dist/; packages no longer ship screenshots.
+- Fix saved-message reporting, repeated settings toasts, truncated favicons, Packages metadata paths, the 24-hour scheduler lock and Server creation hooks throwing on errors.
+- Remove dead code: the legacy create redirect, unused catalog and settings helpers and old stylesheets and scripts.
+
 ## 0.2.0-alpha.26
 - Replace tiny beak dots with two distinct four-point sparkles in the favicon and legacy navigation icon.
 - Center health status between its heading and reporting count, enlarge the heart and clear footer-hook backgrounds.

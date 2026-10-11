@@ -33,9 +33,9 @@ check($set->data['cpu']===300&&$set->data['cpu_choice']==='300'&&$set->data['ram
 $set->data['cpu']=400;$set->data['disk_mb']=40960;$callback('plus',$set);
 check($set->data['cpu']===150&&$set->data['cpu_choice']==='150'&&$set->data['ram_gb']==='custom'&&$set->data['ram_custom_gb']===6&&$set->data['disk_mb']===15360,'going back and switching type resets every resource to its profile');
 $callback('vanilla',$set);check($set->data['ram_gb']==='2'&&$set->data['cpu']===100&&$set->data['disk_mb']===5120,'vanilla switch restores vanilla defaults');
-$resources[2]->options['afterStateUpdated'][0]('400',$set);$resources[4]->options['afterStateUpdated'][0]('40960',$set);
-check($set->data['cpu']===400&&$set->data['disk_mb']===40960,'preset clicks update actual server allocations');
-$resources[2]->options['afterStateUpdated'][0]('custom',$set);check($set->data['cpu']===400,'custom selection retains the previous allocation for editing');
+$page->data=['cpu_choice'=>'400','disk_choice'=>'40960','cpu'=>100,'disk_mb'=>5120];$page->hydrate();
+check($page->data['cpu']===400&&$page->data['disk_mb']===40960,'preset choices update actual server allocations without a round trip per click');
+$page->data['cpu_choice']='custom';$page->data['cpu']=450;$page->hydrate();check($page->data['cpu']===450,'custom selection keeps the typed allocation');
 \Simplify\Panel\Services\CreatorAccess::$isAdmin=false;$callback('modded',$set);
 check($set->data['cpu']===200&&$set->data['ram_gb']==='4'&&$set->data['disk_mb']===10240,'profile defaults are capped by effective user allowances');
 check(!array_key_exists(400,$page->resourceOptions('cpu','modded'))&&!array_key_exists(20480,$page->resourceOptions('disk_mb','modded')),'preset options respect effective CPU and disk limits');

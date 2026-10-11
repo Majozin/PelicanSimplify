@@ -1,6 +1,6 @@
 # Installation
 
-Target: Pelican 1.0.0-beta38 and PHP 8.3 or newer. This is an alpha release.
+Target: Pelican 1.0.0-beta38 and PHP 8.3 or newer. This is a beta release.
 
 ## Panel import
 

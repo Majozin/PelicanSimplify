@@ -17,7 +17,7 @@ namespace {
  check(D::forType('vanilla')['cpu']===100&&D::forType('plus')['cpu']===150);
  $profiles=D::defaults();$profiles['modded']=['cpu'=>300,'ram_gb'=>8,'disk_mb'=>30720];$profiles['unexpected']=['secret'=>'ignored'];D::save($profiles);
  check(D::forType('modded')['cpu']===300&&D::forType('modded')['ram_gb']===8&&D::forType('modded')['disk_mb']===30720);
- check(!isset(json_decode(S::$files[D::FILE],true)['unexpected']));check(str_contains(D::summary(),'Modded: 300%'));
+ check(!isset(json_decode(S::$files[D::FILE],true)['unexpected']));
  $before=S::$files;$admin=false;try{D::save($profiles);throw new \Exception('unrestricted write');}catch(\RuntimeException $e){check($e->getMessage()==='403');}check(S::$files===$before);
  $admin=true;$validationFails=true;try{D::save($profiles);throw new \Exception('failed validation wrote settings');}catch(\RuntimeException $e){check($e->getMessage()==='invalid');}check(S::$files===$before);
  S::$files[D::FILE]='broken';check(D::all()===D::defaults());

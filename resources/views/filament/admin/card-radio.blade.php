@@ -3,8 +3,7 @@
         $path = $getStatePath();
         $name = $field->getName();
         $resource = in_array($name, ['ram_gb','cpu_choice','disk_choice']);
-        $packs = $name === 'featured_modpack'
-            ? collect(\Simplify\Panel\Services\MinecraftCatalog::featuredModpacks())->keyBy('project_id') : collect();
+        $packs = collect();
     @endphp
     <div {{ $getExtraAttributeBag()->class(['ssc-cards', 'ssc-cards--ram' => in_array($name, ['ram_gb','cpu_choice','disk_choice'])]) }}
          role="radiogroup" aria-label="{{ $getLabel() }}">

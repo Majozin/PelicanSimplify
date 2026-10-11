@@ -1,6 +1,6 @@
             <section class="ps-setup-checks {{ $this->needsSetup() ? '' : 'ps-diagnostics-panel' }}" @if($this->needsSetup() && !$setupStarted && !$requirements) wire:init="refreshRequirements" @endif>
                 <header class="ps-setup-heading">
-                    @if(!$this->needsSetup())<button type="button" class="ps-diagnostics-close" wire:click="toggleDiagnostics" aria-label="Close system checks"><x-tabler-x /></button>@endif
+                    @if(!$this->needsSetup())<button type="button" class="ps-btn is-icon is-subtle ps-diagnostics-close" wire:click="toggleDiagnostics" aria-label="Close system checks"><x-tabler-x class="ps-ico" /></button>@endif
                     <span class="ps-setup-mark"><x-tabler-shield-check /></span>
                     <div><span class="ps-setup-eyebrow">{{ $this->needsSetup() ? 'First setup · System check' : 'System diagnostics' }}</span><h2>Let’s get Simplify ready</h2><p>A quick check of your panel before you choose your settings.</p></div>
                 </header>

@@ -97,7 +97,9 @@ final class ModpackCatalog
     public static function results(?string $query = '', ?string $selected = null): array
     {
         $query = mb_substr(trim((string) $query), 0, 60);
-        $results = Cache::remember('ssc.modpacks.search.v1.' . hash('sha256', mb_strtolower($query) . (self::curseForgeKey() !== '' ? ':cf' : '')), 180,
+        // One or two letters are not a useful search; show the popular picks until a real term is typed.
+        if (mb_strlen($query) < 3) $query = '';
+        $results = Cache::remember('ssc.modpacks.search.v1.' . hash('sha256', mb_strtolower($query) . (self::curseForgeKey() !== '' ? ':cf' : '')), 600,
             function () use ($query): array {
                 $mr = self::json('https://api.modrinth.com/v2/search', ['query' => $query, 'index' => $query === '' ? 'downloads' : 'relevance', 'limit' => 6, 'facets' => '[["project_type:modpack"]]']);
                 $modrinth = [];

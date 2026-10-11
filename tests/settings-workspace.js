@@ -1,5 +1,5 @@
 const fs=require('fs'),vm=require('vm'),assert=require('assert');
-const context={window:{},location:{origin:'https://panel.test'},URL};vm.createContext(context);vm.runInContext(fs.readFileSync(__dirname+'/../resources/views/dashboard.js','utf8'),context);
+const context={window:{},location:{origin:'https://panel.test'},URL};vm.createContext(context);vm.runInContext(fs.readFileSync(__dirname+'/../resources/views/js/dashboard.js','utf8'),context);
 const user=context.window.pelicanSimplify({},{});user.openPanelSettings();assert.equal(user.modal,null);
 const admin=context.window.pelicanSimplify({},{settings_url:'https://panel.test/pelican-simplify-settings'});admin.openPanelSettings();assert.equal(admin.modal,'panel-settings');assert.equal(admin.modalTitle(),'Simplify settings');assert.equal(new URL(admin.panelSettingsUrl()).searchParams.get('simplify_embed'),'1');
 admin.boot.settings_url='https://another.test/settings';assert.equal(admin.panelSettingsUrl(),'');

@@ -12,9 +12,7 @@ final class MinecraftMotd
         if(!ManagedSettings::minecraft($server))return '';
         if($reported!==null)return $reported;
         if(user()->can(SubuserPermission::FileReadContent,$server)) {
-            $value=Cache::remember('simplify.motd-properties.'.$server->uuid,30,static function()use($server):?string {
-                try{return PropertiesReader::parse(app(DaemonFileRepository::class)->setServer($server)->getContent('/server.properties',1048576))['motd']??null;}catch(\Throwable){return null;}
-            });
+            $value=Remember::value('simplify.motd-properties.v2.'.$server->uuid,120,static fn():?string=>PropertiesReader::parse(app(DaemonFileRepository::class)->setServer($server)->getContent('/server.properties',1048576))['motd']??null,120);
             if($value!==null)return $value;
         }
         return (string)Cache::get('simplify.public-motd.'.$server->uuid,'');

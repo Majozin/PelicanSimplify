@@ -1,13 +1,13 @@
 <section class="ps-banner-library">
     <header><h2>Server banners</h2><p>Upload and manage server banners here. The standard collection always stays available.</p></header>
     <div class="ps-banner-upload">
-        <label>Server<select wire:model="bannerServer"><option value="">Choose a server</option>@foreach($this->bannerServers() as $uuid => $name)<option value="{{ $uuid }}">{{ $name }}</option>@endforeach</select></label>
-        @error('bannerServer')<p role="alert">{{ $message }}</p>@enderror
-        <label>Banner<input type="file" accept="image/png,image/jpeg,image/webp" wire:model="bannerUpload"></label>
-        @error('bannerUpload')<p role="alert">{{ $message }}</p>@enderror
-        <small>JPG, PNG or WebP · up to {{ \Simplify\Panel\Services\UploadLimits::label(\Simplify\Panel\Services\UploadLimits::bannerBytes()) }}</small>
-        <label class="ps-banner-use"><input type="checkbox" wire:model="useUploadedBanner"> Use this banner on the selected server</label>
-        <button type="button" class="fi-btn fi-color-primary" wire:click="uploadBanner" wire:loading.attr="disabled" wire:target="bannerUpload,uploadBanner"><span wire:loading.remove wire:target="bannerUpload,uploadBanner">Upload banner</span><span wire:loading wire:target="bannerUpload,uploadBanner">Uploading…</span></button>
+        <label class="ps-field">Server<select wire:model="bannerServer"><option value="">Choose a server</option>@foreach($this->bannerServers() as $uuid => $name)<option value="{{ $uuid }}">{{ $name }}</option>@endforeach</select></label>
+        @error('bannerServer')<p class="ps-alert is-danger" role="alert">{{ $message }}</p>@enderror
+        <label class="ps-field">Banner<input type="file" accept="image/png,image/jpeg,image/webp" wire:model="bannerUpload"></label>
+        @error('bannerUpload')<p class="ps-alert is-danger" role="alert">{{ $message }}</p>@enderror
+        <small class="ps-help">JPG, PNG or WebP · up to {{ \Simplify\Panel\Services\UploadLimits::label(\Simplify\Panel\Services\UploadLimits::bannerBytes()) }}</small>
+        <label class="ps-check"><input type="checkbox" role="switch" wire:model="useUploadedBanner"> Use this banner on the selected server</label>
+        <button type="button" class="ps-btn is-primary" wire:click="uploadBanner" wire:loading.attr="disabled" wire:target="bannerUpload,uploadBanner"><span wire:loading.remove wire:target="bannerUpload,uploadBanner">Upload banner</span><span wire:loading wire:target="bannerUpload,uploadBanner">Uploading…</span></button>
     </div>
     <h3>Standard banners</h3>
     <div class="ps-banner-library-grid">
@@ -17,8 +17,10 @@
     </div>
     <h3>Uploaded banners</h3>
     <div class="ps-banner-library-grid">
-        @forelse($this->bannerLibrary() as $banner)
-            <article><img src="{{ $banner['url'] }}" alt="{{ $banner['name'] }}" loading="lazy"><div><strong>{{ $banner['name'] }}</strong><small>{{ \App\Models\Server::query()->where('uuid',$banner['server_uuid'])->value('name') ?? 'Deleted server' }}</small><button type="button" wire:click="deleteBanner('{{ $banner['id'] }}')" wire:confirm="Remove this uploaded banner? Servers using it will return to their automatic background." wire:loading.attr="disabled">Remove upload</button></div></article>
+        @php($library = $this->bannerLibrary())
+        @php($serverNames = \App\Models\Server::query()->whereIn('uuid', array_column($library, 'server_uuid'))->pluck('name', 'uuid')->all())
+        @forelse($library as $banner)
+            <article><img src="{{ $banner['url'] }}" alt="{{ $banner['name'] }}" loading="lazy"><div><strong>{{ $banner['name'] }}</strong><small>{{ $serverNames[$banner['server_uuid']] ?? 'Deleted server' }}</small><button type="button" class="ps-btn is-sm is-danger" x-on:click="Simplify.confirm({title:'Remove this uploaded banner?',message:'Servers using it return to their automatic background.',confirmLabel:'Remove banner',tone:'danger'}).then(ok => ok && $wire.deleteBanner(@js($banner['id'])))" wire:loading.attr="disabled">Remove upload</button></div></article>
         @empty
             <p class="ps-banner-empty">No uploaded banners yet.</p>
         @endforelse

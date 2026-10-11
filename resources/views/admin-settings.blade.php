@@ -1,10 +1,17 @@
 <x-filament-panels::page>
     @assets
-    @include('pelican-simplify::filament.admin.styles')
-    @if(!$this->embedded)<link rel="stylesheet" href="{{ route('simplify.asset',['asset'=>'settings-page.css']) }}?v=0.2.0-alpha.26">@endif
-    <script src="{{ route('simplify.asset',['asset'=>'setup-progress.js']) }}?v=0.2.0-alpha.26"></script>
+    <link rel="stylesheet" href="{{ \Simplify\Panel\Services\BuildInfo::asset('wizard.css') }}">
+    <script src="{{ \Simplify\Panel\Services\BuildInfo::asset('wizard.js') }}"></script>
     @endassets
     <div class="ps-settings-page {{ $this->embedded ? 'is-embedded' : 'is-standalone' }}">
+        @php($update = $this->needsSetup() ? null : $this->updateStatus())
+        @if($update && $update['available'])
+            <div class="ps-alert is-info ps-update-card" role="status">
+                <x-tabler-sparkles class="ps-ico" aria-hidden="true" />
+                <div><strong>Simplify {{ $update['version'] }} is available</strong><small>You are running {{ $update['current'] }}. Install the update from Pelican’s plugin page; your settings stay in place.</small></div>
+                @if($update['url'])<a class="ps-btn is-sm" href="{{ $update['url'] }}" target="_top">Open plugins</a>@endif
+            </div>
+        @endif
         @if($this->needsSetup() && !$setupStarted)
             @include('pelican-simplify::system-checks')
         @endif
@@ -31,7 +38,7 @@
             @if($showDiagnostics)
                 @include('pelican-simplify::system-checks')
             @else
-                <button type="button" class="ps-diagnostics-toggle" wire:click="toggleDiagnostics" wire:loading.attr="disabled"><x-tabler-shield-check />System checks</button>
+                <button type="button" class="ps-btn ps-diagnostics-toggle" wire:click="toggleDiagnostics" wire:loading.attr="disabled"><x-tabler-shield-check class="ps-ico" />System checks</button>
             @endif
         @endif
     </div>

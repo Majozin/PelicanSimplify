@@ -12,6 +12,7 @@ namespace Simplify\Panel\Services {
  class CreatorAccess {public static function configuration(){return ['enabled'=>false];}}
  class AppearanceSettings {public static function all(){return ['individual_colors'=>true];}}
  class Extensions {public static function webInstalled(){return false;}}
+ class PerformanceSettings {public static function all(){return [];}}
 }
 namespace {
  function request(){return new class{function boolean($key){return false;}function query($key){return $GLOBALS['requestedSection']??null;}};}

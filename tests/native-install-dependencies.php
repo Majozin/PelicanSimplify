@@ -9,15 +9,13 @@ namespace {
  $service=new \App\Services\Helpers\PluginService;
  function app($class){global $service;return $service;}
  function base_path(){return '/panel';}function plugin_path($id){return '/panel/plugins/'.$id;}
- try{(new \Database\Seeders\PelicanSimplifySeeder)->run();throw new \RuntimeException('accepted broken build');}
- catch(\RuntimeException $e){if($e->getMessage()!=='Build failed'||!$service->strict)throw $e;}
- $service->fail=false;
  (new \Database\Seeders\PelicanSimplifySeeder)->run();
+ if($service->strict)throw new \RuntimeException('Simplify must not trigger a second panel asset build');
  if(\Illuminate\Support\Facades\Artisan::$calls!==['view:clear']||!\Simplify\Panel\Services\DependencyCheck::$checked)throw new \RuntimeException('update did not clear views and validate dependencies');
  \Illuminate\Support\Facades\Artisan::$result=1;
  \Simplify\Panel\Services\DependencyCheck::$checked=false;
  try{(new \Database\Seeders\PelicanSimplifySeeder)->run();throw new \RuntimeException('accepted failed view cache clear');}
  catch(\RuntimeException $e){if($e->getMessage()!=='Could not clear compiled views after updating Simplify.')throw $e;}
  if(\Simplify\Panel\Services\DependencyCheck::$checked)throw new \RuntimeException('continued after failed view cache clear');
- echo "PASS native install blocks failed builds, clears stale views and stops on cache-clear failure\n";
+ echo "PASS native install skips a second panel build, clears stale views and stops on cache-clear failure\n";
 }

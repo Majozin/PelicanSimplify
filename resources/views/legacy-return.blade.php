@@ -14,9 +14,9 @@
             </x-filament::dropdown>
         @endif
     @endif
-    <a href="{{ \Simplify\Panel\Services\LegacyNavigation::url() }}" class="ps-legacy-return" title="Go to Simplify Panel" aria-label="Go to Simplify Panel">
-        <x-tabler-layout-dashboard aria-hidden="true" />
+    <a href="{{ \Simplify\Panel\Services\LegacyNavigation::url() }}" class="ps-btn ps-legacy-return" aria-label="Go to Simplify Panel">
+        <x-tabler-layout-dashboard class="ps-ico" aria-hidden="true" />
         <span>Go to Simplify Panel</span>
-        <x-tabler-sparkles class="ps-simplify-sparkles" aria-hidden="true" />
+        <x-tabler-sparkles class="ps-ico ps-simplify-sparkles" aria-hidden="true" />
     </a>
 @endif

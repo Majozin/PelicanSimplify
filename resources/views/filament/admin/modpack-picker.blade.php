@@ -7,7 +7,7 @@
     <div class="ssc-pack-search">
         <x-filament::input.wrapper>
             <x-filament::input type="search" placeholder="Search modpacks…" aria-label="Search modpacks"
-                wire:model.live.debounce.600ms="{{ $searchPath }}" />
+                wire:model.live.debounce.800ms="{{ $searchPath }}" />
         </x-filament::input.wrapper>
         <p class="ssc-search-help">{{ trim((string) $get('modpack_search')) === '' ? 'Three popular picks to get started. Search to discover more.' : 'Choose a pack from the results. Your current selection stays in the list.' }}</p>
         <p wire:loading wire:target="{{ $searchPath }}" class="ssc-search-help" role="status">Searching…</p>
@@ -29,7 +29,7 @@
                                 @include('pelican-simplify::filament.admin.outline-icon', ['icon' => 'modded'])
                             </span>
                         </span>
-                        <span class="ssc-source-badge">{{ $pack['source'] }}</span>
+                        <span class="ps-badge">{{ $pack['source'] }}</span>
                         <span class="ssc-card-title">{{ $label }}</span>
                         <span class="ssc-card-description">{{ $pack['description'] }}</span>
                         @if ($pack['url'])

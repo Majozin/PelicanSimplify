@@ -33,11 +33,6 @@ final class CreationDefaults
         $profiles = self::all();
         return $profiles[$type] ?? $profiles['vanilla'];
     }
-    public static function summary(): string
-    {
-        $profiles = self::all();
-        return 'Vanilla: '.$profiles['vanilla']['cpu'].'%; Vanilla+: '.$profiles['plus']['cpu'].'%; Modded: '.$profiles['modded']['cpu'].'%. 100% equals one CPU core. Adjust this in Advanced if needed.';
-    }
     public static function save(array $input): void
     {
         abort_unless(user()?->isRootAdmin(), 403);

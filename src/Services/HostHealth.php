@@ -3,17 +3,21 @@ declare(strict_types=1);
 namespace Simplify\Panel\Services;
 use App\Models\Node;
 use Illuminate\Support\Facades\Http;
-use Illuminate\Support\Facades\Cache;
 final class HostHealth
 {
+    /** One snapshot shared by every viewer for the configured cache time. */
     public static function snapshot(): array
+    {
+        return Remember::value('simplify.host-health',(int)PerformanceSettings::get('health_seconds'),fn():array=>self::collect(),15) ?? self::summarize([]);
+    }
+    private static function collect(): array
     {
         $samples=[];$nodes=[];$rx=0.0;$tx=0.0;$networkAvailable=true;$rxRate=0.0;$txRate=0.0;$ratesAvailable=true;
         foreach(Node::query()->get() as $index=>$node){
             try{$sample=['maintenance'=>$node->isUnderMaintenance(),'stats'=>$node->statistics()];}
             catch(\Throwable){$sample=['maintenance'=>false,'stats'=>[]];}
             $samples[]=$sample;
-            $traffic=Cache::remember('simplify.node-network.'.($node->id??$index),15,fn()=>self::traffic($node));
+            $traffic=Remember::value('simplify.node-network.v2.'.($node->id??$index),15,fn()=>self::traffic($node),60);
             $health=self::summarize([$sample]);
             $health['network_rx_bytes']=$traffic['rx_bytes']??null;$health['network_tx_bytes']=$traffic['tx_bytes']??null;
             $health['network_rx_per_second']=$traffic['rx_per_second']??null;$health['network_tx_per_second']=$traffic['tx_per_second']??null;

@@ -23,7 +23,7 @@
         'Disk space' => round((int) $get('disk_mb') / 1024, 1) . ' GB',
         'Java runtime' => trim((string) $get('image')) !== '' ? 'Custom image' : ($java ? 'Java ' . $java . (($get('java_version') ?: 'auto') === 'auto' ? ' · Automatic' : ' · Manual') : 'Not determined'),
         'Egg' => $egg?->name ?? '—',
-        'Automatic backups' => \Simplify\Panel\Services\FeatureSettings::enabled('automatic_backups') ? (($get('change_backup_schedule')?$get('backup_interval_minutes'):30).' minutes · '.($get('change_backup_schedule')?$get('backup_retention'):2).' recovery points') : 'Paused',
+        'Automatic backups' => \Simplify\Panel\Services\FeatureSettings::enabled('automatic_backups') ? (($get('change_backup_schedule')?$get('backup_interval_minutes'):\Simplify\Panel\Services\PerformanceSettings::get('backup_interval_minutes')).' minutes · '.($get('change_backup_schedule')?$get('backup_retention'):\Simplify\Panel\Services\PerformanceSettings::get('backup_retention')).' recovery points') : 'Paused',
         'Server properties' => $get('properties_enabled') ? $get('max_players') . ' players · ' . ucfirst($get('gamemode')) . ' · ' . ucfirst($get('difficulty')) : 'Installer defaults',
         'MOTD' => $get('properties_enabled') ? $get('motd') : 'Installer default',
         'Server icon' => $get('server_icon') ? 'Ready to upload' : 'Installer default',

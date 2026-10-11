@@ -12,9 +12,7 @@ final class Packages
     public static function capability(Server $s): string
     {
         if (!ManagedSettings::minecraft($s)) return '';
-        $raw=Storage::disk('local')->get('ssc/website-visibility/'.$s->uuid.'.json');
-        $saved=$raw?json_decode($raw,true):[];
-        $flavour=$saved['server_flavour']??null;
+        $flavour=ServerMetadata::read($s)['server_flavour']??null;
         $egg=strtolower((string)$s->egg?->name);
         $plugins=preg_match('/paper|purpur|spigot|bukkit/',$egg)===1;
         $mods=preg_match('/neoforge|forge|fabric|quilt|modrinth|curseforge|ftb|technic|tekkit|hexxit|blightfall|b-team/',$egg)===1;

@@ -3,11 +3,11 @@
 > [!WARNING]
 > This plugin is imagined, designed and tested by me, but used an AI for coding.
 >
-> Create backups before installing and expect bugs and/or errors, especially in the alpha builds. Plugin is made to work on top of your panel so it won't interfere with the running servers. It runs fine for me, but that's no guarantee.
+> Create backups before installing and expect bugs and/or errors, especially in the beta builds. Plugin is made to work on top of your panel so it won't interfere with the running servers. It runs fine for me, but that's no guarantee.
 
 A fresh interface for Pelican, with simpler server management and guided server creation. Built on [Pelican](https://github.com/pelican/panel) and [Wings](https://github.com/pelican/wings); their existing functionality is credited below.
 
-**Alpha · Pelican 1.0.0-beta38 · PHP 8.3+**
+**Beta · Pelican 1.0.0-beta38 · PHP 8.3+**
 
 ## Highlighted features
 
@@ -26,7 +26,7 @@ A fresh interface for Pelican, with simpler server management and guided server 
 
 Use **Admin → Plugins → Import from URL** with the [latest plugin ZIP](https://raw.githubusercontent.com/jerajerajerajera/PelicanSimplify/main/dist/pelican-simplify-latest.zip), click **Install**, then complete the setup checks. Missing dependencies block installation or setup and show how to fix them. Node.js 22.12+ or 24+, Yarn, a running queue worker and scheduler are required.
 
-For migration from the standalone creator, see [installation notes](docs/INSTALLATION.md). This alpha still needs testing on a real Pelican/Wings installation. Report problems through [Issues](https://github.com/jerajerajerajera/PelicanSimplify/issues).
+For migration from the standalone creator, see [installation notes](docs/INSTALLATION.md). This beta still needs testing on a real Pelican/Wings installation. Report problems through [Issues](https://github.com/jerajerajerajera/PelicanSimplify/issues).
 
 ## Coming features
 

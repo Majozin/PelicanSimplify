@@ -1,8 +1,0 @@
-/* Standalone settings follow the native admin shell, with their own content layout. */
-.ps-settings-page.is-standalone{max-width:1200px;padding:4px 0 32px;--ps-surface:#fff;--ps-field:#fafafa;--ps-raised:#f4f4f5;--ps-ink:#27272a;--ps-muted:#71717a;--ps-line:#e4e4e7}
-.dark .ps-settings-page.is-standalone{--ps-surface:#18181b;--ps-field:#202023;--ps-raised:#27272a;--ps-ink:#f4f4f5;--ps-muted:#a1a1aa;--ps-line:#3f3f46}
-.ps-settings-page.is-standalone .ps-settings-form{padding:24px;border:1px solid var(--ps-line);border-radius:16px;background:var(--ps-surface)}
-.ps-settings-page.is-standalone .fi-sc-tabs-tablist{border-bottom:1px solid var(--ps-line);padding-bottom:14px;margin-bottom:24px}
-.ps-settings-page.is-standalone .ps-setup-checks{border-radius:16px;padding:28px}
-.ps-settings-page.is-standalone .ps-banner-library{padding:24px;border:1px solid var(--ps-line);border-radius:16px;background:var(--ps-surface)}
-@media(max-width:640px){.ps-settings-page.is-standalone .ps-settings-form,.ps-settings-page.is-standalone .ps-banner-library{padding:16px}.ps-settings-page.is-standalone .ps-setup-checks{padding:18px}}

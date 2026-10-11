@@ -113,11 +113,12 @@ class SimplifySettings extends Page implements HasForms
 
     public static function canAccess(): bool { return (bool) user()?->isRootAdmin(); }
     public function needsSetup(): bool { return !\Simplify\Panel\Services\FeatureSettings::enabled('setup_completed'); }
+    public function updateStatus(): ?array { return \Simplify\Panel\Services\UpdateCheck::status(); }
     public function mount(): void
     {
         abort_unless(static::canAccess(), 403);
         $this->embedded = request()->boolean('simplify_embed');
-        $this->form->fill([...CreatorAccess::configuration(),'creation_defaults'=>\Simplify\Panel\Services\CreationDefaults::all(),'appearance'=>AppearanceSettings::all(),'features'=>\Simplify\Panel\Services\FeatureSettings::all(),'web'=>\Simplify\Panel\Services\Extensions::webInstalled()?app('simplify.web')->options():[]]);
+        $this->form->fill([...CreatorAccess::configuration(),'creation_defaults'=>\Simplify\Panel\Services\CreationDefaults::all(),'appearance'=>AppearanceSettings::all(),'features'=>\Simplify\Panel\Services\FeatureSettings::all(),'performance'=>\Simplify\Panel\Services\PerformanceSettings::all(),'web'=>\Simplify\Panel\Services\Extensions::webInstalled()?app('simplify.web')->options():[]]);
     }
     public function form(Schema $schema): Schema
     {
@@ -158,6 +159,16 @@ class SimplifySettings extends Page implements HasForms
                 TextInput::make('creation_defaults.'.$type.'.ram_gb')->label('RAM (GB)')->integer()->minValue(1)->maxValue(128)->required(),
                 TextInput::make('creation_defaults.'.$type.'.disk_mb')->label('Disk (MB)')->integer()->minValue(1024)->maxValue(10485760)->required(),
             ]), ['vanilla','plus','modded'], ['Vanilla','Vanilla+','Modded / modpacks']))];
+        $performance = \Simplify\Panel\Services\PerformanceSettings::FIELDS;
+        $numberField = static fn (string $key) => TextInput::make('performance.'.$key)->label($performance[$key][0])->helperText($performance[$key][1])
+            ->integer()->minValue($performance[$key][3])->maxValue($performance[$key][4])->required();
+        $categories['Performance'] = [
+            Section::make('Refresh rates')->columns(2)->description('Lower values feel livelier but cost more requests to the panel and Wings. Hidden browser tabs and open popups never refresh.')
+                ->schema(array_map($numberField, ['overview_seconds', 'server_seconds', 'restart_seconds', 'health_seconds'])),
+            Section::make('Automatic backups for new servers')->columns(2)->description('Existing servers keep their own policy; change it from the server’s Backups workspace.')
+                ->schema([...array_map($numberField, ['backup_interval_minutes', 'backup_retention']),
+                    Toggle::make('performance.backup_only_when_used')->label('Skip backups while a server has not run')->helperText('An offline server that has not started since its last backup is not backed up again.')]),
+        ];
         $categories['Creator access'] = [$sections[0]];
         $limitFields = static fn () => [
             TextInput::make('max_servers')->label('Maximum servers')->integer()->minValue(1)->maxValue(100)->required()->default(2),
@@ -200,7 +211,7 @@ class SimplifySettings extends Page implements HasForms
     }
     public function setupSteps(): array
     {
-        $steps = ['Interface','Appearance','Access and visibility','User access','Server features','Automation','Server defaults','Creator access','Resource limits'];
+        $steps = ['Interface','Appearance','Access and visibility','User access','Server features','Automation','Server defaults','Performance','Creator access','Resource limits'];
         if (\Simplify\Panel\Services\Extensions::webInstalled()) $steps[] = 'Website';
         return $steps;
     }
@@ -208,8 +219,9 @@ class SimplifySettings extends Page implements HasForms
     public function save(): void
     {
         abort_unless(static::canAccess(), 403);
-        $this->refreshRequirements();
-        if (!$this->requirementsReady()) {
+        // Dependency checks are slow (they run node/yarn); only the first setup requires them. Later checks run on demand.
+        if ($this->needsSetup()) $this->refreshRequirements();
+        if ($this->needsSetup() && !$this->requirementsReady()) {
             $this->setupStarted = false;
             $this->showDiagnostics = true;
             Notification::make()->title('Setup blocked')->body('Fix the failed dependency checks and check again.')->danger()->send();
@@ -241,6 +253,7 @@ class SimplifySettings extends Page implements HasForms
         }
         validator($data, $rules)->validate();
         \Simplify\Panel\Services\CreationDefaults::save($state['creation_defaults']??[]);
+        \Simplify\Panel\Services\PerformanceSettings::save($state['performance']??[]);
         if (!Storage::disk('local')->put(CreatorAccess::FILE, json_encode($data, JSON_THROW_ON_ERROR | JSON_PRETTY_PRINT))) {
             throw new \RuntimeException('Could not save creator settings.');
         }

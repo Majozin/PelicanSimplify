@@ -17,19 +17,20 @@ final class SimplifyProvider extends ServiceProvider
         $this->app->scoped(\Simplify\Panel\Services\AppearanceSettings::class);
         $this->app->scoped(\Simplify\Panel\Services\Extensions::class);
         $this->app->scoped(\Simplify\Panel\Services\CreatorAccess::class);
+        $this->app->scoped(\Simplify\Panel\Services\PerformanceSettings::class);
     }
     public function boot(): void
     {
         \Illuminate\Support\Facades\Route::get('/simplify/assets/{asset}',\Simplify\Panel\Http\Controllers\AssetController::class)->name('simplify.asset');
         \Illuminate\Support\Facades\Route::get('/simplify/background/{id}',\Simplify\Panel\Http\Controllers\BackgroundController::class)->name('simplify.background');
         \Illuminate\Support\Facades\Route::get('/simplify/banner/{id}',\Simplify\Panel\Http\Controllers\BannerController::class)->middleware(['web','auth'])->name('simplify.banner');
+        \Illuminate\Support\Facades\Route::get('/simplify/server-icon/{uuid}',\Simplify\Panel\Http\Controllers\ServerIconController::class)->middleware(['web','auth'])->name('simplify.server-icon');
         \Illuminate\Support\Facades\Route::get('/simplify/favicon.svg',\Simplify\Panel\Http\Controllers\FaviconController::class)->name('simplify.favicon');
         // Keep account creation and server linking administrator-only, including
         // direct requests to native pages/APIs outside this dashboard.
         \App\Models\Server::created(function($server):void{
-            $disk=\Illuminate\Support\Facades\Storage::disk('local');
-            $path='simplify/backups/'.$server->uuid.'.json';
-            if(!$disk->exists($path)&&!$disk->put($path,json_encode(['enabled'=>true,'interval_minutes'=>30,'retention'=>2,'last_attempt'=>0],JSON_THROW_ON_ERROR)))throw new \RuntimeException('Could not initialize backup policy.');
+            // Automatic backups start with the configured defaults; a storage error never blocks creation.
+            try { \Simplify\Panel\Services\AutomaticBackups::initialize($server); } catch (\Throwable $e) { report($e); }
         });
         \App\Models\User::creating(function():void {
             if(\Simplify\Panel\Services\FeatureSettings::enabled('restrict_access')) abort_unless(user()?->isAdmin(),403,'Only an administrator can create accounts.');
@@ -49,7 +50,7 @@ final class SimplifyProvider extends ServiceProvider
             return null;
         });
         $this->app->booted(function():void {
-            Schedule::command('simplify:maintenance')->everyMinute()->withoutOverlapping();
+            Schedule::command('simplify:maintenance')->everyMinute()->withoutOverlapping(5);
         });
     }
 }

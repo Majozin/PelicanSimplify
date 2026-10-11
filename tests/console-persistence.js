@@ -2,7 +2,7 @@ const fs=require('fs'),vm=require('vm'),assert=require('assert');
 let poll,outputWrites=0,text='';
 const output={scrollHeight:200,clientHeight:100,scrollTop:0,get textContent(){return text},set textContent(value){outputWrites++;text=value}};
 const context={window:{},document:{hidden:false},setInterval:f=>{poll=f;return 1},clearInterval(){},setTimeout:()=>1,clearTimeout(){}};
-vm.createContext(context);vm.runInContext(fs.readFileSync(__dirname+'/../resources/views/dashboard.js','utf8'),context);
+vm.createContext(context);vm.runInContext(fs.readFileSync(__dirname+'/../resources/views/js/dashboard.js','utf8'),context);
 (async()=>{
  const d=context.window.pelicanSimplify({refreshInfo:async()=>({players:1})},{server:{permissions:{},properties:{}}});
  d.initTheme=()=>{};d.applyFavicon=()=>{};d.connect=async()=>{};d.$nextTick=f=>f();d.$refs={output};

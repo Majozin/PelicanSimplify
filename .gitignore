@@ -7,3 +7,4 @@ server-directory/
 **/config/legacy-web.json
 .env
 !dist/*.zip
+__pycache__/
