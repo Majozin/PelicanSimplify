@@ -45,7 +45,7 @@ final class Dashboard extends Page
         $base=['banner_upload_bytes'=>\Simplify\Panel\Services\UploadLimits::bannerBytes(),'build_version'=>\Simplify\Panel\Services\BuildInfo::version(),'admin_url'=>$admin?\Filament\Facades\Filament::getPanel('admin')->getUrl():(\Simplify\Panel\Services\FeatureSettings::enabled('user_legacy')?route('filament.app.resources.servers.index',['simplify_legacy'=>1]):null),
             'legacy_create_url'=>\App\Filament\Admin\Resources\Servers\ServerResource::canCreate()?\App\Filament\Admin\Resources\Servers\ServerResource::getUrl('create',panel:'admin'):null,'create_url'=>Extensions::createUrl(),'can_create'=>Extensions::canCreate(),'create_games'=>Extensions::createGames(),'web'=>Extensions::web(),
             'native_list_url'=>\Filament\Facades\Filament::getPanel('app')->getUrl(),
-            'profile_url'=>\App\Filament\Pages\Auth\EditProfile::getUrl(panel:'app'),'appearance'=>\Simplify\Panel\Services\AppearanceSettings::all(),'panel_name'=>(string)config('app.name','Pelican'),'features'=>array_replace(\Simplify\Panel\Services\FeatureSettings::all(),array_combine(['settings','files','players','backups','packages','software','resources','advanced','activity','schedules'],array_map(fn($key)=>Access::feature($key),['settings','files','players','backups','packages','software','resources','advanced','activity','schedules']))),'settings_url'=>user()?->isRootAdmin()?\Simplify\Panel\Filament\Admin\Pages\SimplifySettings::getUrl(panel:'app'):null,'website_url'=>Extensions::webAdapter()?->url(),'list_url'=>self::getUrl(panel:'app'),'server'=>null,'servers'=>[],'user'=>user()->username,'avatar'=>user()->getFilamentAvatarUrl(),'favicon_url'=>route('simplify.favicon').'?v=0.2.0-alpha.18'];
+            'profile_url'=>\App\Filament\Pages\Auth\EditProfile::getUrl(panel:'app'),'appearance'=>\Simplify\Panel\Services\AppearanceSettings::all(),'panel_name'=>(string)config('app.name','Pelican'),'features'=>array_replace(\Simplify\Panel\Services\FeatureSettings::all(),array_combine(['settings','files','players','backups','packages','software','resources','advanced','activity','schedules'],array_map(fn($key)=>Access::feature($key),['settings','files','players','backups','packages','software','resources','advanced','activity','schedules']))),'settings_url'=>user()?->isRootAdmin()?\Simplify\Panel\Filament\Admin\Pages\SimplifySettings::getUrl(panel:'app'):null,'website_url'=>Extensions::webAdapter()?->url(),'list_url'=>self::getUrl(panel:'app'),'server'=>null,'servers'=>[],'user'=>user()->username,'avatar'=>user()->getFilamentAvatarUrl(),'favicon_url'=>route('simplify.favicon').'?v=0.2.0-alpha.19'];
         if(!$this->serverUuid){$base['servers']=$this->listing();$base['host_health']=$this->hostHealth();return$base;}
         $s=$this->server();$base['available_colors']=ServerAppearance::choices($s->uuid);$permissions=[];foreach(P::cases() as $p)$permissions[$p->value]=user()->can($p,$s);
         $meta=ManagedSettings::content($s);$mc=MinecraftStatus::get($s);
@@ -245,10 +245,13 @@ final class Dashboard extends Page
         validator(['name'=>$name],['name'=>'nullable|string|max:63|regex:/^[a-z0-9](?:[a-z0-9-]*[a-z0-9])?$/'])->validate();
         abort_unless(Extensions::web(),404);Extensions::webAdapter()->subdomain($s,$name);
     }
+    #[Renderless]
     public function deleteServer(string $confirmation): void
     {
         $s=$this->server();abort_unless(Access::feature('advanced'),404);Access::owner($s);Access::offline($s);abort_unless(hash_equals($s->name,$confirmation),422,'Enter the exact server name.');
         app(\App\Services\Servers\ServerDeletionService::class)->handle($s);
+        $this->serverUuid=null;
+        $this->redirect(self::getUrl(panel:'app'));
     }
     public function backupOptions(array $state): void {abort_unless(Access::feature('backups'),404); AutomaticBackups::save($this->server(),$state); }
     public function backupList(): array

@@ -1,5 +1,13 @@
 # Changes
 
+## 0.2.0-alpha.19
+
+- Redirect to the overview after deletion, without rendering the deleted server.
+- Keep health and the transparent copyright footer docked on mobile; scroll inside the server list.
+- Reveal quick power actions inside the same-size cards, with dark buttons and a slightly lighter dark background.
+- Repeat bump and shine effects on each hovered creator logo; respect reduced motion.
+- Smaller offline heart further right in grid; shift the list heart slightly right.
+
 ## 0.2.0-alpha.18
 
 - Expand host health upward with animated node details and visible-server resource rows.

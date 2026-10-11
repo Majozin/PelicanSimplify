@@ -1194,26 +1194,33 @@ body:has(.ps:not(.server-active)) .fi-main-ctn { height:auto!important;overflow:
 .ps .ps-node-server .ps-status{align-self:flex-start;font-size:10px}
 .ps .ps-node-servers{margin-top:16px}
 /* Quick controls slide into their own tile, keeping hover and keyboard focus together. */
-.ps .ps-server-entry{display:grid;grid-template-rows:auto 0fr;min-width:0;transition:grid-template-rows .25s ease}
-.ps .ps-server-entry>.ps-server-card{min-width:0}
-.ps .ps-overview-power-wrap{min-height:0;overflow:hidden;visibility:hidden;opacity:0;transition:opacity .2s ease,visibility .2s ease}
-.ps .ps-overview-power{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px;margin-top:10px;padding:8px;border:1px solid var(--accent);border-radius:12px;background:var(--surface);transform:translateY(-8px);transition:transform .25s ease}
-.ps .ps-overview-power button{display:grid;place-items:center;min-height:38px;border-radius:8px;color:var(--accent);background:var(--raised);border:1px solid transparent;cursor:pointer}
-.ps .ps-overview-power button:hover:not(:disabled){border-color:var(--accent);background:color-mix(in srgb,var(--accent) 12%,var(--surface))}
-.ps .ps-overview-power button.danger{color:#ef6868}
-.ps .ps-overview-power button:disabled{opacity:.35;cursor:not-allowed}
+/* Power controls belong to the card; their reveal never changes its footprint. */
+.ps .ps-server-entry{display:block;min-width:0}
+.ps .ps-server-entry>.ps-server-card{min-width:0;height:100%}
+.ps .ps-overview-power-wrap{position:absolute;bottom:8px;left:8px;right:8px;z-index:4;visibility:hidden;opacity:0;pointer-events:none;transform:translateY(12px);transition:opacity .2s,transform .25s,visibility .2s}
+.ps .ps-overview-power{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px;margin:0;padding:7px;border:1px solid #50505a;border-radius:10px;background:#3d3d46}
+.ps .ps-overview-power button{display:grid;place-items:center;min-height:38px;border-radius:7px;color:var(--accent);background:#282830;border:1px solid #484850;cursor:pointer}
+.ps .ps-overview-power button:hover:not(:disabled){background:#45454f;border-color:var(--accent)}
+.ps .ps-overview-power button.danger{color:#ff8c8c}
+.ps .ps-overview-power button:disabled{opacity:.4;cursor:not-allowed}
 .ps .ps-overview-power svg{width:21px;height:21px}
-.ps .ps-server-entry.has-power:is(:hover,:focus-within){grid-template-rows:auto 1fr}
-.ps .ps-server-entry.has-power:is(:hover,:focus-within) .ps-overview-power-wrap{visibility:visible;opacity:1}
-.ps .ps-server-entry.has-power:is(:hover,:focus-within) .ps-overview-power{transform:none}
-.ps .ps-server-grid.is-list .ps-server-entry{grid-template-rows:auto;grid-template-columns:minmax(0,1fr) 0fr;transition:grid-template-columns .25s ease}
-.ps .ps-server-grid.is-list .ps-server-entry.has-power:is(:hover,:focus-within){grid-template-columns:minmax(0,1fr) 112px}
-.ps .ps-server-grid.is-list .ps-overview-power-wrap{min-width:0;align-self:stretch}
-.ps .ps-server-grid.is-list .ps-overview-power{grid-template-columns:repeat(2,minmax(0,1fr));grid-template-rows:repeat(2,minmax(0,1fr));margin:0 0 0 10px;height:100%;box-sizing:border-box;transform:translateX(-8px)}
-.ps .ps-server-grid.is-list .ps-server-entry.has-power:is(:hover,:focus-within) .ps-overview-power{transform:none}
-.ps .ps-server-grid:not(.is-list) .ps-offline-artwork svg{height:82%;right:-8%;top:50%;transform:translateY(-50%)}
-.ps .ps-server-grid.is-list .ps-offline-artwork svg{height:125%;right:5%;top:50%;transform:translateY(-50%)}
-@media(hover:none){.ps .ps-server-entry.has-power{grid-template-rows:auto 1fr}.ps .ps-server-entry.has-power .ps-overview-power-wrap{visibility:visible;opacity:1}.ps .ps-server-entry.has-power .ps-overview-power{transform:none}.ps .ps-server-grid.is-list .ps-server-entry.has-power{grid-template-columns:minmax(0,1fr) 102px}}
+.ps .ps-server-open>.ps-card-head,.ps .ps-server-open>.ps-card-title,.ps .ps-server-open>.ps-card-usage,.ps .ps-server-open>.ps-card-bottom,.ps .ps-card-footer{transition:transform .25s,opacity .2s}
+.ps .ps-server-entry.has-power:is(:hover,:focus-within) .ps-overview-power-wrap{visibility:visible;opacity:1;pointer-events:auto;transform:none}
+.ps .ps-server-grid:not(.is-list) .has-power:is(:hover,:focus-within) .ps-card-head{opacity:0}
+.ps .ps-server-grid:not(.is-list) .has-power:is(:hover,:focus-within) :is(.ps-card-title,.ps-card-usage,.ps-card-bottom){transform:translateY(-50px)}
+.ps .ps-server-grid:not(.is-list) .has-power:is(:hover,:focus-within) .ps-card-footer{transform:translateY(-58px)}
+.ps .ps-server-grid.is-list .ps-overview-power-wrap{top:8px;bottom:8px;left:auto;width:104px;transform:translateX(12px)}
+.ps .ps-server-grid.is-list .ps-overview-power{height:100%;grid-template-columns:repeat(2,minmax(0,1fr));grid-template-rows:repeat(2,minmax(0,1fr))}
+.ps .ps-server-grid.is-list .ps-server-open{transition:padding-right .25s;grid-template-columns:96px minmax(0,1fr) minmax(100px,240px) minmax(0,1fr) 0px}
+.ps .ps-server-grid.is-list .has-power:is(:hover,:focus-within) .ps-server-open{padding-right:130px}
+.ps .ps-server-grid.is-list .ps-card-badges{transition:right .25s}
+.ps .ps-server-grid.is-list .has-power:is(:hover,:focus-within) .ps-card-badges{right:128px}
+@media(max-width:1050px){.ps .ps-server-grid.is-list .ps-server-open{grid-template-columns:80px minmax(0,1fr) 130px}}
+@media(max-width:700px){.ps .ps-server-grid.is-list .ps-server-open{grid-template-columns:80px minmax(0,1fr)}.ps .ps-server-grid.is-list .ps-overview-power-wrap{top:auto;left:8px;right:8px;width:auto;transform:translateY(12px)}.ps .ps-server-grid.is-list .ps-overview-power{grid-template-columns:repeat(4,minmax(0,1fr));grid-template-rows:auto;height:auto}.ps .ps-server-grid.is-list .has-power:is(:hover,:focus-within) .ps-server-open{padding-right:16px}.ps .ps-server-grid.is-list .has-power:is(:hover,:focus-within) .ps-card-badges{right:12px}.ps .ps-server-grid.is-list .has-power:is(:hover,:focus-within) :is(.ps-card-head,.ps-card-title,.ps-card-usage){transform:translateY(-48px)}}
+
+.ps .ps-server-grid:not(.is-list) .ps-offline-artwork svg{height:70%;right:-13%;top:50%;transform:translateY(-50%)}
+.ps .ps-server-grid.is-list .ps-offline-artwork svg{height:125%;right:2%;top:50%;transform:translateY(-50%)}
+
 @media(max-width:800px){.ps .ps-node-server{grid-template-columns:repeat(2,minmax(0,1fr))}.ps .ps-node-server>div{grid-column:1/-1}.ps .ps-node-metrics{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(prefers-reduced-motion:reduce){.ps .ps-health-drawer,.ps .ps-health-expand,.ps .ps-server-entry,.ps .ps-overview-power,.ps .ps-overview-power-wrap{transition:none}}
 
@@ -1233,4 +1240,25 @@ body:has(.ps:not(.server-active)) .fi-main-ctn { height:auto!important;overflow:
 @media(min-width:901px){.ps .ps-overview.is-list .ps-server-scroll{justify-content:flex-start}.ps .ps-overview.is-list .ps-server-stage{margin-block:clamp(4px,calc(4dvh - 28px),24px) 0}}
 
 .ps .ps-host-metric>.ps-network-value{white-space:normal;font-size:14px;line-height:1.5}
-@media(max-width:600px){.ps .ps-server-grid.is-list .ps-server-entry.has-power{grid-template-columns:minmax(0,1fr);grid-template-rows:auto 1fr}.ps .ps-server-grid.is-list .ps-overview-power{grid-template-columns:repeat(4,minmax(0,1fr));grid-template-rows:auto;margin:10px 0 0;height:auto;transform:none}.ps .ps-overview-power button{min-height:44px}}
+
+/* Pin the overview shell at every size; scroll only the server region. */
+body:has(.ps:not(.server-active)){height:100dvh;overflow:hidden}
+body:has(.ps:not(.server-active)) .fi-layout{height:100dvh!important;min-height:0!important;overflow:hidden}
+body:has(.ps:not(.server-active)) .fi-main-ctn{height:100%!important;min-height:0!important;overflow:hidden}
+.ps:not(.server-active),.ps:not(.server-active) .ps-main,.ps:not(.server-active) .ps-overview{flex:1 1 0;min-height:0;overflow:hidden}
+.ps:not(.server-active) .ps-server-scroll{flex:1 1 0;min-height:0;overflow-y:auto;overflow-x:hidden}
+body:has(.ps) :is(.fi-footer,.fi-main-ctn>footer){flex:none;margin-top:auto;background:transparent!important;background-image:none!important;box-shadow:none!important}
+@media(max-width:600px){.ps:not(.server-active) .ps-main{padding-bottom:8px}.ps .ps-health-panel .ps-host-health{padding:10px;gap:8px}.ps .ps-health-panel .ps-host-state{grid-column:1/-1}.ps .ps-health-panel .ps-host-metric{padding:4px}.ps .ps-health-panel .ps-host-metric>strong{font-size:13px}.ps .ps-health-panel .ps-host-metric>small{font-size:10px}body:has(.ps) :is(.fi-footer,.fi-main-ctn>footer){padding:6px 12px max(6px,env(safe-area-inset-bottom));font-size:10px;line-height:14px}}
+/* Animate each hovered logo independently, keeping the buttons still. */
+.ps .ps-create-plus{overflow:hidden}
+.ps .ps-create-plus::after{content:"";position:absolute;inset:-30%;background:linear-gradient(110deg,transparent 35%,#ffffff80 50%,transparent 65%);transform:translateX(-130%);pointer-events:none;opacity:0}
+.ps .ps-create-card:is(:hover,:focus-visible):not(:disabled) .ps-create-plus>svg{animation:ps-logo-bump 1.8s ease-in-out infinite}
+.ps .ps-create-card:is(:hover,:focus-visible):not(:disabled) .ps-create-plus::after{animation:ps-logo-shine 1.8s ease-in-out infinite}
+@keyframes ps-logo-bump{0%,65%,100%{transform:translateY(0) scale(1)}20%{transform:translateY(-4px) scale(1.06)}35%{transform:translateY(1px) scale(.98)}48%{transform:translateY(0) scale(1)}}
+@keyframes ps-logo-shine{0%,12%{transform:translateX(-130%);opacity:0}20%{opacity:.8}55%{transform:translateX(130%);opacity:0}100%{transform:translateX(130%);opacity:0}}
+@media(hover:none){.ps .ps-server-entry.has-power .ps-overview-power-wrap{visibility:visible;opacity:1;pointer-events:auto;transform:none}.ps .ps-server-grid:not(.is-list) .has-power .ps-card-head{opacity:0}.ps .ps-server-grid:not(.is-list) .has-power :is(.ps-card-title,.ps-card-usage,.ps-card-bottom){transform:translateY(-50px)}.ps .ps-server-grid:not(.is-list) .has-power .ps-card-footer{transform:translateY(-58px)}}
+@media(hover:none) and (max-width:700px){.ps .ps-server-grid.is-list .has-power :is(.ps-card-head,.ps-card-title,.ps-card-usage){transform:translateY(-48px)}}
+@media(prefers-reduced-motion:reduce){.ps .ps-create-plus>svg,.ps .ps-create-plus::after{animation:none!important}.ps .ps-server-open,.ps .ps-server-open>*,.ps .ps-card-footer,.ps .ps-card-badges{transition:none!important}}
+
+@media(max-width:700px){.ps .ps-server-grid.is-list .has-power .ps-server-open{padding-bottom:68px}.ps .ps-server-grid.is-list .has-power:is(:hover,:focus-within) :is(.ps-card-head,.ps-card-title,.ps-card-usage){transform:none}.ps .ps-server-grid.is-list .has-power .ps-overview-power-wrap{visibility:visible;opacity:1;pointer-events:auto;transform:none}.ps .ps-server-grid.is-list .has-power .ps-overview-power-wrap{bottom:8px}.ps .ps-server-grid.is-list .has-power .ps-card-footer{position:relative;transform:translateY(-58px);margin-bottom:0}}
+@media(hover:none) and (min-width:701px){.ps .ps-server-grid.is-list .has-power .ps-server-open{padding-right:130px}.ps .ps-server-grid.is-list .has-power .ps-card-badges{right:128px}}
