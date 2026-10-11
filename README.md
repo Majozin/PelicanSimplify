@@ -32,6 +32,8 @@ For migration from the standalone creator, see [installation notes](docs/INSTALL
 
 Planned improvements; scope and release order may change.
 
+**All existing Pelican functionality remains available in the legacy panel, including features that have not yet been implemented in Simplify.**
+
 - **Other game server creation** — guided setup and automatic egg selection for more games.
 - **Egg settings in the dashboard** — edit supported startup variables with clear descriptions and validation.
 - **Dashboard alerts** — warnings for crashes, resource limits and failed backups.
@@ -76,7 +78,7 @@ Planned improvements; scope and release order may change.
 - Animated upward expansion with per-node and per-server health details
 - Upload/download rates beside cumulative network usage
 - Reporting-host counts and partial-availability handling
-- Animated, permission-aware server power tiles in grid and list views
+- Animated, permission-aware power actions inside grid and list server cards
 - Separate native and guided creator entry points
 
 ### Guided server creation
