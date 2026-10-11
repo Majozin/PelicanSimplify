@@ -25,6 +25,17 @@ Use **Admin → Plugins → Import from URL** with the [latest plugin ZIP](https
 
 For migration from the standalone creator, see [installation notes](docs/INSTALLATION.md). This alpha still needs testing on a real Pelican/Wings installation. Report problems through [Issues](https://github.com/jerajerajerajera/PelicanSimplify/issues).
 
+## Coming features
+
+Planned improvements; scope and release order may change.
+
+- **Other game server creation** — guided setup and automatic egg selection for more games.
+- **Egg settings in the dashboard** — edit supported startup variables with clear descriptions and validation.
+- **Dashboard alerts** — warnings for crashes, resource limits and failed backups.
+- **Known server startup fixes** — detect common startup problems and offer guided fixes.
+- **Server presets** — reusable settings for faster, consistent server creation.
+- **Troubleshooting reports** — export useful diagnostics with secrets removed to make support easier.
+
 ## Full feature list
 
 - **Overview:** grid/list views, game filters, saved desktop preferences, mobile list view, server status, player counts, CPU/RAM graphs and host health.
