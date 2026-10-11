@@ -17,4 +17,10 @@ with zipfile.ZipFile(archive) as package:
     assert 'pelican-simplify/resources/views/dashboard.css' in package.namelist()
     assert 'pelican-simplify/database/Seeders/PelicanSimplifySeeder.php' in package.namelist()
     assert all(n.startswith('pelican-simplify/') for n in package.namelist())
+    previous=root/'dist'/'pelican-simplify-v0.2.0-alpha.7.zip'
+    with zipfile.ZipFile(previous) as old:
+        name='pelican-simplify/resources/views/dashboard.blade.php'
+        # Laravel reuses a compiled view if its mtime is newer than the source.
+        # A new release must not retain the old source timestamp.
+        assert package.getinfo(name).date_time > old.getinfo(name).date_time
 print('PASS Hub root manifest, autoload layout, native archive and update checksum')

@@ -1,5 +1,10 @@
 # Changes
 
+## 0.2.0-alpha.8
+
+- Fixed release ZIP timestamps so updated files no longer share the same date as older builds.
+- Clear compiled Blade views during installation and updates so the new screens appear immediately.
+
 ## 0.2.0-alpha.7
 
 - Show the installed build number beside Enhanced by Simplify in the copyright footer.

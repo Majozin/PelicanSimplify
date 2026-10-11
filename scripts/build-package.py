@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """Build the native plugin package from the standard repository-root layout."""
 from pathlib import Path
+from datetime import datetime, timezone
 import hashlib
 import json
 import shutil
@@ -10,6 +11,9 @@ manifest = json.loads((root / 'plugin.json').read_text())
 version = manifest['version']
 archive = root / 'dist' / f'pelican-simplify-v{version}.zip'
 archive.parent.mkdir(exist_ok=True)
+# ZIP extraction preserves mtimes. A constant timestamp across releases leaves
+# Laravel's compiled views and timestamp-based PHP caches looking up to date.
+release_time = datetime.now(timezone.utc).timetuple()[:6]
 files = [root / name for name in ['plugin.json', 'README.md', 'LICENSE']]
 for name in ['src', 'resources', 'database', 'lang', 'docs']:
     if (root / name).is_dir():
@@ -17,7 +21,7 @@ for name in ['src', 'resources', 'database', 'lang', 'docs']:
 with zipfile.ZipFile(archive, 'w', zipfile.ZIP_DEFLATED) as package:
     for path in sorted(files):
         name = 'pelican-simplify/' + path.relative_to(root).as_posix()
-        info = zipfile.ZipInfo(name, (2026, 10, 11, 0, 0, 0))
+        info = zipfile.ZipInfo(name, release_time)
         info.compress_type = zipfile.ZIP_DEFLATED
         info.external_attr = 0o100644 << 16
         package.writestr(info, path.read_bytes())
