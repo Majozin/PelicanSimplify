@@ -82,13 +82,13 @@ const html=`<!doctype html><html><head><link rel="stylesheet" href="/global.css"
   await menuPage.addStyleTag({content:fs.readFileSync(root+'dashboard.css','utf8')});
   // Render the actual navigation markup with the mobile and account menus open.
   const navigation=markup.match(/<header class="ps-top">[\s\S]*?<\/nav><\/header>/)[0].replace(/@if[\s\S]*?@endif/g,'').replace(/@csrf/g,'').replace(/x-cloak/g,'');
-  await menuPage.evaluate(html=>{document.body.innerHTML='<main class="ps">'+html+'<article class="ps-server-card" style="height:500px">Server</article></main>';document.querySelector('.ps-panel-name').textContent='Panel';document.querySelector('.ps-top-actions').classList.add('nav-open');document.querySelector('.ps-back-overview').style.display='none';},navigation);
+  await menuPage.evaluate(html=>{document.body.innerHTML='<main class="ps">'+html+'<article class="ps-server-card" style="height:500px">Server</article></main>';document.querySelector('.ps-panel-name').textContent='Panel';document.querySelector('.ps-top-actions').classList.add('nav-open');document.querySelector('.ps-account').classList.add('account-open');document.querySelector('.ps-back-overview').style.display='none';},navigation);
   const menu=menuPage.locator('.ps-nav-items');assert(await menu.isVisible());
   for(const label of ['Simplify settings']){
    const button=menuPage.getByRole('button',{name:label,exact:true});const box=await button.boundingBox();assert(box.height>=44&&box.width>200,'Mobile actions need full touch-sized rows');
    assert(await button.evaluate(el=>{const r=el.getBoundingClientRect();return el.contains(document.elementFromPoint(r.x+r.width/2,r.y+r.height/2));}),'Menu action was covered by server content');
   }
-  const profileButton=menuPage.getByRole('button',{name:'Profile',exact:true});assert(await profileButton.isVisible());assert.equal(await profileButton.locator('use').getAttribute('href'),'#ps-account');
+  const profileButton=menuPage.getByRole('button',{name:'Profile settings',exact:true});assert(await profileButton.isVisible());assert.equal(await profileButton.locator('use').getAttribute('href'),'#ps-account');
   assert(await menuPage.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),'Mobile menu overflowed horizontally');await menuPage.close();
   const filesPage=await browser.newPage({viewport:{width:1200,height:900}});
   await filesPage.goto('http://127.0.0.1:'+server.address().port);await filesPage.addStyleTag({content:fs.readFileSync(root+'dashboard.css','utf8')});await filesPage.addScriptTag({content:fs.readFileSync(root+'dashboard.js','utf8')});
