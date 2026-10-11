@@ -34,6 +34,8 @@
       notifyMenu: false,
       noticeHistory: [],
       panelNotices: [],
+      adminMenu: false,
+      adminPage: null,
       overviewCompact: false,
       overviewPreferences: { ...OVERVIEW_DEFAULTS },
       powerConfirmation: null,
@@ -289,6 +291,14 @@
         for (const notice of this.boot.notices || []) items.push({ action: null, ...notice });
         for (const notice of this.panelNotices) items.push({ action: null, ...notice, pelican: true });
         return items;
+      },
+      adminPages() {
+        return Array.isArray(this.boot.admin_pages) ? this.boot.admin_pages : [];
+      },
+      openAdminPage(item) {
+        this.adminMenu = false;
+        this.adminPage = item;
+        this.openPopup('admin-page');
       },
       /** Opening the bell fetches Pelican's latest notifications (no polling). */
       async toggleNotifications() {
@@ -692,6 +702,7 @@
       },
       openPopup(key) {
         this.accountMenu = false;
+        this.adminMenu = false;
         this.navMenu = false;
         this.notifyMenu = false;
         this.appearanceMenu = false;
@@ -965,17 +976,18 @@
         if (this.modal === 'panel-settings') return this.settingsSection === 'banners' ? 'Server banners' : 'Simplify settings';
         if (this.modal === 'create') return { other: 'Create other game server', native: 'Create server' }[this.createGame] || 'Create Minecraft server';
         if (this.modal === 'account') return 'Profile';
+        if (this.modal === 'admin-page') return this.adminPage?.label || 'Admin';
         const widget = this.widgets.find((w) => w.key === this.modal);
         return (widget ? this.widgetTitle(widget) : null) || (this.modal === 'restart' ? 'Schedule restart' : 'Workspace');
       },
       /** Every popup has a fixed size: small for short forms, large for embedded or list workspaces. */
       modalSize() {
         if (['alias', 'restart'].includes(this.modal)) return 'is-sm';
-        if (['create', 'panel-settings', 'account', 'files', 'schedules', 'activity', 'backups', 'software', 'settings', 'plugins', 'mods'].includes(this.modal)) return 'is-lg';
+        if (['create', 'panel-settings', 'admin-page', 'account', 'files', 'schedules', 'activity', 'backups', 'software', 'settings', 'plugins', 'mods'].includes(this.modal)) return 'is-lg';
         return 'is-md';
       },
       modalFlush() {
-        return ['create', 'panel-settings', 'account', 'files', 'schedules', 'activity'].includes(this.modal) || (this.modal === 'software' && !this.server?.minecraft);
+        return ['create', 'panel-settings', 'admin-page', 'account', 'files', 'schedules', 'activity'].includes(this.modal) || (this.modal === 'software' && !this.server?.minecraft);
       },
       settingsTabs() {
         return [

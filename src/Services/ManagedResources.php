@@ -15,7 +15,7 @@ final class ManagedResources
 {
     public static function canEdit(Server $server): bool
     {
-        return ManagedSettings::owns($server) && (CreatorAccess::admin() || CreatorAccess::allowed(user(), CreatorAccess::settings()));
+        return ManagedSettings::owns($server) && (CreatorAccess::admin() || RoleAccess::can('resources'));
     }
     public static function save(Server $server, array $state): void
     {

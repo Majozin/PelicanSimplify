@@ -9,8 +9,8 @@ final class Access
     {
         if(array_key_exists($key,FeatureSettings::definitions())&&!FeatureSettings::enabled($key))return false;
         if(user()?->isAdmin())return true;
-        $userKey='user_'.$key;
-        return !array_key_exists($userKey,FeatureSettings::definitions())||FeatureSettings::enabled($userKey);
+        // Ordinary users: the abilities of Everyone plus their roles (RoleAccess).
+        return !array_key_exists($key,RoleAccess::ABILITIES)||RoleAccess::can($key);
     }
     public static function overviewQuery(): \Illuminate\Database\Eloquent\Builder
     {

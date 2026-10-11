@@ -8,15 +8,12 @@ final class CreatorFramePolicy
     public function handle(Request $request, Closure $next): mixed
     {
         $response=$next($request);
-        if($request->isMethod('GET')&&user()&&($request->routeIs('filament.server.*')||$request->routeIs(
+        // Admin pages open in the dashboard's admin tools popup, including records clicked inside it.
+        if($request->isMethod('GET')&&user()&&($request->routeIs('filament.server.*','filament.admin.*')||$request->routeIs(
             'filament.app.pages.simple-server-creator',
             'filament.app.pages.simplify',
             'filament.app.auth.profile',
             'filament.app.pages.pelican-simplify-settings',
-            'filament.admin.pages.pelican-simplify-settings',
-            'filament.admin.resources.servers.create',
-            'filament.admin.resources.servers.edit',
-            'filament.admin.resources.servers.view',
         ))){
             // The native SetSecurityHeaders middleware preserves an already set header.
             // Includes native server popups. Authorization remains enforced by the page; other origins remain blocked.

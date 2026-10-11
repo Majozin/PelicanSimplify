@@ -1,19 +1,21 @@
 <?php
 declare(strict_types=1);
-namespace Test {class Component {public array $options=[];public function __construct(public ?string $label=null){}public static function make($label=null){return new static($label);}public function __call($method,$arguments){$this->options[$method]=$arguments;return $this;}}}
+namespace Test {class Component {public array $options=[];public function __construct(public string|int|null $label=null){}public static function make($label=null){return new static($label);}public function __call($method,$arguments){$this->options[$method]=$arguments;return $this;}}}
 namespace Livewire {trait WithFileUploads {}}
 namespace Filament\Pages {class Page {}}
 namespace Filament\Forms\Concerns {trait InteractsWithForms {}}
 namespace Filament\Forms\Contracts {interface HasForms {}}
-namespace Filament\Forms\Components {class Repeater extends \Test\Component {}class Toggle extends \Test\Component {}class TextInput extends \Test\Component {}class Select extends \Test\Component {}class ColorPicker extends \Test\Component {}}
+namespace Filament\Forms\Components {class Repeater extends \Test\Component {}class CheckboxList extends \Test\Component {}class Toggle extends \Test\Component {}class TextInput extends \Test\Component {}class Select extends \Test\Component {}class ColorPicker extends \Test\Component {}}
 namespace Filament\Schemas {class Schema extends \Test\Component {}}
-namespace Filament\Schemas\Components {class View extends \Test\Component {}class Section extends \Test\Component {}class Wizard extends \Test\Component {public static function make($steps=null){$instance=new self;$instance->options['steps']=$steps;return $instance;}}class Tabs extends \Test\Component {}}
+namespace Filament\Schemas\Components {class View extends \Test\Component {}class Section extends \Test\Component {}class Wizard extends \Test\Component {public static function make($steps=null){$instance=new self;$instance->options['steps']=$steps;return $instance;}}class Tabs extends \Test\Component {}class Grid extends \Test\Component {}}
 namespace Filament\Schemas\Components\Wizard {class Step extends \Test\Component {}}
 namespace Filament\Schemas\Components\Tabs {class Tab extends \Test\Component {}}
 namespace Illuminate\Support {class HtmlString {public function __construct($value){}}}
 namespace Simplify\Panel\Services {
  class FeatureSettings {public static bool $complete=false;public static function enabled($key){return self::$complete;}public static function definitions(){return ['dashboard'=>['Dashboard','Description',true,'Interface'],'theme'=>['Theme','Description',true,'Appearance']];}}
  class Extensions {public static function webInstalled(){return false;}}
+ class CreatorAccess {public static function legacyUserGrants(){return 0;}}
+ class RoleAccess {public const ABILITIES=['files'=>['Files','d'],'create'=>['Create','d']];public const LIMITS=['max_servers'=>[2,1,100]];public static function all(){return ['everyone'=>['abilities'=>[]],'roles'=>[]];}}
  class PerformanceSettings {public const FIELDS=['overview_seconds'=>['Overview','Help',30,10,600],'server_seconds'=>['Server','Help',20,5,600],'restart_seconds'=>['Restart','Help',3,2,60],'health_seconds'=>['Health','Help',30,10,600],'backup_interval_minutes'=>['Backups','Help',360,30,10080],'backup_retention'=>['Points','Help',2,1,100]];}
 }
 namespace {

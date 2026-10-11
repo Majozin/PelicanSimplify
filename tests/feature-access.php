@@ -33,6 +33,8 @@ namespace App\Models {
 namespace {
  require __DIR__.'/../src/Services/FeatureSettings.php';
  require __DIR__.'/../src/Services/Access.php';
+ require __DIR__.'/../src/Services/RoleAccess.php';
+ require __DIR__.'/../src/Services/CreatorAccess.php';
  use Simplify\Panel\Services\FeatureSettings as F;
  use Simplify\Panel\Services\Access as A;
  use Illuminate\Support\Facades\Storage;
@@ -51,7 +53,7 @@ namespace {
  configure(['friends_mode'=>false]);check(count(A::overviewQuery()->get())===2,'friends off restricts summaries to owner and assigned');
  check(!A::feature('advanced')&&!A::feature('software'),'ordinary users have no advanced or software workspace by default');
  $GLOBALS['admin']=true;check(count(A::overviewQuery()->get())===3&&A::linked($other)&&A::feature('advanced'),'administrator sees all servers and advanced tools');
- configure(['friends_mode'=>false,'user_advanced'=>true]);$GLOBALS['admin']=false;check(A::feature('advanced'),'explicit user toggle enables advanced workspace');
+ configure(['friends_mode'=>false,'user_advanced'=>true]);$GLOBALS['admin']=false;check(A::feature('advanced'),'earlier user toggles migrate into the Everyone profile');
  Storage::$reads=0;F::all();F::all();check(Storage::$reads<=1,'feature file loaded at most once per request');
  $GLOBALS['admin']=true;F::save(['friends_mode'=>true,'unknown'=>true],true);$saved=json_decode(Storage::$files[F::FILE],true);check($saved['friends_mode']&&$saved['setup_completed']&&!isset($saved['unknown']),'save completes setup and discards unknown settings');
  $GLOBALS['admin']=false;try{F::save(['friends_mode'=>false]);throw new \RuntimeException('user changed global settings');}catch(\RuntimeException $e){check($e->getMessage()==='403','ordinary user cannot save global settings');}

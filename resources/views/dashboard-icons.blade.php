@@ -42,6 +42,10 @@
         <symbol id="ps-logout" viewBox="0 0 24 24"><path d="M10 4H4v16h6m4-13 5 5-5 5M8 12h11"/></symbol>
         <symbol id="ps-save" viewBox="0 0 24 24"><path d="M5 3h11l5 5v13H3V3h2Zm2 0v5h8V3M7 21v-7h10v7"/></symbol>
         <symbol id="ps-file" viewBox="0 0 24 24"><path d="M6 3h8l5 5v13H6zM14 3v5h5"/></symbol>
+        <symbol id="ps-shield" viewBox="0 0 24 24"><path d="M12 3 4 6v6c0 5 3.5 8 8 9 4.5-1 8-4 8-9V6Z"/><path d="m9 12 2 2 4-4"/></symbol>
+        <symbol id="ps-egg" viewBox="0 0 24 24"><path d="M12 3c-3.9 0-7 6.1-7 10.5A7 7 0 0 0 19 13.5C19 9.1 15.9 3 12 3Z"/></symbol>
+        <symbol id="ps-database" viewBox="0 0 24 24"><ellipse cx="12" cy="5" rx="8" ry="3"/><path d="M4 5v14c0 1.7 3.6 3 8 3s8-1.3 8-3V5M4 12c0 1.7 3.6 3 8 3s8-1.3 8-3"/></symbol>
+        <symbol id="ps-key" viewBox="0 0 24 24"><circle cx="8" cy="15" r="4"/><path d="m11 12 9-9m-3 3 3 3m-6 0 2 2"/></symbol>
         <symbol id="ps-lock" viewBox="0 0 24 24"><rect x="5" y="10" width="14" height="11" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></symbol>
         <symbol id="ps-play" viewBox="0 0 24 24"><path d="m8 4 12 8-12 8Z"/></symbol>
         <symbol id="ps-stop" viewBox="0 0 24 24"><rect x="5" y="5" width="14" height="14" rx="2"/></symbol>

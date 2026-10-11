@@ -38,19 +38,12 @@ final class CreatorAccess
         }
     }
 
-    /** User overrides win; for multiple roles, the highest allowance per resource wins. */
+    /** Limits come from the user's roles (RoleAccess); individual grants from earlier versions still win. */
     public static function effective(?object $user, array $settings): array
     {
         if ($user === null) return $settings;
         $keys = ['max_servers','max_memory_mb','max_disk_mb','max_cpu','max_backups'];
-        $roles = self::roleIds($user); $matching = [];
-        foreach ($settings['role_limits'] ?? [] as $profile) {
-            if (in_array((int) ($profile['role_id'] ?? 0), $roles, true)) $matching[] = $profile;
-        }
-        foreach ($keys as $key) {
-            $values = array_column($matching, $key);
-            if ($values) $settings[$key] = max(array_map('intval', $values));
-        }
+        $settings = [...$settings, ...array_intersect_key(RoleAccess::forUser($user), array_flip($keys))];
         foreach ($settings['user_limits'] ?? [] as $profile) {
             if ((int) ($profile['user_id'] ?? 0) !== (int) $user->id) continue;
             foreach ($keys as $key) if (isset($profile[$key])) $settings[$key] = (int) $profile[$key];
@@ -58,12 +51,11 @@ final class CreatorAccess
         return $settings;
     }
 
-    private static function roleIds(object $user): array
+    /** Individual user grants saved by earlier versions; honoured, no longer editable. */
+    public static function legacyUserGrants(): int
     {
-        $roles = $user->roles ?? [];
-        $ids = [];
-        foreach ($roles as $role) $ids[] = (int) $role->id;
-        return $ids;
+        $settings = self::configuration();
+        return count(array_unique([...array_map('intval', $settings['user_ids'] ?? []), ...array_map(fn ($p) => (int) ($p['user_id'] ?? 0), $settings['user_limits'] ?? [])]));
     }
 
     public static function settings(): array
@@ -76,7 +68,7 @@ final class CreatorAccess
     public static function canImportEggs(): bool
     {
         if (user()?->can('import egg')) return true;
-        return self::canCreate() && (bool) (self::configuration()['allow_egg_import'] ?? false);
+        return self::canCreate() && RoleAccess::can('install_eggs');
     }
 
     public static function admin(): bool
@@ -86,9 +78,9 @@ final class CreatorAccess
 
     public static function allowed(?object $user, array $settings): bool
     {
-        return $user !== null && !empty($settings['enabled'])
-            && (in_array((int) $user->id, array_map('intval', $settings['user_ids'] ?? []), true)
-                || array_intersect(self::roleIds($user), array_map('intval', $settings['role_ids'] ?? [])))
+        $legacyGrant = !empty($settings['enabled']) && in_array((int) $user?->id, array_map('intval', $settings['user_ids'] ?? []), true);
+        return $user !== null
+            && (in_array('create', RoleAccess::forUser($user)['abilities'], true) || $legacyGrant)
             && !empty($settings['node_ids'])
             && (!empty($settings['minecraft_enabled']) || !empty($settings['other_egg_ids']));
     }

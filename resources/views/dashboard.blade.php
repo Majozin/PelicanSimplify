@@ -38,6 +38,29 @@
                         <svg aria-hidden="true"><use href="#ps-gear"/></svg><span class="ps-mobile-label">Simplify settings</span>
                     </button>
 
+                    {{-- Admin tools: Pelican admin pages Simplify does not replace, opened in a popup (admins only). --}}
+                    <div class="ps-notify" x-show="adminPages().length" x-on:click.outside="adminMenu=false" x-on:keydown.escape.stop="adminMenu=false; $refs.adminButton.focus()">
+                        <button type="button" x-ref="adminButton" class="ps-btn is-icon is-subtle" data-tip="Admin tools" aria-label="Admin tools" aria-controls="ps-admin-menu" :aria-expanded="adminMenu"
+                                x-on:click="adminMenu=!adminMenu; notifyMenu=false; appearanceMenu=false; accountMenu=false">
+                            <svg aria-hidden="true"><use href="#ps-shield"/></svg><span class="ps-mobile-label">Admin tools</span>
+                        </button>
+                        <div id="ps-admin-menu" class="ps-dropdown is-end ps-admin-menu" x-show="adminMenu" x-cloak x-transition.opacity>
+                            <strong class="ps-dropdown-title">Admin tools</strong>
+                            <template x-for="group in adminPages()" :key="group.label">
+                                <div class="ps-dropdown-section">
+                                    <span class="ps-label" x-text="group.label"></span>
+                                    <div class="ps-admin-grid">
+                                        <template x-for="item in group.items" :key="item.key">
+                                            <button type="button" class="ps-admin-item" x-on:click="openAdminPage(item)">
+                                                <svg aria-hidden="true"><use :href="'#ps-'+item.icon"/></svg><span x-text="item.label"></span>
+                                            </button>
+                                        </template>
+                                    </div>
+                                </div>
+                            </template>
+                        </div>
+                    </div>
+
                     {{-- Notifications: alerts, pending changes and plugin updates in one dropdown. --}}
                     <div class="ps-notify" x-on:click.outside="notifyMenu=false" x-on:keydown.escape.stop="notifyMenu=false; $refs.notifyButton.focus()">
                         <button type="button" x-ref="notifyButton" class="ps-btn is-icon is-subtle" data-tip="Notifications" aria-label="Notifications" aria-controls="ps-notify-menu" :aria-expanded="notifyMenu"
@@ -504,6 +527,9 @@
                 </template>
                 <template x-if="modal==='panel-settings'">
                     <iframe data-ps-frame="settings" :data-ps-accent="currentAccentHex()" :src="panelSettingsUrl()" title="Simplify settings" x-on:load="panelSettingsLoaded($el)"></iframe>
+                </template>
+                <template x-if="modal==='admin-page' && adminPage">
+                    <iframe data-ps-frame="native" :data-ps-accent="currentAccentHex()" :src="frameUrl(adminPage.url)" :title="adminPage.label" x-on:load="styleFrame($el, 'native')"></iframe>
                 </template>
                 <template x-if="modal==='account'">
                     <iframe data-ps-frame="account" :data-ps-accent="currentAccentHex()" :src="frameUrl(boot.profile_url)" title="Profile" x-on:load="styleFrame($el, 'account')"></iframe>

@@ -1,5 +1,12 @@
 # Changes
 
+## 0.3.0-beta.6
+- Permissions reworked around Pelican roles (Simplify settings → Users & access). "Everyone" applies to all signed-in users; each role adds abilities (workspaces, legacy panel, create servers, install missing eggs) and sets its own limits. With several roles, abilities combine and the highest limit wins. Administrators can always do everything.
+- Existing settings migrate automatically: the earlier user toggles become Everyone, creator roles keep creating with their limits. Individual user grants from earlier versions keep working and can be removed once those users have a role.
+- Server creation settings now only hold where and what users may create (nodes, games, starting resources).
+- New admin tools button (admins only) next to the settings button: Pelican's admin pages that Simplify does not replace, grouped as Game servers, Infrastructure, People & access, Panel (and Other for plugin pages). Each opens in a Simplify popup.
+- Admin pages may be framed by the same site so they can open in that popup; other sites remain blocked.
+
 ## 0.3.0-beta.5
 - New permission under Server creation → Who can create servers: "Allow users to install missing eggs". Off by default; when on, users who may create servers let the creator import Simplify's bundled, integrity-checked egg when it is not installed yet. Administrators with Pelican's Import egg permission can always do this.
 

@@ -134,7 +134,7 @@ class SimplifySettings extends Page implements HasForms
     {
         abort_unless(static::canAccess(), 403);
         $this->embedded = request()->boolean('simplify_embed');
-        $this->form->fill([...CreatorAccess::configuration(),'creation_defaults'=>\Simplify\Panel\Services\CreationDefaults::all(),'appearance'=>AppearanceSettings::all(),'features'=>\Simplify\Panel\Services\FeatureSettings::all(),'performance'=>\Simplify\Panel\Services\PerformanceSettings::all(),'web'=>\Simplify\Panel\Services\Extensions::webInstalled()?app('simplify.web')->options():[]]);
+        $this->form->fill([...CreatorAccess::configuration(),'creation_defaults'=>\Simplify\Panel\Services\CreationDefaults::all(),'appearance'=>AppearanceSettings::all(),'features'=>\Simplify\Panel\Services\FeatureSettings::all(),'performance'=>\Simplify\Panel\Services\PerformanceSettings::all(),'roles'=>\Simplify\Panel\Services\RoleAccess::all(),'web'=>\Simplify\Panel\Services\Extensions::webInstalled()?app('simplify.web')->options():[]]);
     }
     /** Settings categories, in order. The first setup walks the same pages; the banner library is added afterwards. */
     private const CATEGORIES = [
@@ -153,18 +153,29 @@ class SimplifySettings extends Page implements HasForms
         return $description ? $section->description($description) : $section;
     }
 
+    /** Ability checkboxes plus limits for one profile; $path null means "relative to a repeater item". */
+    private static function abilityFields(?string $path): array
+    {
+        $name = fn (string $key): string => $path ? $path.'.'.$key : $key;
+        $abilities = \Simplify\Panel\Services\RoleAccess::ABILITIES;
+        $limits = ['max_servers' => 'Max. servers', 'max_memory_mb' => 'Total RAM (MB)', 'max_disk_mb' => 'Total disk (MB)', 'max_cpu' => 'CPU per server (%)', 'max_backups' => 'Backups per server'];
+        $limitFields = [];
+        foreach (\Simplify\Panel\Services\RoleAccess::LIMITS as $key => [$default, $min, $max]) {
+            $limitFields[] = TextInput::make($name($key))->label($limits[$key])->integer()->minValue($min)->maxValue($max)->required()->default($default);
+        }
+        return [
+            \Filament\Forms\Components\CheckboxList::make($name('abilities'))->label('Can')->columns(2)->bulkToggleable()
+                ->options(array_map(fn (array $a): string => $a[0], $abilities))
+                ->descriptions(array_map(fn (array $a): string => $a[1], $abilities)),
+            \Filament\Schemas\Components\Grid::make(5)->schema($limitFields),
+        ];
+    }
+
     public function form(Schema $schema): Schema
     {
         $performance = \Simplify\Panel\Services\PerformanceSettings::FIELDS;
         $numberField = static fn (string $key) => TextInput::make('performance.'.$key)->label($performance[$key][0])->helperText($performance[$key][1])
             ->integer()->minValue($performance[$key][3])->maxValue($performance[$key][4])->required();
-        $limitFields = static fn () => [
-            TextInput::make('max_servers')->label('Maximum servers')->integer()->minValue(1)->maxValue(100)->required()->default(2),
-            TextInput::make('max_memory_mb')->label('Total RAM (MB)')->integer()->minValue(1024)->maxValue(131072)->required()->default(8192),
-            TextInput::make('max_disk_mb')->label('Total disk (MB)')->integer()->minValue(1024)->maxValue(10485760)->required()->default(40960),
-            TextInput::make('max_cpu')->label('CPU per server (%)')->integer()->minValue(1)->maxValue(1600)->required()->default(200),
-            TextInput::make('max_backups')->label('Backups per server')->integer()->minValue(0)->maxValue(100)->required()->default(3),
-        ];
 
         $categories = [
             'General' => [
@@ -182,41 +193,34 @@ class SimplifySettings extends Page implements HasForms
             ],
             'Users & access' => [
                 self::featureSection('Visibility', 'Access and visibility', 'Who sees which servers, and who may share them.'),
-                self::featureSection('What users can use', 'User access', 'Ordinary users only; administrators always keep full access.'),
+                Section::make('Everyone')->description('Applies to every signed-in user. Administrators can always do everything. Pelican\'s own server permissions (owner, subusers) still decide which servers someone can manage.')
+                    ->schema(self::abilityFields('roles.everyone')),
+                Section::make('Roles')->description('Members of a Pelican role get these abilities on top of Everyone, and the role\'s limits replace Everyone\'s. With several roles, abilities combine and the highest limit wins.')->schema([
+                    Repeater::make('roles.roles')->hiddenLabel()->defaultItems(0)->collapsible()->addActionLabel('Add role')
+                        ->itemLabel(fn (array $state): ?string => isset($state['role_id']) ? (Role::query()->whereKey($state['role_id'])->value('name') ?? 'Role') : 'New role')
+                        ->schema([
+                            Select::make('role_id')->label('Pelican role')->required()->distinct()->searchable()->options(fn () => Role::query()->orderBy('name')->pluck('name', 'id')->all()),
+                            ...self::abilityFields(null),
+                        ]),
+                ]),
+                ...(CreatorAccess::legacyUserGrants() > 0 ? [
+                    Section::make('Individual user grants from an earlier version')->description(CreatorAccess::legacyUserGrants().' user(s) still have a personal creator grant or limit. They keep working; move these users into a role and remove the old grants below.')->schema([
+                        Toggle::make('clear_legacy_user_grants')->label('Remove the old individual grants when saving'),
+                    ]),
+                ] : []),
             ],
             'Server creation' => [
-                Section::make('Who can create servers')->columns(2)->description('Allow selected users and roles to create servers and adjust resources within their allowance. This does not grant admin-panel access.')->schema([
-                    Toggle::make('enabled')->label('Allow users to create servers')->columnSpanFull(),
-                    Select::make('user_ids')->label('Allowed users')->multiple()->searchable()->options(fn () => User::query()->orderBy('username')->pluck('username', 'id')->all()),
-                    Select::make('role_ids')->label('Allowed roles')->multiple()->searchable()->options(fn () => Role::query()->orderBy('name')->pluck('name', 'id')->all())->helperText('Members of these Pelican roles receive the same self-service access as explicitly allowed users.'),
+                Section::make('Self-service creation')->columns(2)->description('Where and what users may create. Who may create servers is set per role under Users & access ("Create servers").')->schema([
                     Select::make('node_ids')->label('Hosting machines')->multiple()->searchable()->options(fn () => Node::query()->pluck('name', 'id')->all())->helperText('Nodes used for self-service creation. Users do not choose ports or nodes.'),
                     Select::make('other_egg_ids')->label('Other games')->multiple()->searchable()->options(fn () => Egg::query()->orderBy('name')->pluck('name', 'id')->all()),
                     Toggle::make('minecraft_enabled')->label('Allow Minecraft'),
-                    Toggle::make('allow_egg_import')->label('Allow users to install missing eggs')->helperText('When a chosen server type needs an egg that is not installed yet, the creator imports Simplify\'s bundled, integrity-checked definition. Administrators with Pelican\'s Import egg permission can always do this.'),
                 ]),
-                Section::make('Starting resources')->description('CPU, RAM and disk for each Minecraft type. Applies to new servers within the user\'s allowance; existing servers keep theirs.')
+                Section::make('Starting resources')->description('CPU, RAM and disk for each Minecraft type. Applies to new servers within the user\'s limits; existing servers keep theirs.')
                     ->schema(array_map(fn (string $type, string $label) => Section::make($label)->columns(3)->schema([
                         TextInput::make('creation_defaults.'.$type.'.cpu')->label('CPU (%)')->integer()->minValue(1)->maxValue(1600)->required()->helperText('100% is one core; 200% is two cores.'),
                         TextInput::make('creation_defaults.'.$type.'.ram_gb')->label('RAM (GB)')->integer()->minValue(1)->maxValue(128)->required(),
                         TextInput::make('creation_defaults.'.$type.'.disk_mb')->label('Disk (MB)')->integer()->minValue(1024)->maxValue(10485760)->required(),
                     ]), ['vanilla', 'plus', 'modded'], ['Vanilla', 'Vanilla+', 'Modded / modpacks'])),
-                Section::make('Allowance per user')->columns(3)->description('Totals across all servers a user owns. Administrators are not limited.')->schema([
-                    TextInput::make('max_servers')->label('Maximum servers')->integer()->minValue(1)->maxValue(100)->required(),
-                    TextInput::make('max_memory_mb')->label('Total RAM (MB)')->integer()->minValue(1024)->maxValue(131072)->required(),
-                    TextInput::make('max_disk_mb')->label('Total disk (MB)')->integer()->minValue(1024)->maxValue(10485760)->required(),
-                    TextInput::make('max_cpu')->label('CPU per server (%)')->integer()->minValue(1)->maxValue(1600)->required(),
-                    TextInput::make('max_backups')->label('Backup slots per server')->integer()->minValue(0)->maxValue(100)->required(),
-                ]),
-                Section::make('Exceptions')->description('Role limits override the shared allowance (the highest value wins with several roles); a user limit overrides both. Limits alone do not grant access.')->collapsible()->collapsed()->schema([
-                    Repeater::make('role_limits')->label('Role allowances')->defaultItems(0)->columns(3)->schema([
-                        Select::make('role_id')->label('Role')->required()->distinct()->searchable()->options(fn () => Role::query()->orderBy('name')->pluck('name', 'id')->all()),
-                        ...$limitFields(),
-                    ])->addActionLabel('Add role limits'),
-                    Repeater::make('user_limits')->label('User allowances')->defaultItems(0)->columns(3)->schema([
-                        Select::make('user_id')->label('User')->required()->distinct()->searchable()->options(fn () => User::query()->orderBy('username')->pluck('username', 'id')->all()),
-                        ...$limitFields(),
-                    ])->addActionLabel('Add user limits'),
-                ]),
             ],
             'Backups & performance' => [
                 Section::make('Automatic backups')->columns(2)->description('Defaults for new servers. Existing servers keep their own policy; change it from the server\'s Backups workspace.')->schema([
@@ -278,25 +282,23 @@ class SimplifySettings extends Page implements HasForms
             ServerAppearance::save($server,$state['appearance']['server_color']);
         }
         AppearanceSettings::save($state['appearance']??[]);
-        $data = array_intersect_key($state, CreatorAccess::defaults());
-        foreach (['role_ids' => Role::class, 'user_ids' => User::class, 'node_ids' => Node::class, 'other_egg_ids' => Egg::class] as $key => $model) {
-            $data[$key] = $model::query()->whereIn('id', $data[$key] ?? [])->pluck('id')->map(fn ($id) => (int) $id)->all();
+        // Creator file: only the self-service location and games are edited here; who may create lives in RoleAccess.
+        $data = CreatorAccess::configuration();
+        foreach (['node_ids' => Node::class, 'other_egg_ids' => Egg::class] as $key => $model) {
+            $data[$key] = $model::query()->whereIn('id', $state[$key] ?? [])->pluck('id')->map(fn ($id) => (int) $id)->all();
         }
-        if ($data['enabled'] && ((!$data['user_ids'] && !$data['role_ids']) || !$data['node_ids'] || (!$data['minecraft_enabled'] && !$data['other_egg_ids']))) {
-            throw \Illuminate\Validation\ValidationException::withMessages(['data.enabled' => 'Choose users or roles, a hosting machine and at least one game first.']);
+        $data['minecraft_enabled'] = (bool) ($state['minecraft_enabled'] ?? false);
+        if (!empty($state['clear_legacy_user_grants'])) { $data['user_ids'] = []; $data['user_limits'] = []; }
+        $roles = $state['roles'] ?? [];
+        $existingRoles = Role::query()->pluck('id')->map(fn ($id) => (int) $id)->all();
+        $roles['roles'] = array_values(array_filter($roles['roles'] ?? [], fn ($role) => in_array((int) ($role['role_id'] ?? 0), $existingRoles, true)));
+        $creates = in_array('create', $roles['everyone']['abilities'] ?? [], true) || array_filter($roles['roles'], fn ($role) => in_array('create', $role['abilities'] ?? [], true));
+        if ($creates && (!$data['node_ids'] || (!$data['minecraft_enabled'] && !$data['other_egg_ids']))) {
+            throw \Illuminate\Validation\ValidationException::withMessages(['data.node_ids' => 'Users may create servers: choose a hosting machine and at least one game under Server creation.']);
         }
-        $rules = [];
-        foreach (['role_limits' => ['role_id','roles'], 'user_limits' => ['user_id','users']] as $key => [$id, $table]) {
-            $data[$key] = array_values($data[$key] ?? []);
-            $rules[$key] = 'array';
-            $rules[$key.'.*.'.$id] = 'required|integer|distinct|exists:'.$table.',id';
-            foreach (['max_servers'=>[1,100], 'max_memory_mb'=>[1024,131072], 'max_disk_mb'=>[1024,10485760], 'max_cpu'=>[1,1600], 'max_backups'=>[0,100]] as $field => [$min,$max]) {
-                $rules[$key.'.*.'.$field] = 'required|integer|min:'.$min.'|max:'.$max;
-            }
-        }
-        validator($data, $rules)->validate();
         \Simplify\Panel\Services\CreationDefaults::save($state['creation_defaults']??[]);
         \Simplify\Panel\Services\PerformanceSettings::save($state['performance']??[]);
+        \Simplify\Panel\Services\RoleAccess::save($roles);
         if (!Storage::disk('local')->put(CreatorAccess::FILE, json_encode($data, JSON_THROW_ON_ERROR | JSON_PRETTY_PRINT))) {
             throw new \RuntimeException('Could not save creator settings.');
         }
