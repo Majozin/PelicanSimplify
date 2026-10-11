@@ -1,6 +1,7 @@
 # Changes
 
 ## 0.2.0-alpha.24
+- Anchor grid metrics above player counts and place list metrics farther right, preserving title/icon positions during power-control reveal.
 - Align health edges with the server cards and confine footer background to the copyright row.
 - Health details grow to their content height up to a viewport-aware cap, scroll internally and close on outside clicks.
 - Add a quick-action visibility preference; solid action bars join the card edges and shift artwork aside.

@@ -1484,3 +1484,14 @@ body:has(.ps) [data-ps-footer]{background:var(--ps-surface,#fff)!important}
 body:has(.ps.dark) [data-ps-footer]{background:var(--ps-surface,#1a1a1f)!important}
 
 @media(min-width:701px){.ps .ps-server-grid.is-list .has-power:is(:hover,:focus-within,.confirming-power) .ps-server-open{padding:12px 130px 12px 18px}.ps .ps-server-grid.is-list .has-power:is(:hover,:focus-within,.confirming-power) :is(.ps-card-head,.ps-card-title){transform:none}}
+
+/* Metrics sit next to the player separator; the title gap absorbs control motion. */
+.ps .ps-server-grid:not(.is-list) .ps-server-entry .ps-card-usage{margin-top:auto}
+.ps .ps-server-grid:not(.is-list) .has-power:is(:hover,:focus-within,.confirming-power) .ps-card-usage{margin-top:auto}
+.ps .ps-server-grid:not(.is-list) .ps-server-entry .ps-card-bottom{margin-top:6px}
+.ps .ps-server-grid.is-list .ps-card-usage{justify-self:end}
+@media(min-width:1051px){.ps .ps-server-grid.is-list .ps-server-open{grid-template-columns:80px minmax(0,1fr) minmax(100px,240px) 140px 0px}}
+@media(hover:none){.ps .ps-server-grid:not(.is-list) .has-power .ps-card-usage{margin-top:auto}}
+
+/* Keep overview and health edges aligned on narrow screens too. */
+.ps .ps-server-scroll{padding-inline:4px}

@@ -38,7 +38,7 @@ Planned improvements; scope and release order may change.
 - **Egg settings in the dashboard** — edit supported startup variables with clear descriptions and validation.
 - **Dashboard alerts** — warnings for crashes, resource limits and failed backups.
 - **Known server startup fixes** — detect common startup problems and offer guided fixes.
-- **Configurable overview cards (0.3.0)** — choose which information to show, including the MOTD.
+- **More overview customization (0.3.0)** — additional information fields and layout options.
 - **Server presets** — reusable settings for faster, consistent server creation.
 - **Troubleshooting reports** — export useful diagnostics with secrets removed to make support easier.
 
@@ -68,6 +68,8 @@ Planned improvements; scope and release order may change.
 
 ### Server overview and host health
 
+- Personal appearance dropdown: grid/list layout, MOTD visibility, large server/egg icon, CPU/RAM tiles and quick-action visibility
+- Appearance preferences remembered per user in the browser
 - Grid and list views
 - Saved desktop view preference and automatic mobile list view
 - Dynamic game filters
