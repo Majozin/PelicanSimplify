@@ -1,6 +1,7 @@
 # Changes
 
 ## 0.2.0-alpha.23
+- Remove the empty strip above Host health; its soft shadow overlays the scrolling server region.
 - Shorter list cards use smaller server icons, software icons alongside and raised titles.
 - Taller overview grid cards retain logos and compress their contents when quick controls appear, without hover lift.
 - Original server names appear in parentheses beneath aliases.

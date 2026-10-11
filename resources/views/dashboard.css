@@ -1389,3 +1389,8 @@ body:has(.ps) [data-ps-footer]{flex-direction:row!important}body:has(.ps) [data-
 @media(max-width:700px){.ps .ps-server-grid.is-list .ps-server-open{grid-template-columns:74px minmax(0,1fr);padding:12px 14px}.ps .ps-server-grid.is-list .has-power .ps-server-open{padding-bottom:68px}.ps .ps-server-grid.is-list .has-power:is(:hover,:focus-within,.confirming-power) .ps-server-open{padding:12px 14px 68px}.ps .ps-server-grid.is-list .ps-card-icon{width:42px;height:42px}.ps .ps-server-grid.is-list .ps-card-egg-icon{width:22px;height:22px}.ps .ps-server-grid.is-list .ps-card-head{min-height:42px}}
 
 .ps .ps-server-grid:not(.is-list) .has-power:is(:hover,:focus-within,.confirming-power) :is(.ps-card-title,.ps-card-usage,.ps-card-bottom){transform:none}
+
+/* The health dock casts its shadow over the list, without an empty dark strip. */
+.ps:not(.server-active) .ps-overview{gap:0;background:transparent}
+.ps .ps-health-panel{z-index:1;box-shadow:0 -4px 12px #0002}
+.ps.dark .ps-health-panel{box-shadow:0 -4px 14px #0003}
