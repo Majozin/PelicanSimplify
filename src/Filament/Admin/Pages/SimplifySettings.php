@@ -192,6 +192,7 @@ class SimplifySettings extends Page implements HasForms
                     Select::make('node_ids')->label('Hosting machines')->multiple()->searchable()->options(fn () => Node::query()->pluck('name', 'id')->all())->helperText('Nodes used for self-service creation. Users do not choose ports or nodes.'),
                     Select::make('other_egg_ids')->label('Other games')->multiple()->searchable()->options(fn () => Egg::query()->orderBy('name')->pluck('name', 'id')->all()),
                     Toggle::make('minecraft_enabled')->label('Allow Minecraft'),
+                    Toggle::make('allow_egg_import')->label('Allow users to install missing eggs')->helperText('When a chosen server type needs an egg that is not installed yet, the creator imports Simplify\'s bundled, integrity-checked definition. Administrators with Pelican\'s Import egg permission can always do this.'),
                 ]),
                 Section::make('Starting resources')->description('CPU, RAM and disk for each Minecraft type. Applies to new servers within the user\'s allowance; existing servers keep theirs.')
                     ->schema(array_map(fn (string $type, string $label) => Section::make($label)->columns(3)->schema([

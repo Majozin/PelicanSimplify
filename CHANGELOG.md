@@ -1,5 +1,8 @@
 # Changes
 
+## 0.3.0-beta.5
+- New permission under Server creation → Who can create servers: "Allow users to install missing eggs". Off by default; when on, users who may create servers let the creator import Simplify's bundled, integrity-checked egg when it is not installed yet. Administrators with Pelican's Import egg permission can always do this.
+
 ## 0.3.0-beta.4
 - "Use easy server creator" off now disables the whole guided creator (Minecraft, modpacks, other games and user self-service). The overview shows one "Create server" tile that opens Pelican's native creation; admins always have access to native creation.
 

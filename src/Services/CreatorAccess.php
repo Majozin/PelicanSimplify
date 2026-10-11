@@ -20,7 +20,7 @@ final class CreatorAccess
     public static function defaults(): array
     {
         return ['enabled' => false, 'user_ids' => [], 'role_ids' => [], 'role_limits' => [], 'user_limits' => [], 'node_ids' => [], 'other_egg_ids' => [],
-            'minecraft_enabled' => true, 'max_servers' => 2, 'max_memory_mb' => 8192,
+            'minecraft_enabled' => true, 'allow_egg_import' => false, 'max_servers' => 2, 'max_memory_mb' => 8192,
             'max_disk_mb' => 40960, 'max_cpu' => 200, 'max_backups' => 3];
     }
 
@@ -70,6 +70,13 @@ final class CreatorAccess
     {
         $settings = self::configuration();
         return self::admin() ? $settings : self::effective(user(), $settings);
+    }
+
+    /** Whether the signed-in user may let the creator import a missing (bundled, integrity-checked) egg. */
+    public static function canImportEggs(): bool
+    {
+        if (user()?->can('import egg')) return true;
+        return self::canCreate() && (bool) (self::configuration()['allow_egg_import'] ?? false);
     }
 
     public static function admin(): bool

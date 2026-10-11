@@ -63,8 +63,8 @@ final class EggInstaller
         if (!$file) {
             throw ValidationException::withMessages(['data.egg_id' => 'Choose a supported server type and modpack first.']);
         }
-        if (!user()?->can('import egg') && !CreatorAccess::canCreate()) {
-            throw ValidationException::withMessages(['data.egg_id' => 'The matching egg is missing. Ask an administrator with the Import egg permission to import it or continue this wizard.']);
+        if (!CreatorAccess::canImportEggs()) {
+            throw ValidationException::withMessages(['data.egg_id' => 'The matching egg is not installed yet. Ask an administrator to import it, or to allow users to install missing eggs in Simplify settings.']);
         }
         try {
             // Recheck under a shared cache lock so simultaneous wizards reuse one import.

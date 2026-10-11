@@ -5,7 +5,7 @@ namespace Illuminate\Contracts\Cache {class LockTimeoutException extends \Except
 namespace Illuminate\Validation {class ValidationException extends \Exception {public static function withMessages($m){return new self(json_encode($m));}}}
 namespace Illuminate\Support\Facades {class Cache {public static $race=null;public static function lock($key,$ttl){return new self;}public function block($time,$callback){if(self::$race){(self::$race)();self::$race=null;}return $callback();}}}
 namespace App\Services\Eggs\Sharing {class EggImporterService {public array $calls=[]; public function fromContent($content,$format,$model){$d=json_decode($content,true);if(isset($d['uuid']))throw new \Exception('original UUID reused');if(!$model instanceof \App\Models\Egg)throw new \Exception('existing model risk');$model->name=$d['name'];$this->calls[]=$model->name;\Simplify\Panel\Services\MinecraftCatalog::$egg=$model;return $model;}}}
-namespace Simplify\Panel\Services {class CreatorAccess {public static function canCreate(){return $GLOBALS['sscGrant']??false;}}class MinecraftCatalog {public static $egg=null;public static function eggForType($t){return self::$egg;}}class ModpackCatalog {public static function egg($k){return MinecraftCatalog::$egg;}public static function split($key){if(!preg_match('/^(modrinth|ftb|curseforge|technic):([a-zA-Z0-9_-]+)$/',$key??'',$m))return null;return [$m[1],$m[2]];}}}
+namespace Simplify\Panel\Services {class CreatorAccess {public static function canCreate(){return $GLOBALS['sscGrant']??false;}public static function canImportEggs(){return ($GLOBALS['authorized']??false)||(($GLOBALS['sscGrant']??false)&&($GLOBALS['eggImportAllowed']??false));}}class MinecraftCatalog {public static $egg=null;public static function eggForType($t){return self::$egg;}}class ModpackCatalog {public static function egg($k){return MinecraftCatalog::$egg;}public static function split($key){if(!preg_match('/^(modrinth|ftb|curseforge|technic):([a-zA-Z0-9_-]+)$/',$key??'',$m))return null;return [$m[1],$m[2]];}}}
 namespace {
 $authorized=true;$importer=new \App\Services\Eggs\Sharing\EggImporterService;
 function user(){return new class {public function can($p){return $GLOBALS['authorized'] && $p==='import egg';}};}
@@ -26,6 +26,7 @@ foreach($states as $state){C::$egg=null;$before=count($importer->calls);$egg=I::
 C::$egg=null;\Illuminate\Support\Facades\Cache::$race=function()use($known){C::$egg=$known;};$before=count($importer->calls);
 check(I::ensure(['server_type'=>'vanilla'])===$known && count($importer->calls)===$before,'concurrent import rechecked under lock');
 check(I::file(['server_type'=>'modded','modpack_project'=>'technic:../../escape'])===null,'unsupported/path-like pack rejected');
-C::$egg=null;$authorized=false;$sscGrant=true;$before=count($importer->calls);I::ensure(['server_type'=>'plus']);check(count($importer->calls)===$before+1,'approved SSC client can import only a bundled missing egg');
+C::$egg=null;$authorized=false;$sscGrant=true;$eggImportAllowed=false;$before=count($importer->calls);try{I::ensure(['server_type'=>'plus']);check(false,'creator without the egg-install permission must not import');}catch(\Illuminate\Validation\ValidationException $e){check(count($importer->calls)===$before,'refused import must not run');}
+$eggImportAllowed=true;$before=count($importer->calls);I::ensure(['server_type'=>'plus']);check(count($importer->calls)===$before+1,'approved SSC client can import only a bundled missing egg');
 
 }
