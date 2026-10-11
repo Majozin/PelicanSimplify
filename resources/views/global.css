@@ -85,3 +85,8 @@ html.ps-theme.dark{color-scheme:dark}
 @keyframes ps-check-spin{to{transform:rotate(360deg)}}
 @media(prefers-reduced-motion:reduce){.ps-check-loading svg{animation:none}}
 @media(max-width:600px){.ps-check-grid{grid-template-columns:1fr}.ps-setup-heading{align-items:flex-start;gap:12px}.ps-setup-mark{width:42px;height:42px;border-radius:12px}.ps-setup-mark svg{width:22px;height:22px}.ps-check-actions{flex-wrap:wrap}.ps-check-actions>*{flex:1}.ps-frame[data-ps-frame="settings"] :is(.fi-main,.fi-page){padding:10px!important}}
+.ps-settings-form .fi-tabs{flex-wrap:wrap;gap:6px}
+.ps-settings-form .fi-sc-tabs{min-width:0}
+.ps-settings-form .ssc-progress{border:1px solid var(--ps-line);border-radius:12px;margin-bottom:18px}
+.ps-settings-form .ssc-progress button.is-complete>span{color:var(--ps-ink);border:1px solid var(--ps-line)}
+.ps-settings-form .fi-sc-tabs-tablist{flex-wrap:wrap;gap:6px}

@@ -30,7 +30,7 @@ final class DependencyCheck
         foreach (['storage', 'bootstrap/cache'] as $directory) {
             $add('Writable '.$directory, self::writeProbe($panel.'/'.$directory), 'Grant the panel and queue worker read/write access to '.$directory.'.');
         }
-        foreach (['creator.css', 'global.css', 'dashboard.css', 'theme.js', 'dashboard.js', 'filament/admin/draft.js'] as $file) {
+        foreach (['creator.css', 'global.css', 'dashboard.css', 'theme.js', 'dashboard.js', 'setup-progress.js', 'filament/admin/draft.js'] as $file) {
             $path = $plugin.'/resources/views/'.$file;
             $add('Plugin asset: '.$file, is_readable($path) && filesize($path) > 0, 'Reimport the complete PelicanSimplify package; this CSS/JavaScript file is missing, empty or unreadable.');
         }

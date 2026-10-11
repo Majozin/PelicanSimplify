@@ -1,5 +1,12 @@
 # Changes
 
+## 0.2.0-alpha.6
+
+- Split first setup into separate categories with the same numbered stepper and controls as server creation.
+- Organized settings into category tabs with grouped columns.
+- Made Vanilla, Vanilla+ and modpack CPU/RAM/disk defaults configurable in setup and settings. Existing resource allocations remain unchanged.
+- Updated the README AI disclaimer with the requested orange notice and backup guidance.
+
 ## 0.2.0-alpha.5
 
 - Redesigned first-run checks into compact cards with a separate first-setup button.

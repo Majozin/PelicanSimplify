@@ -40,7 +40,7 @@ Planned improvements; scope and release order may change.
 
 - **Overview:** grid/list views, game filters, saved desktop preferences, mobile list view, server status, player counts, CPU/RAM graphs and host health.
 - **Dashboard:** server banners and artwork, game/version details, live console, start/restart/stop/kill controls, resource metrics and player list.
-- **Creation:** Minecraft or other games, Vanilla/Paper/modpacks, automatic egg selection, bundled egg import, game/version selection, bird-name generator, server colors, saved drafts, resource limits and review before creation.
+- **Creation:** Minecraft or other games, Vanilla/Paper/modpacks, automatic egg selection, bundled egg import, game/version selection, bird-name generator, server colors, saved drafts, configurable CPU/RAM/disk defaults per type, resource limits and review before creation.
 - **Minecraft:** Modrinth, CurseForge, FTB and supported Technic packs; software/version changes, game settings, MOTD, whitelist, operators and player moderation.
 - **Management:** files and SFTP, mods/plugins, backup recovery points, automatic backup policies and retention, schedules, activity and advanced workspaces, subject to native Pelican permissions.
 - **Appearance:** light/dark/system theme, shared styling, optional legacy styling, always-dark or adaptive console, panel accent, automatic individual server colors and a built-in background picker.

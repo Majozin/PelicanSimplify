@@ -185,6 +185,8 @@ class CreateMinecraftServer extends Page implements HasForms
         $game=$this->creationGame ?: (CreatorAccess::admin() || CreatorAccess::settings()['minecraft_enabled']?'minecraft':'other');
         $this->draftSession = microtime(true);
         $node = CreatorAccess::nodes()->first();
+        $resourceDefaults = $game === 'minecraft' ? \Simplify\Panel\Services\CreationDefaults::forType('vanilla') : ['cpu'=>100,'ram_gb'=>4,'disk_mb'=>10240];
+        $defaultRam = CreatorAccess::admin() ? $resourceDefaults['ram_gb'] : min($resourceDefaults['ram_gb'], max(1, (int) floor(CreatorAccess::settings()['max_memory_mb'] / 1024)));
         $this->form->fill([
             'game' => $game,
             'game_egg_id' => null,
@@ -217,10 +219,10 @@ class CreateMinecraftServer extends Page implements HasForms
             'owner_id' => user()?->id,
             'allocation_id' => $node?->allocations()->whereNull('server_id')->orderBy('id')->value('id'),
             'minecraft_version' => '1.21.3',
-            'ram_gb' => CreatorAccess::admin() || CreatorAccess::settings()['max_memory_mb'] >= 4096 ? '4' : 'custom',
-            'ram_custom_gb' => CreatorAccess::admin() ? null : max(1, (int) floor(CreatorAccess::settings()['max_memory_mb'] / 1024)),
-            'disk_mb' => CreatorAccess::admin() ? 10240 : min(10240, (int) CreatorAccess::settings()['max_disk_mb']),
-            'cpu' => CreatorAccess::admin() ? 100 : min(100, (int) CreatorAccess::settings()['max_cpu']),
+            'ram_gb' => in_array($defaultRam,[2,4,8,12],true) ? (string)$defaultRam : 'custom',
+            'ram_custom_gb' => $defaultRam,
+            'disk_mb' => CreatorAccess::admin() ? $resourceDefaults['disk_mb'] : min($resourceDefaults['disk_mb'], (int) CreatorAccess::settings()['max_disk_mb']),
+            'cpu' => CreatorAccess::admin() ? $resourceDefaults['cpu'] : min($resourceDefaults['cpu'], (int) CreatorAccess::settings()['max_cpu']),
             'egg_id' => $game==='minecraft'?MinecraftCatalog::eggForType('vanilla')?->id:null,
             'skip_scripts' => false,
             'start_on_completion' => false,
@@ -336,9 +338,13 @@ class CreateMinecraftServer extends Page implements HasForms
                                     $set('modpack_project', null);
                                     $set('featured_modpack', null);
                                     $set('modpack_version', null);
-                                    $cpu = $state === 'modded' ? 200 : ($state === 'plus' ? 150 : 100);
+                                    $profile = \Simplify\Panel\Services\CreationDefaults::forType((string)$state);
+                                    $cpu = $profile['cpu'];
                                     $set('cpu', CreatorAccess::admin() ? $cpu : min($cpu, (int) CreatorAccess::settings()['max_cpu']));
-                                    $disk = $state === 'modded' ? 20480 : 10240;
+                                    $disk = $profile['disk_mb'];
+                                    $ram = CreatorAccess::admin() ? $profile['ram_gb'] : min($profile['ram_gb'],max(1,(int)floor(CreatorAccess::settings()['max_memory_mb']/1024)));
+                                    $set('ram_gb',in_array($ram,[2,4,8,12],true)?(string)$ram:'custom');
+                                    $set('ram_custom_gb',$ram);
                                     $set('disk_mb', CreatorAccess::admin() ? $disk : min($disk, (int) CreatorAccess::settings()['max_disk_mb']));
                                 }),
                             TextInput::make('name')
@@ -462,7 +468,7 @@ class CreateMinecraftServer extends Page implements HasForms
                                 ->imageEditor()->imageEditorAspectRatios(['1:1'])->storeFiles(false)
                                 ->helperText('PNG, 64 × 64 pixels, up to 100 KB. Uploaded as server-icon.png after installation.'),
                             Section::make('Automatic CPU allocation')->visible(fn (Get $get) => ($this->creationGame ?: $get('game')) === 'minecraft')
-                                ->description('Vanilla: 100% of one core; Vanilla+: 150%; Modded: 200%. You can change this in Advanced. (10% is only one tenth of a core.)'),
+                                ->description(fn()=>\Simplify\Panel\Services\CreationDefaults::summary()),
                         ]),
                     ... (\Simplify\Panel\Services\Extensions::webAdapter()?->creatorSteps($this) ?? []),
                     Step::make('Backups')->visible(fn()=>\Simplify\Panel\Services\FeatureSettings::enabled('backups'))->schema([

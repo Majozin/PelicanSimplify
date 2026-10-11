@@ -7,6 +7,7 @@ namespace Filament\Notifications {class Notification {public static function mak
 namespace Simplify\Panel\Services {
  class DependencyCheck {public static int $calls=0;public static bool $pass=true;public static function inspect(...$args){self::$calls++;return [['name'=>'Built Pelican CSS and JavaScript','ok'=>self::$pass,'fix'=>'Rebuild assets']];}public static function ready($checks){return $checks!==[]&&!array_filter($checks,fn($c)=>!$c['ok']);}}
  class FeatureSettings {public static bool $completed=false;public static function enabled($key){return self::$completed;}public static function all(){return ['setup_completed'=>self::$completed];}}
+ class CreationDefaults {public static function all(){return [];}}
  class CreatorAccess {public static function settings(){return ['enabled'=>false];}}
  class AppearanceSettings {public static function all(){return ['individual_colors'=>true];}}
  class Extensions {public static function webInstalled(){return false;}}
