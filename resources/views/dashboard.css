@@ -1535,3 +1535,5 @@ body:has(.ps:not(.server-active)) :is(.fi-main,.fi-page,.fi-page-content,.fi-pag
 .ps .ps-account-actions-inner form{flex:none}
 @media(max-width:700px){.ps .ps-nav-items>.ps-account{width:100%}.ps .ps-nav-items .ps-account-button{flex:1 1 auto;max-width:none}.ps .ps-nav-items .ps-account-menu{order:0}.ps .ps-nav-items .account-open .ps-account-menu{margin-right:0;margin-left:8px}}
 @media(prefers-reduced-motion:reduce){.ps .ps-nav-items .ps-account-menu{transition:none}}
+
+.ps .ps-nav-items>.ps-account{display:flex;align-items:center;flex:none}
