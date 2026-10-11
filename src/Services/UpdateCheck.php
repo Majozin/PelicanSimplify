@@ -5,7 +5,7 @@ use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Route;
 /**
  * Compares the installed version with the published update.json (the same file Pelican's
- * plugin updater reads). Checked at most twice a day; installing stays with Pelican.
+ * plugin updater reads). Checked at most every three hours (or on demand via forget()); installing stays with Pelican.
  */
 final class UpdateCheck
 {
@@ -15,7 +15,7 @@ final class UpdateCheck
         $manifest = self::manifest();
         $url = is_string($manifest['update_url'] ?? null) ? $manifest['update_url'] : null;
         if (!$current || !$url || !str_starts_with($url, 'https://')) return null;
-        $published = Remember::value('simplify.update-check.'.hash('sha256', $url), 43200, function () use ($url): ?array {
+        $published = Remember::value('simplify.update-check.'.hash('sha256', $url), 10800, function () use ($url): ?array {
             $response = Http::timeout(3)->connectTimeout(2)->acceptJson()->get($url);
             return $response->successful() && is_array($response->json()) ? $response->json() : null;
         }, 3600);
@@ -26,8 +26,15 @@ final class UpdateCheck
             'current' => $current,
             'version' => $latest,
             'available' => version_compare($latest, $current, '>'),
-            'url' => Route::has('filament.admin.resources.plugins.index') ? route('filament.admin.resources.plugins.index') : null,
+            'url' => FeatureSettings::enabled('plugin_manager') ? \Simplify\Panel\Filament\Admin\Pages\ManagePlugins::getUrl(panel: 'admin') : (Route::has('filament.admin.resources.plugins.index') ? route('filament.admin.resources.plugins.index') : null),
         ];
+    }
+
+    /** Drops the cached update.json so the next status() fetches it again. */
+    public static function forget(): void
+    {
+        $url = self::manifest()['update_url'] ?? null;
+        if (is_string($url)) \Illuminate\Support\Facades\Cache::forget('simplify.update-check.'.hash('sha256', $url));
     }
 
     private static function manifest(): array

@@ -96,6 +96,13 @@ final class ManagePlugins extends Page
             }
         };
         return [
+            \Filament\Actions\Action::make('checkUpdates')->label('Check for updates')->tooltip('Check for updates now')->icon('tabler-refresh')
+                ->action(function (): void {
+                    Plugin::query()->pluck('id')->each(fn (string $id) => \Illuminate\Support\Facades\Cache::forget('simplify.plugin-latest.'.$id));
+                    \Simplify\Panel\Services\UpdateCheck::forget();
+                    $count = Plugin::query()->get()->filter(fn (Plugin $plugin) => ($latest = PluginUpdater::latestVersion($plugin)) && version_compare($latest, $plugin->version, '>'))->count();
+                    Notification::make()->title($count ? $count.' update(s) available' : 'Everything is up to date')->success()->send();
+                }),
             \Filament\Actions\Action::make('importUrl')->label('Import from URL')->tooltip('Import from URL')->icon('tabler-world-download')
                 ->authorize(fn () => user()?->can('create', Plugin::class))
                 ->schema([\Filament\Forms\Components\TextInput::make('url')->label('Zip URL')->required()->url()->endsWith('.zip')])

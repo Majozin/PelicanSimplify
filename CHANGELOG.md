@@ -1,5 +1,9 @@
 # Changes
 
+## 0.3.0-beta.9
+- Plugins page: "Check for updates" button that skips the cache and checks right away.
+- The update check runs every three hours instead of every twelve, and the update notice opens Simplify's plugin page.
+
 ## 0.3.0-beta.8
 - Host mode redesign: server cards per node with status, software/version and players; a vertical, colour-coded admin menu with Health always at the bottom that folds to icons once you pick a page; related pages merged (Users & Roles, Database hosts / API keys / Webhooks, Nodes & Backup hosts) as tabs.
 - The Simple / Host mode switch moved into Customize appearance.
