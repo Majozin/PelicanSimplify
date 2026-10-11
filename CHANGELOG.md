@@ -1,5 +1,8 @@
 # Changes
 
+## 0.3.0-beta.11
+- Plugin updates are checked every minute (lookups cached for 50 seconds), so new versions are announced and, with automatic updates on, installed within a minute of GitHub serving them.
+
 ## 0.3.0-beta.10
 - New plugin versions are noticed within about 15 minutes again (checked like Pelican's own plugin page) instead of once a day.
 - Root admins get a notification for each new version, once, with a link to the Plugins page.

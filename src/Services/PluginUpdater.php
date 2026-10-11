@@ -22,18 +22,18 @@ final class PluginUpdater
         Plugin::refreshRows();
         return Plugin::all()->filter(function (Plugin $plugin): bool {
             try {
-                return $plugin->status->value !== 'not_installed' && $plugin->isUpdateAvailable();
+                return $plugin->status->value !== 'not_installed' && ($latest = self::latestVersion($plugin)) && version_compare($latest, $plugin->version, '>');
             } catch (\Throwable) {
                 return false;
             }
         })->values()->all();
     }
 
-    /** The version an update file offers for this panel, cached like Pelican's own check. */
+    /** The version an update file offers for this panel, cached for 50 seconds (GitHub's CDN adds up to five minutes). */
     public static function latestVersion(Plugin $plugin): ?string
     {
         if (!$plugin->update_url) return null;
-        return Cache::remember('simplify.plugin-latest.'.$plugin->id, 600, function () use ($plugin): ?string {
+        return Cache::remember('simplify.plugin-latest.'.$plugin->id, 50, function () use ($plugin): ?string {
             try {
                 $data = Http::timeout(5)->connectTimeout(2)->get((string) $plugin->update_url)->throw()->json();
                 $data = is_array($data[$plugin->id] ?? null) ? $data[$plugin->id] : $data;

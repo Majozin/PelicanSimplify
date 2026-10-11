@@ -7,7 +7,7 @@
         <header class="ps-plugins-head">
             <p class="ps-help">
                 @if(\Simplify\Panel\Services\FeatureSettings::enabled('auto_update_plugins'))
-                    New versions are installed automatically within about 15 minutes, with a backup and automatic rollback.
+                    New versions are installed automatically within about a minute, with a backup and automatic rollback.
                 @else
                     Automatic updates are off: you get a notification for each new version; install it here. A backup is kept and restored if anything fails.
                 @endif

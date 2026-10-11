@@ -36,7 +36,7 @@ final class FeatureSettings
             'backups'=>['Backup workspace','Show backups, downloads, restore actions and automatic backup policy.',true,'Server features'],
             'automatic_backups'=>['Automatic backups','Run configured backup policies through the existing Pelican scheduler. Off pauses policies without deleting them.',true,'Automation'],
             'plugin_manager'=>['Let Simplify manage plugins','Simplify\'s plugin page replaces Pelican\'s, with import, install, removal and safe updates with automatic rollback. Off uses Pelican\'s own plugin page and stops automatic updates.',true,'Add-ons'],
-            'auto_update_plugins'=>['Install plugin updates automatically','Install new plugin versions within about 15 minutes of their release, safely: a backup is kept, the new version is installed and checked, and the previous version is restored if anything fails. Results appear in the notifications.',true,'Automation'],
+            'auto_update_plugins'=>['Install plugin updates automatically','Install new plugin versions within about a minute of their release, safely: a backup is kept, the new version is installed and checked, and the previous version is restored if anything fails. Results appear in the notifications.',true,'Automation'],
             'host_health'=>['Host health','Show host CPU, memory and storage availability on the overview.',true,'Server features'],
             'restrict_access'=>['Administrator managed access','Restrict account creation, server sharing and additional schedules to administrators.',true,'Access and visibility'],
         ];

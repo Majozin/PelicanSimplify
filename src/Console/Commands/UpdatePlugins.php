@@ -4,8 +4,8 @@ use Illuminate\Console\Command;
 use Simplify\Panel\Services\FeatureSettings;
 use Simplify\Panel\Services\PluginUpdater;
 /**
- * Scheduled every 15 minutes: announces each new plugin version once to root admins and, when
- * "Install plugin updates automatically" is on, installs it safely right away. Update lookups are cached for ten minutes.
+ * Scheduled every minute: announces each new plugin version once to root admins and, when
+ * "Install plugin updates automatically" is on, installs it safely right away. Update lookups are cached for 50 seconds.
  */
 final class UpdatePlugins extends Command
 {
