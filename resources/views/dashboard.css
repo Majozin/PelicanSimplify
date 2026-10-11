@@ -1300,3 +1300,29 @@ body:has(.ps) :is(.fi-footer,.fi-main-ctn>footer){flex:none;margin-top:auto;back
 .ps .ps-node-server-drawer .ps-node-servers{margin:0;padding-top:0;transition:padding-top .25s}
 .ps .ps-node-server-drawer.expanded .ps-node-servers{padding-top:16px}
 @media(prefers-reduced-motion:reduce){.ps .ps-node-server-drawer,.ps .ps-node-server-drawer .ps-node-servers,.ps .ps-node-toggle .ps-node-arrow{transition:none}}
+
+.ps .ps-server-grid:not(.is-list) .ps-card-icons{padding-top:0}
+.ps .ps-server-grid:not(.is-list) .ps-card-head{margin-bottom:12px;min-height:44px;align-items:flex-start}
+.ps .ps-server-grid:not(.is-list) .ps-card-badges{max-width:calc(100% - 96px)}
+.ps .ps-motd-display{width:420px;max-width:100%;min-height:calc(3em + 18px);max-height:calc(3em + 18px);overflow-y:auto;white-space:pre-wrap}
+.ps .ps-motd-preview:not(.ps-motd-display){width:420px;max-width:100%;min-height:calc(3.2em + 30px);white-space:pre-wrap}
+
+.ps .ps-server-grid.is-list .ps-card-icons{flex-direction:column;align-items:center;gap:6px}
+.ps .ps-server-grid.is-list .ps-card-egg-icon{width:28px;height:28px}
+.ps .ps-motd-preview{font-size:14px;line-height:1.5}
+.ps .ps-motd-preview:not(.ps-motd-display){min-height:calc(3em + 30px)}
+
+/* Pelican's plain footer can be rendered inside a hook wrapper, without fi-footer. */
+body:has(.ps) :is(.fi-layout,.fi-main-ctn){background:transparent!important}
+body:has(.ps) [data-ps-footer-wrapper]{display:flex;flex-direction:column;flex:none!important;min-height:0!important;height:auto!important;padding:0!important;margin:0!important;gap:0!important;background:transparent!important;border:0!important;box-shadow:none!important}
+body:has(.ps) [data-ps-footer]{display:flex!important;align-items:center;justify-content:center;flex-wrap:wrap;flex:none!important;width:100%;height:auto!important;min-height:0!important;margin:0!important;padding:6px 12px max(6px,env(safe-area-inset-bottom))!important;gap:0 4px!important;border:0!important;background:transparent!important;box-shadow:none!important;text-align:center;font-size:12px;line-height:18px}
+body:has(.ps) [data-ps-footer]>*{margin:0!important;padding:0!important;background:transparent!important;white-space:normal!important}
+body:has(.ps) [data-ps-footer] [data-ps-attribution]{white-space:normal!important}
+@media(max-width:600px){body:has(.ps) [data-ps-footer]{font-size:10px;line-height:14px}}
+
+.ps .ps-health-panel{position:relative;box-shadow:0 -6px 18px #0002}
+.ps.dark .ps-health-panel{box-shadow:0 -6px 18px #0005}
+.ps:not(.server-active) .ps-main{padding-bottom:4px!important}
+body:has(.ps) [data-ps-footer]{padding-top:4px!important}
+
+.ps .ps-motd-preview:not(.ps-motd-display){max-height:calc(3em + 30px);overflow-y:auto}

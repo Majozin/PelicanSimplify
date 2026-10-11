@@ -1,5 +1,17 @@
 # Changes
 
+## 0.2.0-alpha.21
+
+- Confirm every overview quick power action before sending a command.
+- Compact resource presets with larger icons beside their values and descriptions underneath.
+- Build the creator progress bar from available steps; hide website display without its helper and respect disabled backups.
+- Preserve draft stages by their names when optional plugins change.
+- Avoid repeated iframe height writes when creator content has not changed; retain content shrinking and popup scroll positions.
+- Lift grid server icons and place egg icons underneath server icons in list view.
+- Remove MOTD rendering from overview while keeping its data for future configurable cards in 0.3.0.
+- Use a narrow two-line MOTD display and support multiline MOTDs in the creator.
+- Remove native copyright footer hook backgrounds and excessive wrapper height; tighten copyright spacing and add a shadow above host health.
+
 ## 0.2.0-alpha.20
 
 - Give expanded host health a fixed, viewport-bounded detail area with internal scrolling.

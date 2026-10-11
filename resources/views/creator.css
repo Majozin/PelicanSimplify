@@ -145,3 +145,11 @@
 .ssc-wizard .ssc-draft-bar .ssc-draft-action,.ssc-wizard .ssc-next-button,.ssc-wizard .ssc-back-button,.ssc-wizard .ssc-create-button { background-color:var(--ssc-raised)!important;background-image:none!important;transition-property:border-color,color,box-shadow; }
 .ssc-wizard.is-saving-draft .ssc-draft-action:disabled,.ssc-wizard.is-saving-draft .ssc-next-button:disabled,.ssc-wizard.is-saving-draft .ssc-back-button:disabled { opacity:1!important; }
 .ssc-wizard .fi-sc-wizard-footer .fi-btn,.ssc-wizard .fi-sc-wizard-actions .fi-btn { background-color:var(--ssc-raised)!important;background-image:none!important;color:var(--ssc-ink)!important;opacity:1!important;transition-property:border-color,color,box-shadow; }
+
+/* Compact resource presets: a readable icon beside the value, help beneath. */
+.ssc-wizard .ssc-cards--ram{gap:10px}
+.ssc-wizard .ssc-cards--ram .ssc-card-content{display:grid;grid-template-columns:32px minmax(0,1fr);grid-template-rows:auto auto;align-content:center;justify-content:start;align-items:center;text-align:left;gap:5px 9px;min-height:78px;padding:12px}
+.ssc-wizard .ssc-cards--ram .ssc-outline-icon{grid-column:1;grid-row:1;width:32px;height:32px;padding:3px;border-radius:7px}
+.ssc-wizard .ssc-cards--ram .ssc-card-title{grid-column:2;grid-row:1;font-size:14px;min-width:0}
+.ssc-wizard .ssc-cards--ram .ssc-card-description{grid-column:1/-1;grid-row:2;font-size:11px;line-height:1.4;max-width:none}
+@media(max-width:700px){.ssc-wizard .ssc-cards--ram{grid-template-columns:repeat(2,minmax(0,1fr))}}

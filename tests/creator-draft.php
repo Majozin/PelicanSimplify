@@ -9,7 +9,7 @@ namespace Illuminate\Support\Facades {
  class Crypt { public static function encryptString($v){return 'encrypted:'.base64_encode($v);} public static function decryptString($v){return base64_decode(substr($v,10));} }
  class Cache { public static function lock($key,$seconds){return new self;} public function block($seconds,$callback){return $callback();} }
 }
-namespace Simplify\Panel\Services { class FeatureSettings { public static function enabled($key){return true;} } class CreatorAccess { public static bool $allowed=true; public static function canCreate(){return self::$allowed;} } }
+namespace Simplify\Panel\Services { class Extensions {public static bool $web=false;public static function webAdapter(){return self::$web?new class {public function creatorSteps($page){return [new class {public function getLabel(){return 'Website display';}}];}}:null;}} class FeatureSettings {public static bool $backups=true;public static function enabled($key){return $key!=='backups'||self::$backups;} } class CreatorAccess { public static bool $allowed=true; public static function canCreate(){return self::$allowed;} } }
 namespace {
  function user(){return (object)['id'=>$GLOBALS['userId']];}
  function abort_unless($allowed,$status){if(!$allowed)throw new RuntimeException('403');}
@@ -36,9 +36,10 @@ namespace {
 
 namespace {
  $page=new DraftPage;$page->creationGame='minecraft';$step=new \ReflectionMethod(get_parent_class($page),'restoreWizardStep');$step->setAccessible(true);
- check($step->invoke($page,4,2)===5,'existing backup draft moves past the new website step');
- check($step->invoke($page,5,2)===6,'existing review draft keeps the review step');
- check($step->invoke($page,6,1)===6,'legacy game-step draft migrates through both wizard changes');
- check($step->invoke($page,4,3)===4,'new website-step draft remains on website step');
- $page->creationGame='other';check($step->invoke($page,5,2)===6,'other-game draft also migrates website insertion');
+ check($step->invoke($page,4,2)===4,'backup draft stays on backups without the web plugin');
+ check($step->invoke($page,5,2)===5,'review draft stays on review without the web plugin');
+ check($step->invoke($page,6,1)===5,'legacy game-step draft migrates through both wizard changes');
+ check($step->invoke($page,4,3)===4,'current no-web draft stays on backups');
+ $page->creationGame='other';check($step->invoke($page,5,2)===5,'other-game flow omits the website step too');
+ $page->creationGame='minecraft';\Simplify\Panel\Services\Extensions::$web=true;check(in_array('Website display',$page->wizardStepLabels(),true),'web step appears only when supplied by the web adapter');check($step->invoke($page,4,2)===5,'old backup draft migrates when website step is actually available');$saved=$page->wizardStepLabels();\Simplify\Panel\Services\Extensions::$web=false;check(!in_array('Website display',$page->wizardStepLabels(),true),'website step is absent without the helper');check($step->invoke($page,5,4,$saved)===4,'named draft restores backups after removing the web helper');\Simplify\Panel\Services\FeatureSettings::$backups=false;check(!in_array('Backups',$page->wizardStepLabels(),true),'stepper follows disabled backups too');check($step->invoke($page,5,4,$saved)===4,'removed draft stage advances safely to Review');
 }

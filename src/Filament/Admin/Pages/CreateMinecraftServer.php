@@ -112,9 +112,9 @@ class CreateMinecraftServer extends Page implements HasForms
                 if (is_array($value)) return array_map($clean, $value);
                 return is_scalar($value) || $value === null ? $value : null;
             };
-            $this->draftStep = max(1,min($this->creationGame==='minecraft'?6:7,$step));
-            $this->furthestStep=max($this->furthestStep,$this->draftStep,min($this->creationGame==='minecraft'?6:7,$furthestStep));
-            $json = json_encode(['state' => $clean($state), 'step' => $this->draftStep, 'advanced' => $this->editingAdvanced, 'icon' => $this->draftIcon, 'wizard_version'=>3,'furthest_step'=>$this->furthestStep], JSON_THROW_ON_ERROR);
+            $this->draftStep = max(1,min(count($this->wizardStepLabels()),$step));
+            $this->furthestStep=max($this->furthestStep,$this->draftStep,min(count($this->wizardStepLabels()),$furthestStep));
+            $json = json_encode(['state' => $clean($state), 'step' => $this->draftStep, 'advanced' => $this->editingAdvanced, 'icon' => $this->draftIcon, 'wizard_version'=>4,'wizard_steps'=>$this->wizardStepLabels(),'furthest_step'=>$this->furthestStep], JSON_THROW_ON_ERROR);
             if (strlen($json) > 1048576) throw new \RuntimeException('Draft is too large to save.');
             if (!$disk->put($this->draftPath(), \Illuminate\Support\Facades\Crypt::encryptString($json))) throw new \RuntimeException('Could not save draft.');
             return true;
@@ -252,11 +252,11 @@ class CreateMinecraftServer extends Page implements HasForms
                 if (isset($draft['state']) && is_array($draft['state']) && ($draftPath===$this->draftPath() || $this->creationGame==='' || ($draft['state']['game']??'minecraft')===$this->creationGame)) {
                     $this->draftRestored = true;
                     $restoredStep=(int)($draft['step']??1);
-                    $restoredStep=$this->restoreWizardStep($restoredStep,(int)($draft['wizard_version']??1));
-                    $this->draftStep=max(1,min($this->creationGame==='minecraft'?6:7,$restoredStep));
+                    $restoredStep=$this->restoreWizardStep($restoredStep,(int)($draft['wizard_version']??1),(array)($draft['wizard_steps']??[]));
+                    $this->draftStep=max(1,min(count($this->wizardStepLabels()),$restoredStep));
                     $furthest=(int)($draft['furthest_step']??($draft['step']??1));
-                    $furthest=$this->restoreWizardStep($furthest,(int)($draft['wizard_version']??1));
-                    $this->furthestStep=max($this->draftStep,min($this->creationGame==='minecraft'?6:7,$furthest));
+                    $furthest=$this->restoreWizardStep($furthest,(int)($draft['wizard_version']??1),(array)($draft['wizard_steps']??[]));
+                    $this->furthestStep=max($this->draftStep,min(count($this->wizardStepLabels()),$furthest));
                     $this->editingAdvanced = (bool) ($draft['advanced'] ?? false);
                     $this->draftIcon = $draft['icon'] ?? null;
                     $restored = $draft['state'];
@@ -276,11 +276,27 @@ class CreateMinecraftServer extends Page implements HasForms
         if (empty($this->data['server_color'])) $this->data['server_color']=\Simplify\Panel\Services\ServerAppearance::defaultColor();
     }
 
-    private function restoreWizardStep(int $step,int $version): int
+    public function wizardStepLabels(): array
     {
+        $labels=$this->creationGame==='minecraft'?['Server Type','Version & Content','Server properties']:['Game','Server Type','Content','Server properties'];
+        foreach (\Simplify\Panel\Services\Extensions::webAdapter()?->creatorSteps($this) ?? [] as $step) $labels[]=(string)($step->getLabel() ?? 'Website display');
+        if (\Simplify\Panel\Services\FeatureSettings::enabled('backups')) $labels[]='Backups';
+        return [...$labels,'Review'];
+    }
+
+    private function restoreWizardStep(int $step,int $version,array $savedLabels=[]): int
+    {
+        $labels=$this->wizardStepLabels();
+        if ($savedLabels) {
+            for ($index=max(0,$step-1);$index<count($savedLabels);++$index) {
+                $current=array_search($savedLabels[$index],$labels,true);
+                if ($current!==false) return $current+1;
+            }
+            return count($labels);
+        }
         if ($this->creationGame==='minecraft' && $version<2) $step=max(1,$step-1);
-        if ($version<3 && $step>=($this->creationGame==='minecraft'?4:5)) ++$step;
-        return max(1,min($this->creationGame==='minecraft'?6:7,$step));
+        if ($version<3 && in_array('Website display',$labels,true) && $step>=($this->creationGame==='minecraft'?4:5)) ++$step;
+        return max(1,min(count($labels),$step));
     }
 
     public function hydrate(): void
@@ -484,7 +500,7 @@ class CreateMinecraftServer extends Page implements HasForms
                                 ->schema([
                                     Toggle::make('properties_enabled')->label('Apply these settings')->live()->columnSpanFull(),
                                     TextInput::make('max_players')->label('Maximum players')->integer()->minValue(1)->maxValue(1000)->required(),
-                                    TextInput::make('motd')->label('MOTD')->maxLength(512)->required()->helperText('Server description. Minecraft § colour codes are supported.'),
+                                    Textarea::make('motd')->label('MOTD')->rows(2)->maxLength(512)->required()->helperText('Server description. Minecraft § colour codes are supported.'),
                                     Select::make('difficulty')->options(['peaceful' => 'Peaceful', 'easy' => 'Easy', 'normal' => 'Normal', 'hard' => 'Hard'])->required(),
                                     Select::make('gamemode')->options(['survival' => 'Survival', 'creative' => 'Creative', 'adventure' => 'Adventure', 'spectator' => 'Spectator'])->required(),
                                     TextInput::make('view_distance')->label('View distance (chunks)')->integer()->minValue(2)->maxValue(32)->required(),

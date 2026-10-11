@@ -2,6 +2,7 @@
     @php
         $path = $getStatePath();
         $name = $field->getName();
+        $resource = in_array($name, ['ram_gb','cpu_choice','disk_choice']);
         $packs = $name === 'featured_modpack'
             ? collect(\Simplify\Panel\Services\MinecraftCatalog::featuredModpacks())->keyBy('project_id') : collect();
     @endphp
@@ -11,6 +12,7 @@
             @php
                 $pack = $packs->get((string) $value);
                 $description = $field->getDescription((string) $value);
+                if ($resource && !$description) $description = $value === 'custom' ? 'Choose your own' : ($name === 'cpu_choice' ? ($value === 0 || (string)$value === '0' ? 'Unlimited CPU' : round((float)$value / 100, 2).' CPU cores') : round((float)$value / 1024, 2).' GB storage');
             @endphp
             <label class="ssc-card" wire:key="ssc-{{ $path }}-{{ $value }}">
                 <input class="ssc-card-input" type="radio" name="{{ $path }}" value="{{ $value }}"
