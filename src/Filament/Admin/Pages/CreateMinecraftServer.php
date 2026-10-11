@@ -61,6 +61,7 @@ class CreateMinecraftServer extends Page implements HasForms
     protected static ?string $navigationLabel = 'Create server';
     protected static ?string $title = 'Create server';
     protected static ?string $slug = 'simple-server-creator';
+    protected static bool $shouldRegisterNavigation = false;
     protected string $view = 'pelican-simplify::filament.admin.create-server';
 
     /** @var array<string,mixed> */
