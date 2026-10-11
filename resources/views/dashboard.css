@@ -1262,3 +1262,13 @@ body:has(.ps) :is(.fi-footer,.fi-main-ctn>footer){flex:none;margin-top:auto;back
 
 @media(max-width:700px){.ps .ps-server-grid.is-list .has-power .ps-server-open{padding-bottom:68px}.ps .ps-server-grid.is-list .has-power:is(:hover,:focus-within) :is(.ps-card-head,.ps-card-title,.ps-card-usage){transform:none}.ps .ps-server-grid.is-list .has-power .ps-overview-power-wrap{visibility:visible;opacity:1;pointer-events:auto;transform:none}.ps .ps-server-grid.is-list .has-power .ps-overview-power-wrap{bottom:8px}.ps .ps-server-grid.is-list .has-power .ps-card-footer{position:relative;transform:translateY(-58px);margin-bottom:0}}
 @media(hover:none) and (min-width:701px){.ps .ps-server-grid.is-list .has-power .ps-server-open{padding-right:130px}.ps .ps-server-grid.is-list .has-power .ps-card-badges{right:128px}}
+
+.ps .ps-server-grid.is-list .ps-card-title-row{flex-wrap:nowrap}
+.ps .ps-server-grid.is-list .ps-card-title-row h3{min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ps .ps-server-grid.is-list .ps-card-real-name{max-width:40%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ps .ps-server-grid.is-list .ps-card-motd{height:4.5em}
+.ps .ps-server-grid.is-list .has-power:is(:hover,:focus-within) .ps-card-footer{padding-right:120px}
+.ps .ps-server-grid.is-list .ps-card-footer{transition:padding-right .25s,transform .25s}
+@media(max-width:700px){.ps .ps-server-grid.is-list .has-power:is(:hover,:focus-within) .ps-card-footer{padding-right:0}}
+@media(hover:none) and (min-width:701px){.ps .ps-server-grid.is-list .has-power .ps-card-footer{padding-right:120px}}
+@media(max-width:900px), (max-height:700px){.ps .ps-health-drawer .ps-node-health-list{max-height:max(60px,min(35dvh,calc(100dvh - 360px)))}}
