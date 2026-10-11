@@ -1,6 +1,6 @@
 # PelicanSimplify
 
-![Designed by Jeroen. Coded by AI. This plugin may contain bugs or errors.](docs/ai-disclaimer.svg)
+![This plugin is thought of, designed and tested by me, but used AI for coding. May contain bugs or errors.](docs/ai-disclaimer.svg)
 
 A fresh interface for Pelican, with simpler server management and guided server creation.
 
