@@ -12,6 +12,9 @@
                 @if($update['url'])<a class="ps-btn is-sm" href="{{ $update['url'] }}" target="_top">Open plugins</a>@endif
             </div>
         @endif
+        @if($rerunSetup)
+            <div class="ps-alert is-info ps-rerun-banner" role="status"><x-tabler-wand class="ps-ico" aria-hidden="true" /><div><strong>Running the setup wizard again</strong><small>Your current settings stay active until you finish.</small></div><button type="button" class="ps-btn is-sm" wire:click="cancelSetupAgain">Cancel</button></div>
+        @endif
         @if($this->needsSetup() && !$setupStarted)
             @include('pelican-simplify::system-checks')
         @endif
@@ -34,11 +37,15 @@
                 </form>
             </div>
         @endif
-        @if(!$this->needsSetup())
+        {{-- System checks live on the legacy settings page only, not in the panel popup. --}}
+        @if(!$this->needsSetup() && !$this->embedded)
             @if($showDiagnostics)
                 @include('pelican-simplify::system-checks')
             @else
-                <button type="button" class="ps-btn ps-diagnostics-toggle" wire:click="toggleDiagnostics" wire:loading.attr="disabled"><x-tabler-shield-check class="ps-ico" />System checks</button>
+                <div class="ps-settings-tools">
+                    <button type="button" class="ps-btn ps-diagnostics-toggle" wire:click="toggleDiagnostics" wire:loading.attr="disabled"><x-tabler-shield-check class="ps-ico" />System checks</button>
+                    <button type="button" class="ps-btn" wire:loading.attr="disabled" x-on:click="Simplify.confirm({title:'Run the setup wizard again?', message:'You walk through the system checks and every settings page again, starting from your current settings. Nothing changes until you finish the wizard.', confirmLabel:'Start setup'}).then((ok) => ok && $wire.startSetupAgain())"><x-tabler-wand class="ps-ico" />Run setup wizard again</button>
+                </div>
             @endif
         @endif
     </div>

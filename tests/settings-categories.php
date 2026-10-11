@@ -22,12 +22,12 @@ namespace {
  $page=new \Simplify\Panel\Filament\Admin\Pages\SimplifySettings;
  $schema=$page->form(new \Filament\Schemas\Schema);$wizard=$schema->options['components'][0][0];$steps=$wizard->options['steps'];
  if(array_map(fn($step)=>$step->label,$steps)!==$page->setupSteps())throw new \RuntimeException('progress navigation and wizard steps disagree');
- if($steps[1]->label!=='Appearance'||count($steps[1]->options['schema'][0])!==1||$steps[6]->label!=='Server defaults')throw new \RuntimeException('categories not separate pages');
+ if(array_map(fn($step)=>$step->label,$steps)!==['General','Appearance','Users & access','Server creation','Backups & performance']||$steps[1]->options['schema'][0][1]->label!=='Colours')throw new \RuntimeException('categories not separate pages');
  if(!isset($wizard->options['submitAction'])||$wizard->options['skippable']!==[false])throw new \RuntimeException('wizard final save or validation guard missing');
  \Simplify\Panel\Services\FeatureSettings::$complete=true;
  $schema=$page->form(new \Filament\Schemas\Schema);$tabs=$schema->options['components'][0][0]->options['tabs'][0];
  if(array_map(fn($tab)=>$tab->label,$tabs)!==[...$page->setupSteps(),'Server banners'])throw new \RuntimeException('settings tabs lost a setup category');
- $profiles=$tabs[6]->options['schema'][0][0]->options['schema'][0];
+ $profiles=$tabs[3]->options['schema'][0][1]->options['schema'][0];
  if(count($profiles)!==3||$profiles[2]->label!=='Modded / modpacks'||count($profiles[2]->options['schema'][0])!==3)throw new \RuntimeException('CPU/RAM/disk profiles missing from settings');
  echo "PASS separate setup pages, matching numbered navigation, final-step submit, category tabs and editable modpack resource columns\n";
 }

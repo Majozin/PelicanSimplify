@@ -52,7 +52,7 @@ final class Dashboard extends Page
             'legacy_create_url'=>\App\Filament\Admin\Resources\Servers\ServerResource::canCreate()?\App\Filament\Admin\Resources\Servers\ServerResource::getUrl('create',panel:'admin'):null,'create_url'=>Extensions::createUrl(),'can_create'=>Extensions::canCreate(),'create_games'=>Extensions::createGames(),'web'=>Extensions::web(),
             'native_list_url'=>\Filament\Facades\Filament::getPanel('app')->getUrl(),
             'profile_url'=>\App\Filament\Pages\Auth\EditProfile::getUrl(panel:'app'),'appearance'=>\Simplify\Panel\Services\AppearanceSettings::all(),'panel_name'=>(string)config('app.name','Pelican'),'features'=>array_replace(\Simplify\Panel\Services\FeatureSettings::all(),array_combine(['settings','files','players','backups','packages','software','resources','advanced','activity','schedules'],array_map(fn($key)=>Access::feature($key),['settings','files','players','backups','packages','software','resources','advanced','activity','schedules']))),'settings_url'=>user()?->isRootAdmin()?\Simplify\Panel\Filament\Admin\Pages\SimplifySettings::getUrl(panel:'app'):null,'website_url'=>Extensions::webAdapter()?->url(),'list_url'=>self::getUrl(panel:'app'),'server'=>null,'servers'=>[],'user'=>user()->username,'avatar'=>user()->getFilamentAvatarUrl(),'favicon_url'=>route('simplify.favicon').'?v='.\Simplify\Panel\Services\BuildInfo::hash('core.css'),
-            'performance'=>\Simplify\Panel\Services\PerformanceSettings::client(),'update'=>user()?->isRootAdmin()?\Simplify\Panel\Services\UpdateCheck::status():null];
+            'performance'=>\Simplify\Panel\Services\PerformanceSettings::client(),'update'=>user()?->isRootAdmin()?\Simplify\Panel\Services\UpdateCheck::status():null,'panel_notifications'=>\Simplify\Panel\Services\PanelNotifications::unread()];
         if(!$this->serverUuid){$base['servers']=$this->listing();$base['host_health']=$this->hostHealth();return$base;}
         $s=$this->server();$base['available_colors']=ServerAppearance::choices($s->uuid);$permissions=[];foreach(P::cases() as $p)$permissions[$p->value]=user()->can($p,$s);
         $meta=ManagedSettings::content($s);$mc=MinecraftStatus::get($s);
@@ -105,6 +105,11 @@ final class Dashboard extends Page
         }
         return $sections;
     }
+    /** Pelican's own (legacy) notifications, shown in the Simplify bell. */
+    #[Renderless]
+    public function panelNotifications(): array { return \Simplify\Panel\Services\PanelNotifications::unread(); }
+    #[Renderless]
+    public function markPanelNotificationsRead(array $ids): array { \Simplify\Panel\Services\PanelNotifications::markRead($ids); return \Simplify\Panel\Services\PanelNotifications::unread(); }
     #[Renderless]
     public function hostHealth(): array { return \Simplify\Panel\Services\FeatureSettings::enabled('host_health')?HostHealth::snapshot():[]; }
     #[Renderless]
@@ -160,7 +165,8 @@ final class Dashboard extends Page
         $s=$this->server();Access::permission($s,P::FileReadContent);
         abort_unless(strlen($path)<=4096 && !str_contains($path,"\0") && !in_array('..',explode('/',$path),true),422);
         $limit=(int)config('panel.files.max_edit_size',1048576);
-        $content=app(DaemonFileRepository::class)->setServer($s)->getContent($path,$limit);
+        try { $content=app(DaemonFileRepository::class)->setServer($s)->getContent($path,$limit); }
+        catch (\Illuminate\Http\Client\ConnectionException) { abort(503,'The node is not reachable.'); }
         abort_if($limit>0 && strlen($content)>$limit,413,'This file is too large to edit.');
         return hash('sha256',$content);
     }

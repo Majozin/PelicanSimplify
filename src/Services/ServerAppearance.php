@@ -63,7 +63,8 @@ final class ServerAppearance
     private static function hueColor(int $hue): string
     {
         $channel=function(int $n) use($hue): string {
-            $k=fmod($n+$hue/30,12);$l=.52;$a=.55*min($l,1-$l);
+            // Pastel suggestions: light, softly saturated. Custom colours stay free.
+            $k=fmod($n+$hue/30,12);$l=.76;$a=.68*min($l,1-$l);
             return str_pad(dechex((int)round(255*($l-$a*max(-1,min($k-3,9-$k,1))))),2,'0',STR_PAD_LEFT);
         };
         return '#'.$channel(0).$channel(8).$channel(4);

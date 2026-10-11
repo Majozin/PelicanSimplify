@@ -99,8 +99,11 @@
       apply();
     }
   });
-  // Filament's own theme switcher dispatches this event.
+  // Filament's own theme switcher dispatches this event. Filament also fires it while starting up with
+  // its own stored theme, so early events are ignored; embedded pages always follow the dashboard.
+  const loadedAt = Date.now();
   window.addEventListener('theme-changed', (event) => {
+    if (frameKind || Date.now() - loadedAt < 2000) return;
     const value = event.detail?.theme ?? event.detail;
     if (CHOICES.includes(value) && value !== preference) window.SimplifyTheme.set(value);
   });
@@ -310,5 +313,30 @@
     history: () => ui.history.slice(),
     hideTooltip: hideTip,
   };
+
+  // Embedded pages hand Filament's flash notifications ("File saved", errors) to the dashboard toast.
+  const forwardNotifications = () => {
+    if (!frameKind || !parentUi() || !window.MutationObserver) return;
+    root.dataset.psForwardNotices = '';
+    const tones = { success: 'ok', warning: 'warn', danger: 'danger', info: 'info' };
+    const seen = new WeakSet();
+    const forward = (node) => {
+      if (seen.has(node) || node.closest('.fi-no-database')) return;
+      seen.add(node);
+      const title = node.querySelector('.fi-no-notification-title')?.textContent.trim() || '';
+      const body = node.querySelector('.fi-no-notification-body')?.textContent.trim() || '';
+      const status = [...node.classList].find((c) => c.startsWith('fi-status-'))?.slice(10);
+      const text = [title, body].filter(Boolean).join(' — ');
+      if (text) toast(text, tones[status] || 'info');
+    };
+    new MutationObserver((records) => {
+      for (const record of records) for (const added of record.addedNodes) {
+        if (added.nodeType !== 1) continue;
+        if (added.matches('.fi-no-notification')) forward(added);
+        else added.querySelectorAll?.('.fi-no-notification').forEach(forward);
+      }
+    }).observe(document.documentElement, { childList: true, subtree: true });
+  };
   apply();
+  forwardNotifications();
 })();

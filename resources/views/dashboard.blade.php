@@ -41,21 +41,28 @@
                     {{-- Notifications: alerts, pending changes and plugin updates in one dropdown. --}}
                     <div class="ps-notify" x-on:click.outside="notifyMenu=false" x-on:keydown.escape.stop="notifyMenu=false; $refs.notifyButton.focus()">
                         <button type="button" x-ref="notifyButton" class="ps-btn is-icon is-subtle" data-tip="Notifications" aria-label="Notifications" aria-controls="ps-notify-menu" :aria-expanded="notifyMenu"
-                                x-on:click="notifyMenu=!notifyMenu; appearanceMenu=false; accountMenu=false">
+                                x-on:click="toggleNotifications()">
                             <svg aria-hidden="true"><use href="#ps-bell"/></svg><span class="ps-mobile-label">Notifications</span>
                             <span class="ps-notify-count" x-show="notifications().length" x-text="notifications().length"></span>
                         </button>
                         <div id="ps-notify-menu" class="ps-dropdown is-end ps-notify-menu" x-show="notifyMenu" x-cloak x-transition.opacity>
-                            <strong class="ps-dropdown-title">Notifications</strong>
+                            <div class="ps-notify-head">
+                                <strong class="ps-dropdown-title">Notifications</strong>
+                                <button type="button" class="ps-btn is-sm is-subtle" x-show="panelNotices.length" x-on:click="markPanelNoticesRead(panelNotices.map((n) => n.key))">Mark all read</button>
+                            </div>
                             <div class="ps-notify-list">
                                 <template x-for="item in notifications()" :key="item.id">
                                     <div class="ps-notify-item" :class="'is-'+item.tone">
                                         <svg aria-hidden="true"><use :href="'#ps-'+(item.tone==='ok'?'check':item.tone==='info'?'info':'alert')"/></svg>
                                         <strong x-text="item.title"></strong>
-                                        <small x-text="item.text"></small>
-                                        <template x-if="item.action">
-                                            <a class="ps-btn is-sm" :href="item.action.url" x-on:click="if(item.action.run){$event.preventDefault(); notifyMenu=false; item.action.run()}" x-text="item.action.label"></a>
-                                        </template>
+                                        <small x-text="item.text" x-show="item.text"></small>
+                                        <small class="ps-notify-time" x-show="item.time" x-text="item.time"></small>
+                                        <span class="ps-notify-actions" x-show="item.action || item.pelican">
+                                            <template x-if="item.action">
+                                                <a class="ps-btn is-sm" :href="item.action.url" x-on:click="if(item.action.run){$event.preventDefault(); notifyMenu=false; item.action.run()} else if(item.pelican){markPanelNoticesRead([item.key])}" x-text="item.action.label"></a>
+                                            </template>
+                                            <button type="button" class="ps-btn is-sm is-subtle" x-show="item.pelican" x-on:click="markPanelNoticesRead([item.key])">Mark read</button>
+                                        </span>
                                     </div>
                                 </template>
                                 <p class="ps-empty" x-show="!notifications().length">You are all caught up.</p>
@@ -632,9 +639,13 @@
                     <template x-if="fileEditorUrl">
                         <section class="ps-file-editor">
                             <header>
-                                <strong>File editor</strong>
-                                <span class="ps-badge is-warn" x-show="fileEditorDirty">Unsaved changes</span>
-                                <button type="button" class="ps-btn is-icon is-sm is-subtle" x-on:click="closeFileEditor()" aria-label="Close file editor"><svg aria-hidden="true"><use href="#ps-close"/></svg></button>
+                                <svg class="ps-file-editor-icon" aria-hidden="true"><use href="#ps-file"/></svg>
+                                <strong class="ps-file-editor-path" :data-tip="fileEditorPath" x-text="fileEditorPath.split('/').pop() || fileEditorPath"></strong>
+                                <span class="ps-badge is-warn" x-show="fileEditorDirty">Unsaved</span>
+                                <span class="ps-file-editor-actions">
+                                    <button type="button" class="ps-btn is-sm is-primary" x-show="fileEditorExternal" :disabled="fileEditorChecking || fileEditorSaving" x-on:click="saveFileEditor()" data-tip="Save and close (Ctrl+S)"><svg aria-hidden="true"><use href="#ps-save"/></svg><span>Save</span></button>
+                                    <button type="button" class="ps-btn is-icon is-sm is-subtle" x-on:click="closeFileEditor()" data-tip="Close editor" aria-label="Close file editor"><svg aria-hidden="true"><use href="#ps-close"/></svg></button>
+                                </span>
                             </header>
                             <iframe data-ps-frame="editor" :data-ps-accent="currentAccentHex()" :src="fileEditorUrl" x-on:load="fileEditorLoaded($el)" title="File editor"></iframe>
                         </section>

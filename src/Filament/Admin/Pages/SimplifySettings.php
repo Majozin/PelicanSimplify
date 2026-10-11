@@ -112,7 +112,23 @@ class SimplifySettings extends Page implements HasForms
     }
 
     public static function canAccess(): bool { return (bool) user()?->isRootAdmin(); }
-    public function needsSetup(): bool { return !\Simplify\Panel\Services\FeatureSettings::enabled('setup_completed'); }
+    /** True while an administrator walks the setup wizard again; current settings stay active until it is saved. */
+    public bool $rerunSetup = false;
+    public function needsSetup(): bool { return $this->rerunSetup || !\Simplify\Panel\Services\FeatureSettings::enabled('setup_completed'); }
+    /** Opens the first-setup wizard again (system checks first), prefilled with the current settings. */
+    public function startSetupAgain(): void
+    {
+        abort_unless(static::canAccess() && !$this->embedded, 403);
+        $this->rerunSetup = true;
+        $this->setupStarted = false;
+        $this->showDiagnostics = false;
+        $this->refreshRequirements();
+    }
+    public function cancelSetupAgain(): void
+    {
+        $this->rerunSetup = false;
+        $this->setupStarted = false;
+    }
     public function updateStatus(): ?array { return \Simplify\Panel\Services\UpdateCheck::status(); }
     public function mount(): void
     {
@@ -120,56 +136,28 @@ class SimplifySettings extends Page implements HasForms
         $this->embedded = request()->boolean('simplify_embed');
         $this->form->fill([...CreatorAccess::configuration(),'creation_defaults'=>\Simplify\Panel\Services\CreationDefaults::all(),'appearance'=>AppearanceSettings::all(),'features'=>\Simplify\Panel\Services\FeatureSettings::all(),'performance'=>\Simplify\Panel\Services\PerformanceSettings::all(),'web'=>\Simplify\Panel\Services\Extensions::webInstalled()?app('simplify.web')->options():[]]);
     }
+    /** Settings categories, in order. The first setup walks the same pages; the banner library is added afterwards. */
+    private const CATEGORIES = [
+        'General' => 'tabler-layout-dashboard',
+        'Appearance' => 'tabler-palette',
+        'Users & access' => 'tabler-users',
+        'Server creation' => 'tabler-server-bolt',
+        'Backups & performance' => 'tabler-gauge',
+    ];
+
+    /** Feature toggles of one group (FeatureSettings::definitions()[key][3]) as a titled section. */
+    private static function featureSection(string $title, string $group, ?string $description = null): Section
+    {
+        $definitions = array_filter(\Simplify\Panel\Services\FeatureSettings::definitions(), fn ($item) => ($item[3] ?? 'Server features') === $group);
+        $section = Section::make($title)->columns(2)->schema(array_map(fn (array $definition, string $key) => Toggle::make('features.'.$key)->label($definition[0])->helperText($definition[1]), $definitions, array_keys($definitions)));
+        return $description ? $section->description($description) : $section;
+    }
+
     public function form(Schema $schema): Schema
     {
-        $groups = ['Interface','Appearance','Access and visibility','User access','Server features','Automation'];
-        $featureSections = array_map(function(string $group){
-                    $definitions=array_filter(\Simplify\Panel\Services\FeatureSettings::definitions(),fn($item)=>($item[3]??'Server features')===$group);
-                    $fields=array_map(fn(array $definition,string $key)=>Toggle::make('features.'.$key)->label($definition[0])->helperText($definition[1]),$definitions,array_keys($definitions));
-                    if($group==='Appearance')$fields=[...$fields,
-                        ColorPicker::make('appearance.accent_color')->view('pelican-simplify::filament.admin.accent-picker')->label('Panel accent color')->hex()->required()->rules(['regex:/^#[0-9a-fA-F]{6}$/'])->helperText('Used throughout the shared interface and by every server when separate colors are off.'),
-                        Toggle::make('appearance.individual_colors')->label('Use separate server colors')->live()->helperText('On assigns a color to every server without one. Off makes all servers use the panel accent; saved colors are retained.'),
-                        Select::make('appearance.server_uuid')->label('Server color to edit')->searchable()->options(fn()=>Server::query()->orderBy('name')->pluck('name','uuid')->all())->live()->visible(fn(Get $get)=>$get('appearance.individual_colors'))->afterStateUpdated(function(?string $state,Set $set):void{$server=$state?Server::query()->where('uuid',$state)->first():null;$set('appearance.server_color',$server?ServerAppearance::color($server):null);}),
-                        ColorPicker::make('appearance.server_color')->view('pelican-simplify::filament.admin.accent-picker')->label('Selected server accent')->hex()->nullable()->rules(['regex:/^#[0-9a-fA-F]{6}$/'])->visible(fn(Get $get)=>$get('appearance.individual_colors')&&filled($get('appearance.server_uuid')))->helperText('Choose a color and save settings to apply it to this server.'),
-                    ];
-                    return Section::make($group)->columns(2)->schema($fields);
-                },$groups);
-        $sections=[
-            Section::make('User resource allowances')->columns(2)->description('Allow selected owners to adjust resources within these limits. The easy creator uses these same grants. This does not grant admin-panel access.')->schema([
-                Toggle::make('enabled')->label('Enable user resource allowances / optional server creation'),
-                Select::make('user_ids')->label('Allowed users')->multiple()->searchable()->options(fn () => User::query()->orderBy('username')->pluck('username', 'id')->all()),
-                Select::make('role_ids')->label('Allowed roles')->multiple()->searchable()->options(fn () => Role::query()->orderBy('name')->pluck('name', 'id')->all())->helperText('Members of these Pelican roles receive the same self-service access as explicitly allowed users.'),
-                Select::make('node_ids')->label('Hosting machine')->multiple()->searchable()->options(fn () => Node::query()->pluck('name', 'id')->all())->helperText('Select the hosting nodes available for self-service creation. Users do not choose ports or nodes.'),
-                Toggle::make('minecraft_enabled')->label('Allow Minecraft'),
-                Select::make('other_egg_ids')->label('Other games available to users')->multiple()->searchable()->options(fn () => Egg::query()->orderBy('name')->pluck('name', 'id')->all()),
-            ]),
-            Section::make('Allowance per user')->description('Server count, RAM and disk include all servers owned by that user. Admin creators retain their existing privileges.')->columns(2)->schema([
-                TextInput::make('max_servers')->label('Maximum servers')->integer()->minValue(1)->maxValue(100)->required(),
-                TextInput::make('max_memory_mb')->label('Total RAM (MB)')->integer()->minValue(1024)->maxValue(131072)->required(),
-                TextInput::make('max_disk_mb')->label('Total disk (MB)')->integer()->minValue(1024)->maxValue(10485760)->required(),
-                TextInput::make('max_cpu')->label('CPU per server (%)')->integer()->minValue(1)->maxValue(1600)->required(),
-                TextInput::make('max_backups')->label('Backup slots per server')->integer()->minValue(0)->maxValue(100)->required(),
-            ]),
-        ];
-        $categories = array_combine($groups, array_map(fn($section) => [$section], $featureSections));
-        $categories['Server defaults'] = [Section::make('Default resources for new servers')
-            ->description('Choose the starting CPU, RAM and disk for each Minecraft type. These apply to new servers and remain subject to user allowances. Existing servers keep their resources.')
-            ->schema(array_map(fn(string $type, string $label) => Section::make($label)->columns(3)->schema([
-                TextInput::make('creation_defaults.'.$type.'.cpu')->label('CPU (%)')->integer()->minValue(1)->maxValue(1600)->required()->helperText('100% is one core; 200% is two cores.'),
-                TextInput::make('creation_defaults.'.$type.'.ram_gb')->label('RAM (GB)')->integer()->minValue(1)->maxValue(128)->required(),
-                TextInput::make('creation_defaults.'.$type.'.disk_mb')->label('Disk (MB)')->integer()->minValue(1024)->maxValue(10485760)->required(),
-            ]), ['vanilla','plus','modded'], ['Vanilla','Vanilla+','Modded / modpacks']))];
         $performance = \Simplify\Panel\Services\PerformanceSettings::FIELDS;
         $numberField = static fn (string $key) => TextInput::make('performance.'.$key)->label($performance[$key][0])->helperText($performance[$key][1])
             ->integer()->minValue($performance[$key][3])->maxValue($performance[$key][4])->required();
-        $categories['Performance'] = [
-            Section::make('Refresh rates')->columns(2)->description('Lower values feel livelier but cost more requests to the panel and Wings. Hidden browser tabs and open popups never refresh.')
-                ->schema(array_map($numberField, ['overview_seconds', 'server_seconds', 'restart_seconds', 'health_seconds'])),
-            Section::make('Automatic backups for new servers')->columns(2)->description('Existing servers keep their own policy; change it from the server’s Backups workspace.')
-                ->schema([...array_map($numberField, ['backup_interval_minutes', 'backup_retention']),
-                    Toggle::make('performance.backup_only_when_used')->label('Skip backups while a server has not run')->helperText('An offline server that has not started since its last backup is not backed up again.')]),
-        ];
-        $categories['Creator access'] = [$sections[0]];
         $limitFields = static fn () => [
             TextInput::make('max_servers')->label('Maximum servers')->integer()->minValue(1)->maxValue(100)->required()->default(2),
             TextInput::make('max_memory_mb')->label('Total RAM (MB)')->integer()->minValue(1024)->maxValue(131072)->required()->default(8192),
@@ -177,25 +165,77 @@ class SimplifySettings extends Page implements HasForms
             TextInput::make('max_cpu')->label('CPU per server (%)')->integer()->minValue(1)->maxValue(1600)->required()->default(200),
             TextInput::make('max_backups')->label('Backups per server')->integer()->minValue(0)->maxValue(100)->required()->default(3),
         ];
-        $categories['Resource limits'] = [$sections[1],
-            Section::make('Role limits')->description('Overrides the shared allowance for matching roles. With multiple roles, the highest value for each resource applies. Limits alone do not grant access.')->schema([
-                Repeater::make('role_limits')->label('Role allowances')->defaultItems(0)->columns(2)->schema([
-                    Select::make('role_id')->label('Role')->required()->distinct()->searchable()->options(fn () => Role::query()->orderBy('name')->pluck('name','id')->all()),
-                    ...$limitFields(),
-                ])->addActionLabel('Add role limits'),
-            ]),
-            Section::make('User limits')->description('A specific user allowance takes precedence over role limits and shared defaults. Limits alone do not grant access.')->schema([
-                Repeater::make('user_limits')->label('User allowances')->defaultItems(0)->columns(2)->schema([
-                    Select::make('user_id')->label('User')->required()->distinct()->searchable()->options(fn () => User::query()->orderBy('username')->pluck('username','id')->all()),
-                    ...$limitFields(),
-                ])->addActionLabel('Add user limits'),
-            ]),
+
+        $categories = [
+            'General' => [
+                self::featureSection('Simplify interface', 'Interface', 'What Simplify replaces in Pelican.'),
+                self::featureSection('Server workspaces', 'Server features', 'Workspaces shown on every server page. Pelican permissions still decide who may use them.'),
+            ],
+            'Appearance' => [
+                self::featureSection('Theme', 'Appearance'),
+                Section::make('Colours')->columns(2)->schema([
+                    ColorPicker::make('appearance.accent_color')->view('pelican-simplify::filament.admin.accent-picker')->label('Panel accent color')->hex()->required()->rules(['regex:/^#[0-9a-fA-F]{6}$/'])->helperText('Used throughout the shared interface and by every server when separate colors are off.')->columnSpanFull(),
+                    Toggle::make('appearance.individual_colors')->label('Use separate server colors')->live()->helperText('On assigns a color to every server without one. Off makes all servers use the panel accent; saved colors are retained.')->columnSpanFull(),
+                    Select::make('appearance.server_uuid')->label('Server color to edit')->searchable()->options(fn () => Server::query()->orderBy('name')->pluck('name', 'uuid')->all())->live()->visible(fn (Get $get) => $get('appearance.individual_colors'))->afterStateUpdated(function (?string $state, Set $set): void { $server = $state ? Server::query()->where('uuid', $state)->first() : null; $set('appearance.server_color', $server ? ServerAppearance::color($server) : null); }),
+                    ColorPicker::make('appearance.server_color')->view('pelican-simplify::filament.admin.accent-picker')->label('Selected server accent')->hex()->nullable()->rules(['regex:/^#[0-9a-fA-F]{6}$/'])->visible(fn (Get $get) => $get('appearance.individual_colors') && filled($get('appearance.server_uuid')))->helperText('Choose a color and save settings to apply it to this server.'),
+                ]),
+            ],
+            'Users & access' => [
+                self::featureSection('Visibility', 'Access and visibility', 'Who sees which servers, and who may share them.'),
+                self::featureSection('What users can use', 'User access', 'Ordinary users only; administrators always keep full access.'),
+            ],
+            'Server creation' => [
+                Section::make('Who can create servers')->columns(2)->description('Allow selected users and roles to create servers and adjust resources within their allowance. This does not grant admin-panel access.')->schema([
+                    Toggle::make('enabled')->label('Allow users to create servers')->columnSpanFull(),
+                    Select::make('user_ids')->label('Allowed users')->multiple()->searchable()->options(fn () => User::query()->orderBy('username')->pluck('username', 'id')->all()),
+                    Select::make('role_ids')->label('Allowed roles')->multiple()->searchable()->options(fn () => Role::query()->orderBy('name')->pluck('name', 'id')->all())->helperText('Members of these Pelican roles receive the same self-service access as explicitly allowed users.'),
+                    Select::make('node_ids')->label('Hosting machines')->multiple()->searchable()->options(fn () => Node::query()->pluck('name', 'id')->all())->helperText('Nodes used for self-service creation. Users do not choose ports or nodes.'),
+                    Select::make('other_egg_ids')->label('Other games')->multiple()->searchable()->options(fn () => Egg::query()->orderBy('name')->pluck('name', 'id')->all()),
+                    Toggle::make('minecraft_enabled')->label('Allow Minecraft'),
+                ]),
+                Section::make('Starting resources')->description('CPU, RAM and disk for each Minecraft type. Applies to new servers within the user\'s allowance; existing servers keep theirs.')
+                    ->schema(array_map(fn (string $type, string $label) => Section::make($label)->columns(3)->schema([
+                        TextInput::make('creation_defaults.'.$type.'.cpu')->label('CPU (%)')->integer()->minValue(1)->maxValue(1600)->required()->helperText('100% is one core; 200% is two cores.'),
+                        TextInput::make('creation_defaults.'.$type.'.ram_gb')->label('RAM (GB)')->integer()->minValue(1)->maxValue(128)->required(),
+                        TextInput::make('creation_defaults.'.$type.'.disk_mb')->label('Disk (MB)')->integer()->minValue(1024)->maxValue(10485760)->required(),
+                    ]), ['vanilla', 'plus', 'modded'], ['Vanilla', 'Vanilla+', 'Modded / modpacks'])),
+                Section::make('Allowance per user')->columns(3)->description('Totals across all servers a user owns. Administrators are not limited.')->schema([
+                    TextInput::make('max_servers')->label('Maximum servers')->integer()->minValue(1)->maxValue(100)->required(),
+                    TextInput::make('max_memory_mb')->label('Total RAM (MB)')->integer()->minValue(1024)->maxValue(131072)->required(),
+                    TextInput::make('max_disk_mb')->label('Total disk (MB)')->integer()->minValue(1024)->maxValue(10485760)->required(),
+                    TextInput::make('max_cpu')->label('CPU per server (%)')->integer()->minValue(1)->maxValue(1600)->required(),
+                    TextInput::make('max_backups')->label('Backup slots per server')->integer()->minValue(0)->maxValue(100)->required(),
+                ]),
+                Section::make('Exceptions')->description('Role limits override the shared allowance (the highest value wins with several roles); a user limit overrides both. Limits alone do not grant access.')->collapsible()->collapsed()->schema([
+                    Repeater::make('role_limits')->label('Role allowances')->defaultItems(0)->columns(3)->schema([
+                        Select::make('role_id')->label('Role')->required()->distinct()->searchable()->options(fn () => Role::query()->orderBy('name')->pluck('name', 'id')->all()),
+                        ...$limitFields(),
+                    ])->addActionLabel('Add role limits'),
+                    Repeater::make('user_limits')->label('User allowances')->defaultItems(0)->columns(3)->schema([
+                        Select::make('user_id')->label('User')->required()->distinct()->searchable()->options(fn () => User::query()->orderBy('username')->pluck('username', 'id')->all()),
+                        ...$limitFields(),
+                    ])->addActionLabel('Add user limits'),
+                ]),
+            ],
+            'Backups & performance' => [
+                Section::make('Automatic backups')->columns(2)->description('Defaults for new servers. Existing servers keep their own policy; change it from the server\'s Backups workspace.')->schema([
+                    ...array_map(fn (array $definition, string $key) => Toggle::make('features.'.$key)->label($definition[0])->helperText($definition[1]), array_filter(\Simplify\Panel\Services\FeatureSettings::definitions(), fn ($item) => ($item[3] ?? '') === 'Automation'), array_keys(array_filter(\Simplify\Panel\Services\FeatureSettings::definitions(), fn ($item) => ($item[3] ?? '') === 'Automation'))),
+                    Toggle::make('performance.backup_only_when_used')->label('Skip backups while a server has not run')->helperText('An offline server that has not started since its last backup is not backed up again.'),
+                    ...array_map($numberField, ['backup_interval_minutes', 'backup_retention']),
+                ]),
+                Section::make('Refresh rates')->columns(2)->description('Lower values feel livelier but cost more requests to the panel and Wings. Hidden browser tabs and open popups never refresh.')
+                    ->schema(array_map($numberField, ['overview_seconds', 'server_seconds', 'restart_seconds', 'health_seconds'])),
+            ],
         ];
-        if (\Simplify\Panel\Services\Extensions::webInstalled()) $categories['Website'] = app('simplify.web')->settingsSections();
+        $icons = self::CATEGORIES;
+        if (\Simplify\Panel\Services\Extensions::webInstalled()) {
+            $categories['Website'] = app('simplify.web')->settingsSections();
+            $icons['Website'] = 'tabler-world';
+        }
         if ($this->needsSetup()) {
             return $schema->statePath('data')->components([
                 \Filament\Schemas\Components\Wizard::make(
-                    array_map(fn(string $label, array $content) => \Filament\Schemas\Components\Wizard\Step::make($label)->schema($content), array_keys($categories), array_values($categories))
+                    array_map(fn (string $label, array $content) => \Filament\Schemas\Components\Wizard\Step::make($label)->schema($content), array_keys($categories), array_values($categories))
                 )->skippable(false)->columnSpanFull()
                     ->nextAction(fn (\Filament\Actions\Action $action) => $action->label('Next')->color('gray')->extraAttributes(['class' => 'ssc-next-button']))
                     ->previousAction(fn (\Filament\Actions\Action $action) => $action->label('Back')->color('gray')->extraAttributes(['class' => 'ssc-back-button']))
@@ -203,15 +243,17 @@ class SimplifySettings extends Page implements HasForms
             ]);
         }
         $categories['Server banners'] = [\Filament\Schemas\Components\View::make('pelican-simplify::banner-library')];
-        return $schema->statePath('data')->components([
-            \Filament\Schemas\Components\Tabs::make('Simplify settings')->columnSpanFull()->tabs(
-                array_map(fn(string $label, array $content) => \Filament\Schemas\Components\Tabs\Tab::make($label)->schema($content), array_keys($categories), array_values($categories))
-            ),
-        ]);
+        $icons['Server banners'] = 'tabler-photo';
+        $tabs = \Filament\Schemas\Components\Tabs::make('Simplify settings')->columnSpanFull()->extraAttributes(['class' => 'ps-settings-tabs'])->tabs(
+            array_map(fn (string $label, array $content) => \Filament\Schemas\Components\Tabs\Tab::make($label)->icon($icons[$label] ?? null)->schema($content), array_keys($categories), array_values($categories))
+        );
+        if (method_exists($tabs, 'vertical')) $tabs->vertical();
+        if (method_exists($tabs, 'persistTabInQueryString')) $tabs->persistTabInQueryString('section');
+        return $schema->statePath('data')->components([$tabs]);
     }
     public function setupSteps(): array
     {
-        $steps = ['Interface','Appearance','Access and visibility','User access','Server features','Automation','Server defaults','Performance','Creator access','Resource limits'];
+        $steps = array_keys(self::CATEGORIES);
         if (\Simplify\Panel\Services\Extensions::webInstalled()) $steps[] = 'Website';
         return $steps;
     }
@@ -260,6 +302,7 @@ class SimplifySettings extends Page implements HasForms
         if(\Simplify\Panel\Services\Extensions::webInstalled())app('simplify.web')->saveOptions($state['web']??[]);
         app(CreatorAccess::class)->reset();
         \Simplify\Panel\Services\FeatureSettings::save($state['features']??[],true);
+        $this->rerunSetup = false;
         Notification::make()->title('PelicanSimplify settings saved')->success()->send();
         if ($firstSetup) {
             $this->redirect(\Simplify\Panel\Filament\App\Pages\Dashboard::getUrl(panel: 'app'));

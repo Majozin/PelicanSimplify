@@ -410,7 +410,9 @@ html:has(.ps-modal-layer[data-open="true"]), html.ps-ui-locked { overflow: hidde
 .ps-notify-item > svg { grid-row: span 2; width: 18px; height: 18px; margin-top: 1px; color: var(--ps-tone); }
 .ps-notify-item strong { font-size: 13px; font-weight: 650; }
 .ps-notify-item small { color: var(--ps-muted); font-size: 12px; line-height: 1.45; }
-.ps-notify-item .ps-btn { grid-column: 2; justify-self: start; margin-top: 6px; }
+.ps-notify-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.ps-notify-actions { display: flex; flex-wrap: wrap; grid-column: 2; gap: 6px; margin-top: 6px; }
+.ps-notify-item .ps-notify-time { grid-column: 2; font-size: 11px; opacity: .8; }
 .ps-notify-item.is-ok { --ps-tone: var(--ps-ok); }
 .ps-notify-item.is-warn { --ps-tone: var(--ps-warn); }
 .ps-notify-item.is-danger { --ps-tone: var(--ps-danger); }

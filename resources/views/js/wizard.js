@@ -1,27 +1,20 @@
 /* Wizard helpers for the server creator (draft autosave) and the first Simplify setup (step navigation). */
 
-/** Calls `onChange` whenever the Filament wizard changes step; reactive when Alpine allows, polling otherwise. */
+/**
+ * Calls `onChange` when the Filament wizard may have changed step. Livewire 4 can replace the wizard
+ * element on re-render, so this does not hold on to one Alpine instance: it re-checks right after
+ * clicks and wizard events, with a cheap local fallback check (no requests) every `fallbackMs`.
+ */
 window.sscWatchWizardStep = function (root, onChange, fallbackMs) {
-  const wizardData = () => Alpine.$data(root.querySelector('.fi-sc-wizard'));
-  if (typeof Alpine !== 'undefined' && typeof Alpine.effect === 'function') {
-    let stop = null;
-    const start = () => {
-      try {
-        const wizard = wizardData();
-        if (!wizard || !('step' in wizard)) return false;
-        const runner = Alpine.effect(() => onChange(wizard.step));
-        stop = () => Alpine.release?.(runner);
-        return true;
-      } catch {
-        return false;
-      }
-    };
-    // The wizard initialises after its parent; wait for it.
-    if (!start()) queueMicrotask(() => start() || setTimeout(start, 50));
-    return () => stop?.();
-  }
-  const timer = setInterval(() => onChange(), fallbackMs);
-  return () => clearInterval(timer);
+  const soon = () => setTimeout(onChange, 60);
+  const timer = setInterval(onChange, fallbackMs);
+  root?.addEventListener?.('click', soon);
+  window.addEventListener?.('next-wizard-step', soon);
+  return () => {
+    clearInterval(timer);
+    root?.removeEventListener?.('click', soon);
+    window.removeEventListener?.('next-wizard-step', soon);
+  };
 };
 
 window.sscDraft = function (wire) {

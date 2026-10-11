@@ -453,12 +453,13 @@ class CreateMinecraftServer extends Page implements HasForms
                             Select::make('allocation_id')
                                 ->dehydratedWhenHidden()->label('Port / allocation')->visible(fn () => $this->multipleNodes())
                                 ->required()->searchable()
-                                ->options(fn (Get $get) => $this->multipleNodes() ? $this->memo('allocations-'.$get('node_id'), fn () => Allocation::query()
+                                // Also built when hidden (single node): Select validates the auto-picked allocation against these options.
+                                ->options(fn (Get $get) => $this->memo('allocations-'.$get('node_id'), fn () => Allocation::query()
                                     ->where('node_id', $get('node_id'))
                                     ->whereNull('server_id')
                                     ->get()->mapWithKeys(fn (Allocation $allocation) => [
                                         $allocation->id => $allocation->address ?? ($allocation->ip . ':' . $allocation->port),
-                                    ])->all()) : [])
+                                    ])->all()))
                                 ->helperText('Only free allocations are shown. Create an allocation under Nodes if this is empty.'),
                             Hidden::make('owner_id'),
                         ])->columns(1)

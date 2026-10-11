@@ -40,6 +40,8 @@
         <symbol id="ps-account" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 22v-2a8 8 0 0 1 16 0v2"/></symbol>
         <symbol id="ps-monitor" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="13" rx="2"/><path d="M12 16v5m-5 0h10"/></symbol>
         <symbol id="ps-logout" viewBox="0 0 24 24"><path d="M10 4H4v16h6m4-13 5 5-5 5M8 12h11"/></symbol>
+        <symbol id="ps-save" viewBox="0 0 24 24"><path d="M5 3h11l5 5v13H3V3h2Zm2 0v5h8V3M7 21v-7h10v7"/></symbol>
+        <symbol id="ps-file" viewBox="0 0 24 24"><path d="M6 3h8l5 5v13H6zM14 3v5h5"/></symbol>
         <symbol id="ps-lock" viewBox="0 0 24 24"><rect x="5" y="10" width="14" height="11" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></symbol>
         <symbol id="ps-play" viewBox="0 0 24 24"><path d="m8 4 12 8-12 8Z"/></symbol>
         <symbol id="ps-stop" viewBox="0 0 24 24"><rect x="5" y="5" width="14" height="14" rx="2"/></symbol>

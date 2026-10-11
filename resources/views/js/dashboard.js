@@ -33,6 +33,7 @@
       appearanceMenu: false,
       notifyMenu: false,
       noticeHistory: [],
+      panelNotices: [],
       overviewCompact: false,
       overviewPreferences: { ...OVERVIEW_DEFAULTS },
       powerConfirmation: null,
@@ -76,6 +77,8 @@
       fileEditorUrl: null,
       fileEditorDirty: false,
       fileEditorSaving: false,
+      fileEditorChecking: false,
+      fileEditorExternal: false,
       uploadedBackgrounds: boot.uploaded_backgrounds || [],
       backgroundDraft: 'auto',
       colorMenu: false,
@@ -209,7 +212,7 @@
         if (typeof color === 'string' && /^#[0-9a-f]{6}$/i.test(color)) return { '--ps-accent': color, '--ps-on-accent': accentInk(color) };
         let hash = 2166136261;
         for (const c of String(id)) hash = Math.imul(hash ^ c.charCodeAt(0), 16777619) >>> 0;
-        return { '--ps-accent': `hsl(${hash % 360} 42% ${this.themeDark ? 70 : 40}%)`, '--ps-on-accent': this.themeDark ? '#111118' : '#ffffff' };
+        return { '--ps-accent': `hsl(${hash % 360} 68% 76%)`, '--ps-on-accent': '#111118' };
       },
       /** Panel name gradient: the common accent, else the page accent (blue on an uncoloured overview). */
       brandStyle() {
@@ -251,6 +254,7 @@
       },
       initNotices() {
         this.noticeHistory = window.Simplify?.history?.() || [];
+        this.panelNotices = Array.isArray(this.boot.panel_notifications) ? this.boot.panel_notifications : [];
         this.noticeListener = (event) => (this.noticeHistory = [event.detail, ...this.noticeHistory].slice(0, 20));
         window.addEventListener?.('simplify:notice', this.noticeListener);
       },
@@ -283,7 +287,30 @@
           items.push({ id: 'update', tone: 'info', title: 'Simplify ' + update.version + ' is available', text: 'You are running ' + (update.current || 'an older version') + '. Update from the Pelican plugin page.', action: update.url ? { label: 'Open plugins', url: update.url } : null });
         }
         for (const notice of this.boot.notices || []) items.push({ action: null, ...notice });
+        for (const notice of this.panelNotices) items.push({ action: null, ...notice, pelican: true });
         return items;
+      },
+      /** Opening the bell fetches Pelican's latest notifications (no polling). */
+      async toggleNotifications() {
+        this.notifyMenu = !this.notifyMenu;
+        this.appearanceMenu = false;
+        this.accountMenu = false;
+        if (!this.notifyMenu || typeof wire.panelNotifications !== 'function') return;
+        try {
+          const items = await wire.panelNotifications();
+          if (Array.isArray(items)) this.panelNotices = items;
+        } catch {}
+      },
+      async markPanelNoticesRead(keys) {
+        const ids = keys.filter(Boolean);
+        if (!ids.length) return;
+        this.panelNotices = this.panelNotices.filter((n) => !ids.includes(n.key));
+        try {
+          const items = await wire.markPanelNotificationsRead(ids);
+          if (Array.isArray(items)) this.panelNotices = items;
+        } catch {
+          this.toast('Notifications could not be marked as read.', 'warn');
+        }
       },
       enhanceCopyright() {
         if (!document.querySelectorAll) return;
@@ -1424,6 +1451,15 @@
           this.toast('The file workspace could not be opened.', 'danger');
         }
       },
+      /** Clicks Pelican's (hidden) "Save and close", which runs the revision check above first. */
+      saveFileEditor() {
+        try {
+          const doc = document.querySelector('.ps-file-editor iframe')?.contentDocument;
+          const button = doc && [...doc.querySelectorAll('button[wire\\:click]')].find((b) => (b.getAttribute('wire:click') || '').includes('fm_save_and_close'));
+          if (button) return button.click();
+        } catch {}
+        this.toast('The editor is not ready yet.', 'warn');
+      },
       async closeFileEditor() {
         if (this.busy) return;
         if (this.fileEditorDirty && !(await this.ask({ title: 'Discard unsaved file changes?', message: 'Your edits have not been saved.', confirmLabel: 'Discard changes', tone: 'danger' }))) return;
@@ -1458,6 +1494,9 @@
           this.styleFrame(frame, 'editor');
           const doc = frame.contentDocument;
           const saveButton = () => [...doc.querySelectorAll('button[wire\\:click]')].find((button) => (button.getAttribute('wire:click') || '').includes('fm_save_and_close'));
+          // Simplify's header takes over Save/Close; Pelican's own footer only stays when its save button is not found.
+          this.fileEditorExternal = !!saveButton();
+          if (this.fileEditorExternal) doc.documentElement.dataset.psEditorActions = 'external';
           for (const button of doc.querySelectorAll('button[wire\\:click]')) {
             const action = button.getAttribute('wire:click') || '';
             if ((action.includes('fm_save') && !action.includes('fm_save_and_close')) || action.includes('fm_cancel')) button.style.display = 'none';

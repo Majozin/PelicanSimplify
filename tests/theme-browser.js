@@ -70,23 +70,39 @@ const { start } = require('./browser-harness');
     assert.equal(await dark.evaluate(() => getComputedStyle(document.querySelector('.ps-modal-body')).overflowY), 'auto');
     console.log('PASS fixed popup size with a scrolling body');
 
-    // 5. Files: the iframe fills the popup and scrolls on its own; no outer scrollbar.
+    // 5. Files: the page fills the popup; only the file list scrolls (toolbar and pagination stay put).
     await data(dark, (d) => d.close());
     await data(dark, (d) => d.open('files'));
     const filesFrame = await (await dark.waitForSelector('iframe[title="Server file manager"]')).contentFrame();
     await filesFrame.waitForFunction(() => document.documentElement.classList.contains('ps-frame'));
-    const scroll = await filesFrame.evaluate(() => ({
-      html: getComputedStyle(document.documentElement).overflowY,
-      body: getComputedStyle(document.body).overflowY,
-      scrolls: document.body.scrollHeight > document.body.clientHeight,
-    }));
-    assert.deepEqual(scroll, { html: 'hidden', body: 'auto', scrolls: true });
+    const scroll = await filesFrame.evaluate(() => {
+      const list = document.querySelector('.fi-ta-content-ctn');
+      return {
+        html: getComputedStyle(document.documentElement).overflowY,
+        body: getComputedStyle(document.body).overflowY,
+        bodyScrolls: document.body.scrollHeight > document.body.clientHeight + 1,
+        listScrolls: list.scrollHeight > list.clientHeight && getComputedStyle(list).overflowY === 'auto',
+        heading: getComputedStyle(document.querySelector('.fi-header-heading')).display,
+      };
+    });
+    assert.deepEqual(scroll, { html: 'hidden', body: 'hidden', bodyScrolls: false, listScrolls: true, heading: 'none' });
     const outerScroll = await dark.evaluate(() => {
       const body = document.querySelector('.ps-modal-body');
       return body.scrollHeight > body.clientHeight + 1;
     });
     assert.equal(outerScroll, false, 'the popup itself never scrolls around the file manager');
-    console.log('PASS file workspace uses a single scroll container');
+    // The editor opens beside the list with Simplify's own header; only its code area grows.
+    await filesFrame.click('a[href*="/edit/file3.yml"]');
+    const editorFrame = await (await dark.waitForSelector('.ps-file-editor iframe')).contentFrame();
+    await editorFrame.waitForFunction(() => document.documentElement.dataset.psEditorActions === 'external');
+    const editor = await editorFrame.evaluate(() => ({
+      footer: getComputedStyle(document.querySelector('.fi-section-footer')).display,
+      fills: document.querySelector('.fme-wrapper').getBoundingClientRect().height > 300,
+      bodyScrolls: document.body.scrollHeight > document.body.clientHeight + 1,
+    }));
+    assert.deepEqual(editor, { footer: 'none', fills: true, bodyScrolls: false });
+    assert.equal(await dark.textContent('.ps-file-editor-path'), 'file3.yml');
+    console.log('PASS file workspace and editor scroll only their lists');
 
     // 6. Confirmations use the Simplify dialog; Cancel keeps the server running.
     await data(dark, (d) => d.close());

@@ -605,12 +605,14 @@ body:has(.ps) [data-ps-copyright-line] > * { display: inline; }
 }
 
 /* Files: list and editor share the popup; each iframe scrolls inside itself. */
-.ps-files-workspace { display: grid; flex: 1 1 auto; grid-template-columns: minmax(0, 1fr); gap: 12px; min-height: 0; height: 100%; padding: 12px; }
+.ps-files-workspace { display: grid; flex: 1 1 auto; grid-template-columns: minmax(0, 1fr); gap: 0; min-height: 0; height: 100%; padding: 0; }
 .ps-files-workspace.has-editor { grid-template-columns: minmax(260px, .8fr) minmax(0, 1.2fr); }
-.ps-files-list, .ps-file-editor { display: flex; flex-direction: column; min-width: 0; min-height: 0; overflow: hidden; border: 1px solid var(--ps-line); border-radius: var(--ps-radius-lg); background: var(--ps-surface); }
-.ps-file-editor { border-color: var(--ps-accent); }
-.ps-file-editor > header { display: flex; flex: none; align-items: center; gap: 10px; padding: 6px 6px 6px 14px; border-bottom: 1px solid var(--ps-line); background: var(--ps-raised); font-size: 13px; }
-.ps-file-editor > header > .ps-btn { margin-left: auto; }
+.ps-files-list, .ps-file-editor { display: flex; flex-direction: column; min-width: 0; min-height: 0; overflow: hidden; background: var(--ps-surface); }
+.ps-files-workspace.has-editor .ps-file-editor { border-left: 1px solid var(--ps-line); }
+.ps-file-editor > header { display: flex; flex: none; align-items: center; gap: 8px; min-height: 46px; padding: 6px 10px 6px 14px; border-bottom: 1px solid var(--ps-line); font-size: 13px; }
+.ps-file-editor-icon { flex: none; width: 16px; height: 16px; color: var(--ps-accent); }
+.ps-file-editor-path { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-family: var(--ps-mono); font-size: 12px; }
+.ps-file-editor-actions { display: flex; flex: none; align-items: center; gap: 6px; margin-left: auto; }
 .ps-files-workspace iframe { display: block; flex: 1 1 auto; width: 100%; height: 100%; min-height: 0; border: 0; }
 @media (max-width: 800px) { .ps-files-workspace.has-editor { grid-template-columns: minmax(0, 1fr); grid-template-rows: repeat(2, minmax(0, 1fr)); } }
 
@@ -623,7 +625,7 @@ body:has(.ps) [data-ps-copyright-line] > * { display: inline; }
 .ps-admin-options { margin-bottom: 20px; padding-bottom: 20px; border-bottom: 1px solid var(--ps-line); }
 .ps-admin-options .ps-input-row { flex-wrap: wrap; gap: 8px 24px; }
 .ps-admin-options .ps-input-row > .ps-btn { margin-left: auto; }
-.ps-embedded-frame { display: block; width: 100%; height: min(560px, 65dvh); border: 1px solid var(--ps-line); border-radius: var(--ps-radius-lg); background: var(--ps-surface); }
+.ps-embedded-frame { display: block; width: 100%; height: min(560px, 65dvh); margin-top: 8px; border: 0; border-top: 1px solid var(--ps-line); background: var(--ps-surface); }
 .ps-player-actions { margin-bottom: 8px; padding-bottom: 16px; border-bottom: 1px solid var(--ps-line); }
 .ps-action-wrap { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 16px; }
 .ps-player-actions .ps-action-wrap { margin: 0; }

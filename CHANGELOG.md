@@ -1,5 +1,17 @@
 # Changes
 
+## 0.3.0-beta.3
+- Fix Next in the server creator for real (verified on Pelican 1.0.0-beta38 / Filament 5 / Livewire 4): the hidden allocation field lost its options on single-node panels, and the draft step watcher lost track when Livewire 4 re-rendered the wizard.
+- Embedded pages no longer flip the dashboard to light mode (Filament's start-up theme event is ignored).
+- Popups with Pelican pages: no frames inside frames, no second page title, Simplify icon buttons.
+- Files: the page fits the popup and only the file list scrolls; toolbar and pagination stay in place.
+- File editor: fills the space beside the list with only the code scrolling; Simplify header with file name, Save and Close.
+- Pelican's own notifications appear in the Simplify bell (mark read / mark all read); notifications inside popups become Simplify toasts.
+- Suggested server accent colours are pastel; custom colours stay free.
+- Simplify settings reorganised into General, Appearance, Users & access, Server creation and Backups & performance, with side tabs.
+- System checks only on the legacy settings page; new "Run setup wizard again" button there.
+- The file revision check reports an unreachable node instead of failing.
+
 ## 0.3.0-beta.2
 - Fix Next in the server creator: fields that are hidden in the browser (custom RAM, backup schedule) are no longer validated, and CPU/disk presets always win over hidden custom values.
 - Panel name follows the accent colour; server names fade from white (ink) into their accent.
