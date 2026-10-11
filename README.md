@@ -139,7 +139,7 @@ Planned improvements; scope and release order may change.
 ### Minecraft settings and software
 
 - MOTD color/formatting helper with a live Minecraft-style preview
-- Dark, formatted MOTD panels on the overview and server dashboard
+- Narrow two-line, formatted MOTD panels on the server dashboard and in the editor preview
 - Unchanged settings do not create restart reminders
 - MOTD and server icon
 - Player capacity, difficulty and game mode

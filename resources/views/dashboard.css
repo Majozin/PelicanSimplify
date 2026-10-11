@@ -1303,7 +1303,7 @@ body:has(.ps) :is(.fi-footer,.fi-main-ctn>footer){flex:none;margin-top:auto;back
 
 .ps .ps-server-grid:not(.is-list) .ps-card-icons{padding-top:0}
 .ps .ps-server-grid:not(.is-list) .ps-card-head{margin-bottom:12px;min-height:44px;align-items:flex-start}
-.ps .ps-server-grid:not(.is-list) .ps-card-badges{max-width:calc(100% - 96px)}
+.ps .ps-server-grid:not(.is-list) .ps-card-badges{max-width:calc(100% - 112px)}
 .ps .ps-motd-display{width:420px;max-width:100%;min-height:calc(3em + 18px);max-height:calc(3em + 18px);overflow-y:auto;white-space:pre-wrap}
 .ps .ps-motd-preview:not(.ps-motd-display){width:420px;max-width:100%;min-height:calc(3.2em + 30px);white-space:pre-wrap}
 
