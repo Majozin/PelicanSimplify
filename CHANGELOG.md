@@ -1,5 +1,12 @@
 # Changes
 
+## 0.2.0-alpha.22
+- Overview titles shrink to fit; aliases and original names use consistent stacked rows.
+- Software labels move into styled icon tooltips with reported versions.
+- Inline cancel/confirm controls for draft deletion and overview power actions.
+- Batch wizard draft autosaves and ignore draft indicator mutations when sizing popups.
+
+
 ## 0.2.0-alpha.21
 
 - Confirm every overview quick power action before sending a command.

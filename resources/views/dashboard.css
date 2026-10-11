@@ -1326,3 +1326,15 @@ body:has(.ps) [data-ps-footer] [data-ps-attribution]{white-space:normal!importan
 body:has(.ps) [data-ps-footer]{padding-top:4px!important}
 
 .ps .ps-motd-preview:not(.ps-motd-display){max-height:calc(3em + 30px);overflow-y:auto}
+
+/* Stable overview identity and software details. */
+.ps .ps-server-grid .ps-card-title-row{display:flex;flex-direction:column;align-items:stretch;gap:0;height:48px;min-width:0;flex-wrap:nowrap}
+.ps .ps-server-grid .ps-card-title-row h3{display:block;width:100%;max-width:100%;min-width:0;height:30px;line-height:30px;margin:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ps .ps-server-grid .ps-card-real-name{display:block;max-width:100%;height:16px;line-height:16px;margin:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ps .ps-card-real-name.no-alias{visibility:hidden}
+.ps .ps-software-tooltip{position:fixed;z-index:10000;pointer-events:none;width:max-content;max-width:min(260px,calc(100vw - 24px));padding:10px 14px;border:1px solid var(--accent);border-radius:10px;background:var(--surface,#25252c);color:var(--ink,#eee);box-shadow:0 8px 28px #0005;overflow-wrap:anywhere}
+.ps .ps-software-tooltip small{display:block;color:var(--muted);font-size:10px;margin-bottom:3px}
+.ps .ps-software-tooltip strong{font-size:13px;font-weight:600}
+.ps .ps-server-grid:not(.is-list) .has-power:has(.ps-card-egg-icon:hover) .ps-card-head{opacity:1}
+
+.ps .ps-overview-power{position:relative}.ps .ps-overview-power>button{transition:transform .2s,opacity .2s}.ps .ps-overview-power.is-confirming>button{opacity:0;transform:translateX(-20px);pointer-events:none;visibility:hidden}.ps .ps-power-confirm{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;gap:8px;padding:4px;background:inherit;border-radius:inherit;animation:ps-confirm-in .2s ease-out}.ps .ps-power-confirm>span{font-size:12px;min-width:0}.ps .ps-power-confirm button{width:32px;height:32px;padding:7px;flex:none}.ps .ps-power-confirm svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:2}.ps .ps-power-confirm .confirm{color:var(--accent)}.ps .ps-server-grid.is-list .ps-power-confirm{flex-wrap:wrap}.ps .ps-server-grid.is-list .ps-power-confirm>span{width:100%;text-align:center}@keyframes ps-confirm-in{from{opacity:0;transform:translateX(20px)}to{opacity:1;transform:none}}@media(prefers-reduced-motion:reduce){.ps .ps-power-confirm{animation:none}}

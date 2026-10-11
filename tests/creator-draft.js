@@ -1,6 +1,6 @@
 const fs=require('fs'),vm=require('vm'),assert=require('assert');
 let timerTick;
-const context={window:{addEventListener(){},removeEventListener(){}},setInterval:fn=>{timerTick=fn;return 1},clearInterval(){},confirm:()=>true,Alpine:{$data:()=>({step:'Resources',getStepIndex:()=>3})}};
+const context={window:{addEventListener(){},removeEventListener(){}},setInterval:fn=>{timerTick=fn;return 1},clearInterval(){},setTimeout:fn=>{context.saveTick=fn;return 2},clearTimeout(){},confirm:()=>true,Alpine:{$data:()=>({step:'Resources',getStepIndex:()=>3})}};
 vm.createContext(context);vm.runInContext(fs.readFileSync(__dirname+'/../resources/views/filament/admin/draft.js','utf8'),context);
 (async()=>{
  let saves=0,discard=0,fail=false,release;
@@ -11,7 +11,7 @@ vm.createContext(context);vm.runInContext(fs.readFileSync(__dirname+'/../resourc
  let blocked=false;d.unload({preventDefault(){blocked=true;}});assert.equal(blocked,true);
  fail=false;await d.flush();blocked=false;d.unload({preventDefault(){blocked=true;}});assert.equal(blocked,false);
  let resolve;release=new Promise(r=>resolve=r);d.changed();const saving=d.flush();d.changed();release=null;resolve();await saving;assert.equal(d.dirty,false);assert.ok(saves>=5);
- await d.discard();assert.equal(discard,1);assert.equal(d.completed,true);const count=saves;await d.flush();assert.equal(saves,count);d.destroy();assert.equal(context.window.sscSaveDraft,undefined);
+ await d.discard();assert.equal(discard,0);await d.discard(true);assert.equal(discard,1);assert.equal(d.completed,true);const count=saves;await d.flush();assert.equal(saves,count);d.destroy();assert.equal(context.window.sscSaveDraft,undefined);
  const inputs=[
  {attributes:[{name:'wire:model',value:'data.game'}],value:'',type:'hidden'},
  {attributes:[{name:'wire:model',value:'data.modpack_search'}],value:'',type:'hidden'},
@@ -23,8 +23,8 @@ vm.createContext(context);vm.runInContext(fs.readFileSync(__dirname+'/../resourc
  let autoWrites=0,finishAuto;const pauseAuto=new Promise(resolve=>finishAuto=resolve);
  const auto=context.window.sscDraft({draftStep:1,saveDraft:async()=>{autoWrites++;await pauseAuto;},$set(){}});auto.$root={querySelector:()=>({}),querySelectorAll:()=>[]};wizard.step='type';auto.init();assert.equal(auto.savedVisible(),true,'new wizard starts checked');const textEvent={target:{tagName:'INPUT',type:'text'}};
  auto.fieldFocused(textEvent);auto.changed();auto.changed();timerTick();await Promise.resolve();assert.equal(autoWrites,0,'typing and periodic step checks do not save text');
- auto.fieldExited(textEvent);assert.equal(autoWrites,1,'leaving the field starts one autosave');auto.fieldFocused(textEvent);auto.changed();finishAuto();await auto.pending;await Promise.resolve();assert.equal(autoWrites,1,'typing in the next field does not chain extra saves');assert.equal(auto.dirty,true);
- auto.fieldExited(textEvent);await auto.pending;assert.equal(autoWrites,2);assert.equal(auto.dirty,false);assert.equal(auto.savedCount,1,'check mark signals the completed field-exit save');assert.equal(auto.savedVisible(),true,'check stays visible while draft is saved');auto.fieldFocused(textEvent);auto.changed();assert.equal(auto.savedVisible(),false,'typing immediately hides the check');auto.fieldExited(textEvent);await auto.pending;assert.equal(auto.savedVisible(),true,'check returns after field-exit save');auto.destroy();
+ auto.fieldExited(textEvent);context.saveTick();assert.equal(autoWrites,1,'leaving the field starts one autosave');auto.fieldFocused(textEvent);auto.changed();finishAuto();await auto.pending;await Promise.resolve();assert.equal(autoWrites,1,'typing in the next field does not chain extra saves');assert.equal(auto.dirty,true);
+ auto.fieldExited(textEvent);context.saveTick();await auto.pending;assert.equal(autoWrites,2);assert.equal(auto.dirty,false);assert.equal(auto.savedCount,1,'check mark signals the completed field-exit save');assert.equal(auto.savedVisible(),true,'check stays visible while draft is saved');auto.fieldFocused(textEvent);auto.changed();assert.equal(auto.savedVisible(),false,'typing immediately hides the check');auto.fieldExited(textEvent);context.saveTick();await auto.pending;assert.equal(auto.savedVisible(),true,'check returns after field-exit save');auto.destroy();
  const refreshBefore=auto.refreshCount;auto.buttonClicked({target:{closest:()=>({})}});assert.equal(auto.refreshCount,refreshBefore+1,'native navigation triggers refresh animation');
  console.log('PASS autosave waits for text-field exit and does not save new typing during an in-flight save');
  console.log('PASS navigation among visited steps and future-step blocking');

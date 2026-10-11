@@ -1,8 +1,8 @@
 <x-filament-panels::page>
     @assets
     @include('pelican-simplify::filament.admin.styles')
-    @if(!$this->embedded)<link rel="stylesheet" href="{{ route('simplify.asset',['asset'=>'settings-page.css']) }}?v=0.2.0-alpha.21">@endif
-    <script src="{{ route('simplify.asset',['asset'=>'setup-progress.js']) }}?v=0.2.0-alpha.21"></script>
+    @if(!$this->embedded)<link rel="stylesheet" href="{{ route('simplify.asset',['asset'=>'settings-page.css']) }}?v=0.2.0-alpha.22">@endif
+    <script src="{{ route('simplify.asset',['asset'=>'setup-progress.js']) }}?v=0.2.0-alpha.22"></script>
     @endassets
     <div class="ps-settings-page {{ $this->embedded ? 'is-embedded' : 'is-standalone' }}">
         @if($this->needsSetup() && !$setupStarted)

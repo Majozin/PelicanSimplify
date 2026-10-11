@@ -153,3 +153,5 @@
 .ssc-wizard .ssc-cards--ram .ssc-card-title{grid-column:2;grid-row:1;font-size:14px;min-width:0}
 .ssc-wizard .ssc-cards--ram .ssc-card-description{grid-column:1/-1;grid-row:2;font-size:11px;line-height:1.4;max-width:none}
 @media(max-width:700px){.ssc-wizard .ssc-cards--ram{grid-template-columns:repeat(2,minmax(0,1fr))}}
+
+.ssc-delete-concept{width:40px;transition:width .2s;overflow:hidden}.ssc-delete-concept.is-confirming{width:96px}.ssc-delete-confirm{display:flex;align-items:center;justify-content:flex-end;gap:8px;white-space:nowrap;font-size:12px}.ssc-wizard .ssc-delete-button:hover{color:#ef7676!important;border-color:#ef7676!important}.ssc-delete-confirm .ssc-delete-button{color:#ef7676!important}@media(prefers-reduced-motion:reduce){.ssc-delete-concept{transition:none}}
