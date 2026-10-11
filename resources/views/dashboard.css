@@ -1495,3 +1495,30 @@ body:has(.ps.dark) [data-ps-footer]{background:var(--ps-surface,#1a1a1f)!importa
 
 /* Keep overview and health edges aligned on narrow screens too. */
 .ps .ps-server-scroll{padding-inline:4px}
+
+/* Match the rendered cards, including space consumed by a platform scrollbar. */
+.ps .ps-overview .ps-health-panel{width:var(--ps-health-width,calc(100% - 8px));max-width:none;margin-left:var(--ps-health-left,auto);margin-right:var(--ps-health-left,auto)}
+.ps .ps-health-panel>.ps-host-health{padding:16px 18px;gap:18px}
+.ps .ps-health-panel>.ps-host-health .ps-host-heading>svg{width:19px;height:19px}
+.ps .ps-health-panel>.ps-host-health .ps-host-heading .ps-health-heart svg{width:16px;height:16px}
+.ps .ps-health-panel>.ps-host-health .ps-host-emblem{width:42px;height:46px}
+.ps .ps-health-panel>.ps-host-health .ps-host-emblem .ps-host-heart{width:40px;height:40px}
+@media(max-width:600px){.ps .ps-health-panel>.ps-host-health{padding:12px;gap:12px}}
+/* MOTD absorbs equal spacing above and below while metrics remain docked. */
+.ps .ps-server-grid:not(.is-list) .ps-server-entry.has-card-motd .ps-card-title{display:flex;flex-direction:column;flex:1 1 0;min-height:0}
+.ps .ps-server-grid:not(.is-list) .has-card-motd .ps-card-title-row{flex:none}
+.ps .ps-server-grid:not(.is-list) .has-card-motd .ps-card-motd{flex:none;margin-block:auto}
+.ps .ps-server-grid:not(.is-list) .ps-server-entry.has-card-motd .ps-card-usage{margin-top:0}
+.ps .ps-server-grid:not(.is-list) .has-card-motd:is(:hover,:focus-within,.confirming-power) .ps-card-usage{margin-top:0}
+@media(hover:none){.ps .ps-server-grid:not(.is-list) .has-card-motd .ps-card-usage{margin-top:0}}
+/* Less information needs less card height, with room for power confirmations. */
+.ps .ps-server-grid:not(.is-list).no-metrics .ps-server-entry .ps-server-open{height:240px}
+.ps .ps-server-grid:not(.is-list).no-metrics.has-motd .ps-server-entry .ps-server-open{height:300px}
+.ps .ps-server-grid:not(.is-list).no-metrics.no-quick-actions .ps-server-entry .ps-server-open{height:200px}
+.ps .ps-server-grid:not(.is-list).no-metrics.no-quick-actions.has-motd .ps-server-entry .ps-server-open{height:260px}
+.ps .ps-server-grid:not(.is-list).no-metrics .ps-create-tiles{min-height:200px}
+.ps .ps-server-grid:not(.is-list).no-metrics .ps-server-entry .ps-card-bottom{margin-top:auto}
+
+/* Only the health card and copyright row paint their own surfaces. */
+body:has(.ps:not(.server-active)) :is(.fi-main,.fi-page,.fi-page-content,.fi-page-header-main-ctn,.fi-page-main){background:transparent!important;background-image:none!important}
+.ps:not(.server-active),.ps:not(.server-active) :is(.ps-main,.ps-overview,.ps-server-scroll){background:transparent!important;background-image:none!important}

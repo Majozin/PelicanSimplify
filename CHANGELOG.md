@@ -1,5 +1,13 @@
 # Changes
 
+## 0.2.0-alpha.25
+- Move Light, Dark and System theme controls into the appearance dropdown, also available on server pages.
+- Remove surrounding overview and legacy page backgrounds behind the health dock.
+- Align Host health to the rendered server grid, including platform scrollbar widths.
+- Increase aggregate health icon sizes and padding.
+- Balance free space above and below the MOTD while keeping metrics beside player counts.
+- Use shorter grid cards without CPU/RAM tiles, with room for quick actions when enabled.
+
 ## 0.2.0-alpha.24
 - Anchor grid metrics above player counts and place list metrics farther right, preserving title/icon positions during power-control reveal.
 - Align health edges with the server cards and confine footer background to the copyright row.
