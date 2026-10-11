@@ -24,12 +24,13 @@ namespace {
  $page=new \Simplify\Panel\Filament\Admin\Pages\SimplifySettings;
  $schema=$page->form(new \Filament\Schemas\Schema);$wizard=$schema->options['components'][0][0];$steps=$wizard->options['steps'];
  if(array_map(fn($step)=>$step->label,$steps)!==$page->setupSteps())throw new \RuntimeException('progress navigation and wizard steps disagree');
- if(array_map(fn($step)=>$step->label,$steps)!==['General','Appearance','Users & access','Server creation','Backups & performance']||$steps[1]->options['schema'][0][1]->label!=='Colours')throw new \RuntimeException('categories not separate pages');
+ if(array_map(fn($step)=>$step->label,$steps)!==['General','Appearance','Users & access','Backups & performance','Easy server creator','Plugin manager']||$steps[1]->options['schema'][0][1]->label!=='Colours')throw new \RuntimeException('categories not separate pages');
  if(!isset($wizard->options['submitAction'])||$wizard->options['skippable']!==[false])throw new \RuntimeException('wizard final save or validation guard missing');
  \Simplify\Panel\Services\FeatureSettings::$complete=true;
  $schema=$page->form(new \Filament\Schemas\Schema);$tabs=$schema->options['components'][0][0]->options['tabs'][0];
- if(array_map(fn($tab)=>$tab->label,$tabs)!==[...$page->setupSteps(),'Server banners'])throw new \RuntimeException('settings tabs lost a setup category');
- $profiles=$tabs[3]->options['schema'][0][1]->options['schema'][0];
+ if(array_map(fn($tab)=>$tab->label,$tabs)!==['General','Appearance','Users & access','Backups & performance','Server banners','Easy server creator','Plugin manager'])throw new \RuntimeException('settings tabs lost a setup category');
+ $profiles=$tabs[5]->options['schema'][0][1]->options['schema'][0];
  if(count($profiles)!==3||$profiles[2]->label!=='Modded / modpacks'||count($profiles[2]->options['schema'][0])!==3)throw new \RuntimeException('CPU/RAM/disk profiles missing from settings');
+ if(($tabs[6]->options['badge'][0]??null)!=='Add-on'||$tabs[0]->options['badge'][0]!==null)throw new \RuntimeException('add-on tabs not marked');
  echo "PASS separate setup pages, matching numbered navigation, final-step submit, category tabs and editable modpack resource columns\n";
 }

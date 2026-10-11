@@ -69,6 +69,7 @@ final class PanelNotifications
             if (isset($match[2], $sections[$match[2]])) $query['open'] = $sections[$match[2]];
             return $dashboard.'?'.http_build_query($query);
         }
+        if (preg_match('#^/admin/plugins(/|$)#', $path) && FeatureSettings::enabled('plugin_manager')) $path = '/admin/simplify-plugins';
         if (str_starts_with($path, '/admin') && user()?->isAdmin()) return $dashboard.'?'.http_build_query(['admin' => $path]);
         return $url;
     }

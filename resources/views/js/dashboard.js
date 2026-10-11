@@ -37,6 +37,8 @@
       adminMenu: false,
       hostMode: false,
       hostPage: null,
+      hostSection: null,
+      hostRailCollapsed: false,
       hostServersOpen: false,
       adminPage: null,
       overviewCompact: false,
@@ -335,11 +337,11 @@
           saved = localStorage.getItem(this.hostModeKey());
         } catch {}
         this.hostMode = saved === null ? !!this.boot.host_mode_auto && this.nodeOptions().length > 1 : saved === '1';
-        if (this.hostMode) this.hostPage = this.adminHealthPage() || this.hostPages()[0] || null;
+        if (this.hostMode) this.openHostSection(this.hostSections().find((x) => x.key === 'health') || this.hostSections()[0], false);
       },
       setHostMode(on) {
         this.hostMode = !!on && this.adminPages().length > 0;
-        if (this.hostMode && !this.hostPage) this.hostPage = this.adminHealthPage() || this.hostPages()[0] || null;
+        if (this.hostMode && !this.hostPage) this.openHostSection(this.hostSections().find((x) => x.key === 'health') || this.hostSections()[0], false);
         try {
           localStorage.setItem(this.hostModeKey(), this.hostMode ? '1' : '0');
         } catch {}
@@ -349,11 +351,46 @@
         const health = items.find((item) => item.key === 'health');
         return health ? [health, ...items.filter((item) => item !== health)] : items;
       },
+      /** Admin pages merged into a few colour-coded sections; pages from other plugins go to Extensions. */
+      hostSections() {
+        const plan = [
+          { key: 'servers', label: 'Servers', icon: 'host', color: '#5fb87a', pages: ['serverresource', 'eggresource', 'mountresource'] },
+          { key: 'nodes', label: 'Nodes', icon: 'monitor', color: '#5b9cf0', pages: ['noderesource', 'backuphostresource'] },
+          { key: 'people', label: 'People', icon: 'players', color: '#a78bfa', pages: ['userresource', 'roleresource'] },
+          { key: 'integrations', label: 'Integrations', icon: 'database', color: '#f0a35b', pages: ['databasehostresource', 'apikeyresource', 'webhookresource'] },
+          { key: 'plugins', label: 'Plugins', icon: 'plugins', color: '#f472b6', pages: ['pluginresource'] },
+          { key: 'panel', label: 'Panel', icon: 'gear', color: '#94a3b8', pages: ['settings', 'listlogs'] },
+          { key: 'extensions', label: 'Extensions', icon: 'legacy', color: '#2dd4bf', pages: [] },
+          { key: 'health', label: 'Health', icon: 'heart', color: '#f87171', pages: ['health'] },
+        ];
+        const items = this.adminPages().flatMap((group) => group.items);
+        const known = new Set(plan.flatMap((section) => section.pages));
+        return plan.map((section) => ({
+          ...section,
+          pages: section.key === 'extensions' ? items.filter((item) => !known.has(item.key)) : section.pages.map((key) => items.find((item) => item.key === key)).filter(Boolean),
+        })).filter((section) => section.pages.length);
+      },
+      /** Opening a section from the menu folds the menu into its coloured icons. */
+      openHostSection(section, collapse = true) {
+        if (!section) return;
+        this.hostSection = section;
+        this.hostPage = section.pages[0] || null;
+        if (collapse) this.hostRailCollapsed = true;
+      },
+      hostServerVersion(s) {
+        const version = String(s.reported_version || '').trim();
+        const software = String(s.software || s.game_label || '').trim();
+        return version && !version.toLowerCase().includes(software.toLowerCase()) ? (software ? software + ' · ' + version : version) : version || software || '—';
+      },
       hostNodes() {
         return this.nodeOptions().map((node) => ({ ...node, servers: (this.boot.servers || []).filter((s) => Number(s.node_id) === node.id) })).filter((node) => node.servers.length);
       },
       adminHealthPage() {
         return this.adminPages().flatMap((group) => group.items).find((item) => item.key === 'health') || null;
+      },
+      /** Latest Spatie health results (admins only); empty until the checks have run once. */
+      healthChecks() {
+        return this.boot.health_checks || [];
       },
       openAdminPage(item) {
         this.adminMenu = false;

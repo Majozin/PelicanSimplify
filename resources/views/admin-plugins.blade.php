@@ -12,7 +12,6 @@
                     Automatic updates are off; install updates here. A backup is kept and restored if anything fails.
                 @endif
             </p>
-            <a class="ps-btn is-sm" href="{{ $this->legacyUrl() }}"><x-tabler-file-import class="ps-ico" />Import or remove plugins</a>
         </header>
         <div class="ps-plugin-list" wire:poll.15s>
             @forelse($plugins as $plugin)
@@ -34,10 +33,20 @@
                                     <x-tabler-download class="ps-ico" />{{ $plugin['updating'] ? 'Updating…' : 'Update' }}
                                 </button>
                             @endif
+                            @if($plugin['status'] === 'not_installed')
+                                <button type="button" class="ps-btn is-sm is-primary" wire:click="installPlugin('{{ $plugin['id'] }}')">Install</button>
+                            @endif
                             @if($plugin['status'] === 'enabled')
                                 <button type="button" class="ps-btn is-sm" wire:click="setEnabled('{{ $plugin['id'] }}', false)">Disable</button>
                             @elseif($plugin['status'] === 'disabled')
                                 <button type="button" class="ps-btn is-sm" wire:click="setEnabled('{{ $plugin['id'] }}', true)">Enable</button>
+                            @endif
+                            @if(in_array($plugin['status'], ['not_installed', 'errored'], true))
+                                @if($plugin['can_delete'])
+                                    <button type="button" class="ps-btn is-sm is-danger" wire:click="deletePlugin('{{ $plugin['id'] }}')" wire:confirm="Delete {{ $plugin['name'] }} and its files?">Delete</button>
+                                @endif
+                            @else
+                                <button type="button" class="ps-btn is-sm is-danger" wire:click="uninstallPlugin('{{ $plugin['id'] }}')" wire:confirm="Uninstall {{ $plugin['name'] }}? Its data may be removed.">Uninstall</button>
                             @endif
                         </div>
                     @endif

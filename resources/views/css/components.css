@@ -414,8 +414,16 @@ html:has(.ps-modal-layer[data-open="true"]), html.ps-ui-locked { overflow: hidde
 .ps-admin-groups { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px 12px; margin-top: 10px; }
 .ps-admin-group { display: grid; align-content: start; gap: 2px; }
 .ps-admin-group .ps-label { margin: 0 0 4px 10px; }
-.ps-admin-health { margin-top: 12px; }
-.ps-admin-health svg { width: 16px; height: 16px; color: var(--ps-accent); }
+.ps-admin-health { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-top: 12px; padding-top: 10px; border-top: 1px solid var(--ps-line); }
+.ps-admin-health-title { display: inline-flex; align-items: center; gap: 8px; padding: 4px 6px; border: 0; border-radius: var(--ps-radius); background: none; color: var(--ps-ink); font: 600 13px/1.2 var(--ps-font); cursor: pointer; }
+.ps-admin-health-title:hover, .ps-admin-health-title:focus-visible { background: var(--ps-raised); }
+.ps-admin-health-title svg { width: 16px; height: 16px; fill: none; stroke: var(--ps-accent); stroke-width: 1.8; }
+.ps-admin-health-checks { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 4px; }
+.ps-health-check { --ps-tone: var(--ps-muted); display: grid; place-items: center; width: 24px; height: 24px; padding: 0; border: 1px solid color-mix(in srgb, var(--ps-tone) 40%, transparent); border-radius: 50%; background: color-mix(in srgb, var(--ps-tone) 14%, transparent); cursor: pointer; }
+.ps-health-check svg { width: 13px; height: 13px; fill: none; stroke: var(--ps-tone); stroke-width: 2.4; stroke-linecap: round; stroke-linejoin: round; }
+.ps-health-check.is-ok { --ps-tone: var(--ps-ok); }
+.ps-health-check.is-warning { --ps-tone: var(--ps-warn); }
+.ps-health-check.is-failed, .ps-health-check.is-crashed { --ps-tone: var(--ps-danger); }
 .ps-admin-item { display: flex; align-items: center; gap: 10px; min-height: var(--ps-h); padding: 6px 10px; border: 1px solid transparent; border-radius: var(--ps-radius); background: transparent; color: var(--ps-ink); font: 550 13px/1.2 var(--ps-font); text-align: left; cursor: pointer; }
 .ps-admin-item:hover, .ps-admin-item:focus-visible { border-color: var(--ps-line); background: var(--ps-raised); }
 .ps-admin-item svg { flex: none; width: 18px; height: 18px; fill: none; stroke: var(--ps-accent); stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }

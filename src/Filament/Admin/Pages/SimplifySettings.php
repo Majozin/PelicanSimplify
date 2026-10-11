@@ -141,8 +141,12 @@ class SimplifySettings extends Page implements HasForms
         'General' => 'tabler-layout-dashboard',
         'Appearance' => 'tabler-palette',
         'Users & access' => 'tabler-users',
-        'Server creation' => 'tabler-server-bolt',
         'Backups & performance' => 'tabler-gauge',
+    ];
+    /** Optional add-ons, switched on under General → Add-ons; each keeps its own settings tab after the core categories. */
+    private const ADDONS = [
+        'Easy server creator' => 'tabler-server-bolt',
+        'Plugin manager' => 'tabler-plug',
     ];
 
     /** Feature toggles of one group (FeatureSettings::definitions()[key][3]) as a titled section. */
@@ -187,6 +191,7 @@ class SimplifySettings extends Page implements HasForms
             'General' => [
                 self::featureSection('Simplify interface', 'Interface', 'What Simplify replaces in Pelican.'),
                 self::featureSection('Server workspaces', 'Server features', 'Workspaces shown on every server page. Pelican permissions still decide who may use them.'),
+                self::featureSection('Add-ons', 'Add-ons', 'Optional parts of Simplify. Each add-on has its own settings tab at the bottom of the menu.'),
             ],
             'Appearance' => [
                 self::featureSection('Theme', 'Appearance'),
@@ -215,7 +220,16 @@ class SimplifySettings extends Page implements HasForms
                     ]),
                 ] : []),
             ],
-            'Server creation' => [
+            'Backups & performance' => [
+                Section::make('Automatic backups')->columns(2)->description('Defaults for new servers. Existing servers keep their own policy; change it from the server\'s Backups workspace.')->schema([
+                    self::featureToggle('automatic_backups'),
+                    Toggle::make('performance.backup_only_when_used')->label('Skip backups while a server has not run')->helperText('An offline server that has not started since its last backup is not backed up again.'),
+                    ...array_map($numberField, ['backup_interval_minutes', 'backup_retention']),
+                ]),
+                Section::make('Refresh rates')->columns(2)->description('Lower values feel livelier but cost more requests to the panel and Wings. Hidden browser tabs and open popups never refresh.')
+                    ->schema(array_map($numberField, ['overview_seconds', 'server_seconds', 'restart_seconds', 'health_seconds'])),
+            ],
+            'Easy server creator' => [
                 Section::make('Self-service creation')->columns(2)->description('Where and what users may create. Who may create servers is set per role under Users & access ("Create servers").')->schema([
                     Select::make('node_ids')->label('Hosting machines')->multiple()->searchable()->options(fn () => Node::query()->pluck('name', 'id')->all())->helperText('Nodes used for self-service creation. Users do not choose ports or nodes.'),
                     Select::make('other_egg_ids')->label('Other games')->multiple()->searchable()->options(fn () => Egg::query()->orderBy('name')->pluck('name', 'id')->all()),
@@ -228,23 +242,19 @@ class SimplifySettings extends Page implements HasForms
                         TextInput::make('creation_defaults.'.$type.'.disk_mb')->label('Disk (MB)')->integer()->minValue(1024)->maxValue(10485760)->required(),
                     ]), ['vanilla', 'plus', 'modded'], ['Vanilla', 'Vanilla+', 'Modded / modpacks'])),
             ],
-            'Backups & performance' => [
-                Section::make('Automatic backups')->columns(2)->description('Defaults for new servers. Existing servers keep their own policy; change it from the server\'s Backups workspace.')->schema([
-                    self::featureToggle('automatic_backups'),
-                    Toggle::make('performance.backup_only_when_used')->label('Skip backups while a server has not run')->helperText('An offline server that has not started since its last backup is not backed up again.'),
-                    ...array_map($numberField, ['backup_interval_minutes', 'backup_retention']),
-                ]),
-                Section::make('Plugin updates')->description('Applies to every installed plugin with a published update, Simplify included. Updates can also be started by hand from Admin tools → Plugins.')->schema([self::featureToggle('auto_update_plugins')]),
-                Section::make('Refresh rates')->columns(2)->description('Lower values feel livelier but cost more requests to the panel and Wings. Hidden browser tabs and open popups never refresh.')
-                    ->schema(array_map($numberField, ['overview_seconds', 'server_seconds', 'restart_seconds', 'health_seconds'])),
+            'Plugin manager' => [
+                Section::make('Plugin updates')->description('Applies to every installed plugin with a published update, Simplify included. Updates can also be started by hand from Admin tools → Plugins. Needs the plugin manager add-on.')->schema([self::featureToggle('auto_update_plugins')]),
             ],
         ];
-        $icons = self::CATEGORIES;
+        $icons = [...self::CATEGORIES, ...self::ADDONS];
+        $addons = array_intersect_key($categories, self::ADDONS);
+        $categories = array_diff_key($categories, self::ADDONS);
         if (\Simplify\Panel\Services\Extensions::webInstalled()) {
             $categories['Website'] = app('simplify.web')->settingsSections();
             $icons['Website'] = 'tabler-world';
         }
         if ($this->needsSetup()) {
+            $categories = [...$categories, ...$addons];
             return $schema->statePath('data')->components([
                 \Filament\Schemas\Components\Wizard::make(
                     array_map(fn (string $label, array $content) => \Filament\Schemas\Components\Wizard\Step::make($label)->schema($content), array_keys($categories), array_values($categories))
@@ -256,8 +266,9 @@ class SimplifySettings extends Page implements HasForms
         }
         $categories['Server banners'] = [\Filament\Schemas\Components\View::make('pelican-simplify::banner-library')];
         $icons['Server banners'] = 'tabler-photo';
+        $categories = [...$categories, ...$addons];
         $tabs = \Filament\Schemas\Components\Tabs::make('Simplify settings')->columnSpanFull()->extraAttributes(['class' => 'ps-settings-tabs'])->tabs(
-            array_map(fn (string $label, array $content) => \Filament\Schemas\Components\Tabs\Tab::make($label)->icon($icons[$label] ?? null)->schema($content), array_keys($categories), array_values($categories))
+            array_map(fn (string $label, array $content) => \Filament\Schemas\Components\Tabs\Tab::make($label)->icon($icons[$label] ?? null)->badge(isset(self::ADDONS[$label]) ? 'Add-on' : null)->schema($content), array_keys($categories), array_values($categories))
         );
         if (method_exists($tabs, 'vertical')) $tabs->vertical();
         if (method_exists($tabs, 'persistTabInQueryString')) $tabs->persistTabInQueryString('section');
@@ -267,7 +278,7 @@ class SimplifySettings extends Page implements HasForms
     {
         $steps = array_keys(self::CATEGORIES);
         if (\Simplify\Panel\Services\Extensions::webInstalled()) $steps[] = 'Website';
-        return $steps;
+        return [...$steps, ...array_keys(self::ADDONS)];
     }
 
     public function save(): void
@@ -301,7 +312,7 @@ class SimplifySettings extends Page implements HasForms
         $roles['roles'] = array_values(array_filter($roles['roles'] ?? [], fn ($role) => in_array((int) ($role['role_id'] ?? 0), $existingRoles, true)));
         $creates = in_array('create', $roles['everyone']['abilities'] ?? [], true) || array_filter($roles['roles'], fn ($role) => in_array('create', $role['abilities'] ?? [], true));
         if ($creates && (!$data['node_ids'] || (!$data['minecraft_enabled'] && !$data['other_egg_ids']))) {
-            throw \Illuminate\Validation\ValidationException::withMessages(['data.node_ids' => 'Users may create servers: choose a hosting machine and at least one game under Server creation.']);
+            throw \Illuminate\Validation\ValidationException::withMessages(['data.node_ids' => 'Users may create servers: choose a hosting machine and at least one game under Easy server creator.']);
         }
         \Simplify\Panel\Services\CreationDefaults::save($state['creation_defaults']??[]);
         \Simplify\Panel\Services\PerformanceSettings::save($state['performance']??[]);

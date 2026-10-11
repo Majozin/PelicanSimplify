@@ -1,5 +1,13 @@
 # Changes
 
+## 0.3.0-beta.8
+- Host mode redesign: server cards per node with status, software/version and players; a vertical, colour-coded admin menu with Health always at the bottom that folds to icons once you pick a page; related pages merged (Users & Roles, Database hosts / API keys / Webhooks, Nodes & Backup hosts) as tabs.
+- The Simple / Host mode switch moved into Customize appearance.
+- Admin tools: health check icons at the bottom, coloured per status; hover shows what is wrong, click opens the Health page.
+- Plugins page: import from URL or zip, install, uninstall and delete in Simplify; Pelican's plugin page and its notification links are no longer needed.
+- Settings: new Add-ons section in General ("Easy server creator", "Let Simplify manage plugins"); each add-on has its own settings tab, marked "Add-on". Turning the plugin manager off restores Pelican's own plugin page and stops automatic updates.
+- Proposal for the "other games" creator rework: docs/proposals/other-games-creator.md.
+
 ## 0.3.0-beta.7
 - Safe plugin updates (Admin tools → Plugins and once a day when "Install plugin updates automatically" is on): backup, download with checksum check, install in a fresh process, start-up check, automatic rollback on failure. Plugins stay enabled after an update (Pelican's own update left them disabled). Results appear in the notifications.
 - Fix: Simplify's scheduled commands were never registered, so automatic backups and scheduled restarts did not run from the scheduler. Commands now live where Pelican loads them.

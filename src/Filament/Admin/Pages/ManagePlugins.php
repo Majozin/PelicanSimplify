@@ -15,7 +15,7 @@ final class ManagePlugins extends Page
     protected string $view = 'pelican-simplify::admin-plugins';
     protected static bool $shouldRegisterNavigation = false;
 
-    public static function canAccess(): bool { return (bool) user()?->can('viewAny', Plugin::class); }
+    public static function canAccess(): bool { return (bool) user()?->can('viewAny', Plugin::class) && \Simplify\Panel\Services\FeatureSettings::enabled('plugin_manager'); }
 
     private function canChange(Plugin $plugin): bool { return (bool) user()?->can('update', $plugin); }
 
@@ -35,6 +35,7 @@ final class ManagePlugins extends Page
                 'status' => $plugin->status->value,
                 'message' => $plugin->status_message,
                 'can_change' => $this->canChange($plugin),
+                'can_delete' => (bool) user()?->can('delete', $plugin),
                 'updating' => \Illuminate\Support\Facades\Cache::has('simplify.plugin-update-queued.'.$plugin->id),
             ];
         })->all();
@@ -58,8 +59,53 @@ final class ManagePlugins extends Page
         Notification::make()->title($plugin->name.($enabled ? ' enabled' : ' disabled'))->body('Reload the panel to apply the change.')->success()->send();
     }
 
-    public function legacyUrl(): string
+    /** Install, uninstall and delete run through Pelican's own jobs and service, so nothing needs the legacy page. */
+    public function installPlugin(string $id): void
     {
-        return \App\Filament\Admin\Resources\Plugins\PluginResource::getUrl('index', panel: 'admin');
+        $plugin = Plugin::query()->findOrFail($id);
+        abort_unless($this->canChange($plugin) && $plugin->status->value === 'not_installed', 403);
+        \App\Jobs\Plugin\InstallPlugin::dispatch(user(), $plugin->id);
+        Notification::make()->title('Install started')->body($plugin->name.' is installed in the background. You get a notification when it is done.')->info()->send();
+    }
+
+    public function uninstallPlugin(string $id): void
+    {
+        $plugin = Plugin::query()->findOrFail($id);
+        abort_unless($this->canChange($plugin) && !in_array($plugin->status->value, ['not_installed', 'errored'], true), 403);
+        \App\Jobs\Plugin\UninstallPlugin::dispatch(user(), $plugin->id);
+        Notification::make()->title('Uninstall started')->body($plugin->name.' is removed in the background. Its files stay until you delete it.')->info()->send();
+    }
+
+    public function deletePlugin(string $id): void
+    {
+        $plugin = Plugin::query()->findOrFail($id);
+        abort_unless(user()?->can('delete', $plugin) && in_array($plugin->status->value, ['not_installed', 'errored'], true), 403);
+        app(\App\Services\Helpers\PluginService::class)->deletePlugin($plugin);
+        Notification::make()->title($plugin->name.' deleted')->success()->send();
+    }
+
+    protected function getHeaderActions(): array
+    {
+        $import = fn (callable $download) => function (array $data) use ($download): void {
+            try {
+                $download(app(\App\Services\Helpers\PluginService::class), $data);
+                Notification::make()->title('Plugin imported')->body('Install it from the list to start using it.')->success()->send();
+            } catch (\Throwable $exception) {
+                report($exception);
+                Notification::make()->title('Import failed')->body($exception->getMessage())->danger()->send();
+            }
+        };
+        return [
+            \Filament\Actions\Action::make('importUrl')->label('Import from URL')->tooltip('Import from URL')->icon('tabler-world-download')
+                ->authorize(fn () => user()?->can('create', Plugin::class))
+                ->schema([\Filament\Forms\Components\TextInput::make('url')->label('Zip URL')->required()->url()->endsWith('.zip')])
+                ->action($import(fn ($service, array $data) => $service->downloadPluginFromUrl($data['url']))),
+            \Filament\Actions\Action::make('importFile')->label('Upload zip')->tooltip('Upload zip')->icon('tabler-file-upload')
+                ->authorize(fn () => user()?->can('create', Plugin::class))
+                ->schema([\Filament\Forms\Components\FileUpload::make('file')->label('Plugin zip')->required()
+                    ->acceptedFileTypes(['application/zip', 'application/zip-compressed', 'application/x-zip-compressed'])
+                    ->preserveFilenames()->previewable(false)->storeFiles(false)])
+                ->action($import(fn ($service, array $data) => $service->downloadPluginFromFile($data['file']))),
+        ];
     }
 }

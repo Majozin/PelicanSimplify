@@ -38,7 +38,7 @@ final class AdminPages
                 $url = match (true) {
                     // Servers open straight on Pelican's (legacy) create form; plugins on Simplify's safe updater.
                     $name === 'ServerResource' => $class::canCreate() ? $class::getUrl('create', panel: 'admin') : $class::getUrl('index', panel: 'admin'),
-                    $name === 'PluginResource' => \Simplify\Panel\Filament\Admin\Pages\ManagePlugins::getUrl(panel: 'admin'),
+                    $name === 'PluginResource' && FeatureSettings::enabled('plugin_manager') => \Simplify\Panel\Filament\Admin\Pages\ManagePlugins::getUrl(panel: 'admin'),
                     $isResource => $class::getUrl('index', panel: 'admin'),
                     default => $class::getUrl(panel: 'admin'),
                 };
