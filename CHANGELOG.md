@@ -1,5 +1,8 @@
 # Changes
 
+## 0.3.0-beta.17
+- Much faster Simplify updates: the install step skips Pelican's panel-wide `yarn install` and `yarn build` (minutes on a small server). Simplify ships its own compiled CSS and JS; other plugins still get the full build.
+
 ## 0.3.0-beta.16
 - Host mode: the page tabs at the top size to their text; the easy creator is called "Create server".
 - Host mode: the selected menu item, the page header and the active tab use the panel accent colour; section icons keep their own colour.

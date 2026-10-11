@@ -15,7 +15,15 @@ final class InstallPlugin extends Command
         try {
             \App\Models\Plugin::refreshRows();
             $plugin = \App\Models\Plugin::findOrFail((string) $this->argument('id'));
-            $plugins->installPlugin($plugin, (bool) $this->option('enable'));
+            if ($plugin->id === 'pelican-simplify' && !$plugin->composer_packages) {
+                // Simplify ships its own compiled CSS and JS: skip Pelican's panel-wide yarn install/build, which takes minutes.
+                $plugins->runPluginMigrations($plugin);
+                $plugins->runPluginSeeder($plugin);
+                $this->option('enable') ? $plugins->enablePlugin($plugin) : ($plugin->status->value === 'not_installed' ? $plugins->disablePlugin($plugin) : null);
+                foreach (\Filament\Facades\Filament::getPanels() as $panel) $panel->clearCachedComponents();
+            } else {
+                $plugins->installPlugin($plugin, (bool) $this->option('enable'));
+            }
             $plugin = $plugin->refresh();
             if (in_array($plugin->status->value, ['errored', 'incompatible', 'not_installed'], true)) throw new \RuntimeException($plugin->status_message ?: 'The plugin reports status '.$plugin->status->value.'.');
             if (!class_exists(ltrim($plugin->fullClass(), '\\'))) throw new \RuntimeException('The plugin class '.$plugin->fullClass().' could not be loaded.');
