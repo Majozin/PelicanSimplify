@@ -17,7 +17,7 @@ final class AdminPages
     ];
     private const GROUPS = ['Game servers', 'Infrastructure', 'People & access', 'Panel', 'Other'];
     /** Pages Simplify replaces or that need parameters. */
-    private const SKIP = ['Dashboard', 'ViewLogs', 'SimplifySettings', 'CreateMinecraftServer'];
+    private const SKIP = ['Dashboard', 'ViewLogs', 'SimplifySettings', 'CreateMinecraftServer', 'ManagePlugins'];
 
     public static function menu(): array
     {
@@ -35,12 +35,19 @@ final class AdminPages
                 $isResource = is_subclass_of($class, \Filament\Resources\Resource::class);
                 if ($isResource ? !$class::canViewAny() : !$class::canAccess()) continue;
                 if (!$isResource && method_exists($class, 'shouldRegisterNavigation') && !$class::shouldRegisterNavigation() && !isset(self::KNOWN[$name])) continue;
-                $url = $isResource ? $class::getUrl('index', panel: 'admin') : $class::getUrl(panel: 'admin');
+                $url = match (true) {
+                    // Servers open straight on Pelican's (legacy) create form; plugins on Simplify's safe updater.
+                    $name === 'ServerResource' => $class::canCreate() ? $class::getUrl('create', panel: 'admin') : $class::getUrl('index', panel: 'admin'),
+                    $name === 'PluginResource' => \Simplify\Panel\Filament\Admin\Pages\ManagePlugins::getUrl(panel: 'admin'),
+                    $isResource => $class::getUrl('index', panel: 'admin'),
+                    default => $class::getUrl(panel: 'admin'),
+                };
                 $label = (string) $class::getNavigationLabel();
             } catch (\Throwable) {
                 continue;
             }
             [$group, $icon] = self::KNOWN[$name] ?? ['Other', 'legacy'];
+            if ($name === 'ServerResource' && $class::canCreate()) $label = 'Create server (legacy)';
             $groups[$group][] = ['key' => strtolower($name), 'label' => $label, 'url' => $url, 'icon' => $icon];
         }
         $menu = [];

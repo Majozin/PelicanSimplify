@@ -1,5 +1,5 @@
 <?php
-namespace Simplify\Panel\Commands;
+namespace Simplify\Panel\Console\Commands;
 use Illuminate\Console\Command;
 use App\Models\Server;
 use Simplify\Panel\Services\PendingChanges;

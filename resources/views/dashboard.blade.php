@@ -39,24 +39,30 @@
                     </button>
 
                     {{-- Admin tools: Pelican admin pages Simplify does not replace, opened in a popup (admins only). --}}
-                    <div class="ps-notify" x-show="adminPages().length" x-on:click.outside="adminMenu=false" x-on:keydown.escape.stop="adminMenu=false; $refs.adminButton.focus()">
+                    <button type="button" x-show="adminPages().length && !server" class="ps-btn is-icon is-subtle" :aria-pressed="hostMode" x-on:click="setHostMode(!hostMode)" :data-tip="hostMode ? 'Simple view' : 'Host mode'" :aria-label="hostMode ? 'Switch to simple view' : 'Switch to host mode'">
+                        <svg aria-hidden="true"><use :href="hostMode ? '#ps-grid' : '#ps-host'"/></svg><span class="ps-mobile-label" x-text="hostMode ? 'Simple view' : 'Host mode'"></span>
+                    </button>
+                    <div class="ps-notify" x-show="adminPages().length && !(hostMode && !server)" x-on:click.outside="adminMenu=false" x-on:keydown.escape.stop="adminMenu=false; $refs.adminButton.focus()">
                         <button type="button" x-ref="adminButton" class="ps-btn is-icon is-subtle" data-tip="Admin tools" aria-label="Admin tools" aria-controls="ps-admin-menu" :aria-expanded="adminMenu"
                                 x-on:click="adminMenu=!adminMenu; notifyMenu=false; appearanceMenu=false; accountMenu=false">
                             <svg aria-hidden="true"><use href="#ps-shield"/></svg><span class="ps-mobile-label">Admin tools</span>
                         </button>
                         <div id="ps-admin-menu" class="ps-dropdown is-end ps-admin-menu" x-show="adminMenu" x-cloak x-transition.opacity>
                             <strong class="ps-dropdown-title">Admin tools</strong>
-                            <template x-for="group in adminPages()" :key="group.label">
-                                <div class="ps-dropdown-section">
-                                    <span class="ps-label" x-text="group.label"></span>
-                                    <div class="ps-admin-grid">
-                                        <template x-for="item in group.items" :key="item.key">
+                            <div class="ps-admin-groups">
+                                <template x-for="group in adminPages()" :key="group.label">
+                                    <div class="ps-admin-group">
+                                        <span class="ps-label" x-text="group.label"></span>
+                                        <template x-for="item in group.items.filter((i) => i.key !== 'health')" :key="item.key">
                                             <button type="button" class="ps-admin-item" x-on:click="openAdminPage(item)">
                                                 <svg aria-hidden="true"><use :href="'#ps-'+item.icon"/></svg><span x-text="item.label"></span>
                                             </button>
                                         </template>
                                     </div>
-                                </div>
+                                </template>
+                            </div>
+                            <template x-if="adminHealthPage()">
+                                <button type="button" class="ps-btn is-block ps-admin-health" x-on:click="openAdminPage(adminHealthPage())"><svg aria-hidden="true"><use href="#ps-heart"/></svg><span>Host health checks</span></button>
                             </template>
                         </div>
                     </div>
@@ -143,6 +149,14 @@
                                             <button type="button" :aria-pressed="overviewPreferences.largeIcon==='egg'" x-on:click="setOverviewPreference('largeIcon','egg')">Egg icon</button>
                                         </div>
                                     </div>
+                                    <div class="ps-dropdown-section" x-show="nodeOptions().length > 1 || overviewPreferences.groupByNode==='always'">
+                                        <span class="ps-label">Group by node</span>
+                                        <div class="ps-segmented" role="group" aria-label="Group servers by node">
+                                            <template x-for="mode in [{key:'auto',label:'Automatic'},{key:'always',label:'Always'},{key:'off',label:'Off'}]" :key="mode.key">
+                                                <button type="button" :aria-pressed="overviewPreferences.groupByNode===mode.key" x-on:click="setOverviewPreference('groupByNode', mode.key)" x-text="mode.label"></button>
+                                            </template>
+                                        </div>
+                                    </div>
                                     <div class="ps-dropdown-section">
                                         <span class="ps-label">Large name</span>
                                         <div class="ps-segmented" role="group" aria-label="Large server name">
@@ -188,8 +202,46 @@
             </nav>
         </header>
 
+        {{-- Host mode (admins, large hosts): compact servers per node on the left, admin pages in the middle. --}}
+        <template x-if="!server && hostMode">
+            <section class="ps-host" :style="accentStyle('overview')">
+                <aside class="ps-host-servers" :class="{'is-open': hostServersOpen}" aria-label="Servers">
+                    <button type="button" class="ps-btn is-sm ps-host-servers-toggle" x-on:click="hostServersOpen=!hostServersOpen" :aria-expanded="hostServersOpen"><svg aria-hidden="true"><use href="#ps-list"/></svg><span x-text="'Servers ('+(boot.servers||[]).length+')'"></span></button>
+                    <div class="ps-host-server-list">
+                        <template x-for="node in hostNodes()" :key="node.id">
+                            <div class="ps-host-node">
+                                <span class="ps-label"><svg aria-hidden="true"><use href="#ps-host"/></svg><span x-text="node.name"></span><small x-text="node.servers.length"></small></span>
+                                <template x-for="s in node.servers" :key="s.uuid">
+                                    <a class="ps-host-server" :href="s.linked ? s.url : null" :style="accentStyle(s.uuid)" :aria-disabled="!s.linked">
+                                        <i class="ps-host-dot" :class="s.status"></i>
+                                        <span class="ps-host-server-name" x-text="cardNames(s).large"></span>
+                                        <small x-text="playerCount(s)"></small>
+                                    </a>
+                                </template>
+                            </div>
+                        </template>
+                        <p class="ps-empty" x-show="!(boot.servers||[]).length">No servers yet.</p>
+                    </div>
+                </aside>
+                <div class="ps-host-main">
+                    <nav class="ps-host-tabs" aria-label="Admin pages">
+                        <template x-for="item in hostPages()" :key="item.key">
+                            <button type="button" class="ps-chip" :aria-pressed="hostPage?.key===item.key" x-on:click="hostPage=item">
+                                <svg aria-hidden="true"><use :href="'#ps-'+item.icon"/></svg><span x-text="item.label"></span>
+                            </button>
+                        </template>
+                    </nav>
+                    <div class="ps-host-frame">
+                        <template x-if="hostPage">
+                            <iframe data-ps-frame="native" :data-ps-accent="currentAccentHex()" :src="frameUrl(hostPage.url)" :title="hostPage.label" x-on:load="styleFrame($el, 'native')"></iframe>
+                        </template>
+                    </div>
+                </div>
+            </section>
+        </template>
+
         {{-- Overview -------------------------------------------------------------------------------- --}}
-        <section x-show="!server" class="ps-overview" :class="{'is-list': overviewView==='list'}" :style="{'--grid-columns': overviewColumns()}">
+        <section x-show="!server && !hostMode" class="ps-overview" :class="{'is-list': overviewView==='list'}" :style="{'--grid-columns': overviewColumns()}">
             <div class="ps-server-scroll" tabindex="0" role="region" aria-label="Servers">
                 <div class="ps-server-stage" :class="{'is-list': overviewView==='list'}">
                     <div class="ps-overview-toolbar">
@@ -197,6 +249,13 @@
                             <button type="button" class="ps-chip" :aria-pressed="gameFilter==='all'" x-on:click="setGameFilter('all')">All</button>
                             <template x-for="game in gameOptions()" :key="game.key">
                                 <button type="button" class="ps-chip" :aria-pressed="gameFilter===game.key" x-on:click="setGameFilter(game.key)" x-text="game.label"></button>
+                            </template>
+                        </div>
+                        <div class="ps-node-filters" x-show="nodeOptions().length > 1" role="group" aria-label="Filter servers by node">
+                            <input type="search" class="ps-input ps-node-search" x-show="nodeOptions().length > 3" x-model.debounce.200ms="nodeSearch" placeholder="Search nodes" aria-label="Search nodes">
+                            <button type="button" class="ps-chip" :aria-pressed="nodeFilter==='all'" x-on:click="nodeFilter='all'"><svg aria-hidden="true"><use href="#ps-host"/></svg>All nodes</button>
+                            <template x-for="node in nodeOptions().filter((n) => !nodeSearch || n.name.toLowerCase().includes(nodeSearch.toLowerCase()))" :key="node.id">
+                                <button type="button" class="ps-chip" :aria-pressed="nodeFilter===node.id" x-on:click="nodeFilter=node.id" x-text="node.name"></button>
                             </template>
                         </div>
                     </div>
@@ -216,8 +275,12 @@
                                 <h3><span>Create</span><strong>New</strong><span>server</span></h3>
                             </button>
                         </div>
-                        <template x-for="s in visibleServers()" :key="s.uuid">
-                            <div class="ps-server-entry" :class="{'has-card-motd': overviewPreferences.showMotd && s.game==='minecraft' && !!s.motd, 'has-power': overviewPreferences.showQuickActions && s.linked && Object.values(s.permissions || {}).some(Boolean), 'confirming-power': powerConfirmation?.uuid===s.uuid}" :style="accentStyle(s.uuid)">
+                        <template x-for="s in overviewItems()" :key="s.uuid">
+                            <div class="ps-server-entry" :class="{'is-node-heading': !!s.isNodeHeader, 'has-card-motd': overviewPreferences.showMotd && s.game==='minecraft' && !!s.motd, 'has-power': overviewPreferences.showQuickActions && s.linked && Object.values(s.permissions || {}).some(Boolean), 'confirming-power': powerConfirmation?.uuid===s.uuid}" :style="accentStyle(s.uuid)">
+                                <template x-if="s.isNodeHeader">
+                                    <h2 class="ps-node-heading"><svg aria-hidden="true"><use href="#ps-host"/></svg><span x-text="s.name"></span><small x-text="s.count+(s.count===1?' server':' servers')"></small></h2>
+                                </template>
+                                <template x-if="!s.isNodeHeader">
                                 <article class="ps-server-card" :class="{'locked': !s.linked}">
                                     <span class="ps-offline-artwork" x-show="s.status==='offline'" aria-label="Server offline"><svg aria-hidden="true"><use href="#ps-offline"/></svg></span>
                                     <img class="ps-card-background" x-show="s.background && s.status!=='offline'" :src="safeImage(s.background)" alt="" loading="lazy" x-on:error="$el.style.visibility='hidden'">
@@ -286,6 +349,7 @@
                                         </div>
                                     </div>
                                 </article>
+                                </template>
                             </div>
                         </template>
                     </div>

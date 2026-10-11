@@ -124,6 +124,25 @@ const { start } = require('./browser-harness');
     }
     console.log('PASS phone layouts without horizontal scrolling');
 
+    // 8. Overview by node: one heading per node, compact list rows whatever the card options, host mode.
+    const prefs = (o) => `localStorage.setItem('pelicanSimplify.overviewAppearance.jera', ${JSON.stringify(JSON.stringify(o))})`;
+    const nodes = await browser.newPage({ viewport: { width: 1440, height: 900 } });
+    await nodes.addInitScript(prefs({ showQuickActions: false, showCpu: false, showRam: false }));
+    await nodes.goto(base + '/?mode=overview&theme=dark');
+    await nodes.waitForFunction(() => window.Alpine && document.querySelector('.ps-node-heading'));
+    assert.equal(await nodes.locator('.ps-node-heading').count(), 2, 'one heading per node');
+    await nodes.evaluate(() => Alpine.$data(document.querySelector('.ps')).setOverviewView('list'));
+    await nodes.waitForTimeout(300);
+    const rows = await nodes.evaluate(() => [...document.querySelectorAll('.ps-server-entry:not(.is-node-heading)')].map((e) => Math.round(e.getBoundingClientRect().height)));
+    assert.ok(rows.length && rows.every((h) => h <= 80), 'list rows stay compact without quick actions or metrics: ' + rows);
+    await nodes.evaluate(() => { const d = Alpine.$data(document.querySelector('.ps')); d.nodeFilter = 2; });
+    assert.equal(await nodes.locator('.ps-server-entry:not(.is-node-heading)').count(), 2, 'node filter limits the list');
+    await nodes.evaluate(() => Alpine.$data(document.querySelector('.ps')).setHostMode(true));
+    await nodes.waitForSelector('.ps-host iframe[title="Health"]');
+    assert.equal(await nodes.locator('.ps-host-server').count(), 4, 'host mode lists every server');
+    await nodes.close();
+    console.log('PASS servers grouped per node, compact list rows and host mode');
+
     assert.deepEqual(errors, []);
   } finally {
     await browser.close();

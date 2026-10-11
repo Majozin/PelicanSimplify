@@ -41,7 +41,7 @@ final class PanelNotifications
         foreach (is_array($data['actions'] ?? null) ? $data['actions'] : [] as $candidate) {
             $url = is_array($candidate) ? ($candidate['url'] ?? null) : null;
             if (is_string($url) && self::safeUrl($url)) {
-                $action = ['label' => self::text($candidate['label'] ?? '') ?: 'Open', 'url' => $url];
+                $action = ['label' => self::text($candidate['label'] ?? '') ?: 'Open', 'url' => self::simplifyUrl($url)];
                 break;
             }
         }
@@ -54,6 +54,23 @@ final class PanelNotifications
             'time' => $notification->created_at?->diffForHumans(),
             'action' => $action,
         ];
+    }
+
+    /** Pelican panel links open the matching Simplify popup instead of the legacy page. */
+    public static function simplifyUrl(string $url): string
+    {
+        $path = (string) parse_url($url, PHP_URL_PATH);
+        $dashboard = \Simplify\Panel\Filament\App\Pages\Dashboard::getUrl(panel: 'app');
+        if (preg_match('#^/server/([A-Za-z0-9-]+)(?:/([a-z-]+))?#', $path, $match)) {
+            $server = \App\Models\Server::query()->where('uuid_short', $match[1])->orWhere('uuid', $match[1])->first(['uuid']);
+            if (!$server) return $url;
+            $sections = ['backups' => 'backups', 'files' => 'files', 'schedules' => 'schedules', 'activity' => 'activity', 'startup' => 'advanced', 'settings' => 'settings', 'databases' => 'advanced', 'users' => 'advanced'];
+            $query = ['server' => $server->uuid];
+            if (isset($match[2], $sections[$match[2]])) $query['open'] = $sections[$match[2]];
+            return $dashboard.'?'.http_build_query($query);
+        }
+        if (str_starts_with($path, '/admin') && user()?->isAdmin()) return $dashboard.'?'.http_build_query(['admin' => $path]);
+        return $url;
     }
 
     private static function text(mixed $value): string

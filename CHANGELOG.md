@@ -1,5 +1,17 @@
 # Changes
 
+## 0.3.0-beta.7
+- Safe plugin updates (Admin tools → Plugins and once a day when "Install plugin updates automatically" is on): backup, download with checksum check, install in a fresh process, start-up check, automatic rollback on failure. Plugins stay enabled after an update (Pelican's own update left them disabled). Results appear in the notifications.
+- Fix: Simplify's scheduled commands were never registered, so automatic backups and scheduled restarts did not run from the scheduler. Commands now live where Pelican loads them.
+- New Plugins page in Simplify style with status, available update, Update and Enable/Disable.
+- Admin tools: "Create server (legacy)" opens Pelican's create form; menu in two columns with "Host health checks" at the bottom.
+- Large dialogs on admin pages (egg import, record forms) open as a side panel; admin wizards and tabbed pages (profile, user edit) follow the Simplify look.
+- Notification links open the matching Simplify popup instead of the legacy page.
+- Overview: servers grouped per node (grid and list), node filter next to the game filter with search above three nodes, "Group by node" choice (Automatic / Always / Off).
+- Host mode for administrators: servers per node in a compact column, admin pages as the main workspace. "Display host mode automatically" in Simplify settings (recommended for big hosts with multiple nodes).
+- Fix: list rows grew very tall with quick actions and CPU/RAM tiles off; the player count chevron now nudges on hover in both views; the MOTD gives way when quick actions slide in.
+- Roadmap: easy game server creator, installation overhaul with EULA up front, Simplify as the whole panel (docs/ROADMAP.md).
+
 ## 0.3.0-beta.6
 - Permissions reworked around Pelican roles (Simplify settings → Users & access). "Everyone" applies to all signed-in users; each role adds abilities (workspaces, legacy panel, create servers, install missing eggs) and sets its own limits. With several roles, abilities combine and the highest limit wins. Administrators can always do everything.
 - Existing settings migrate automatically: the earlier user toggles become Everyone, creator roles keep creating with their limits. Individual user grants from earlier versions keep working and can be removed once those users have a role.

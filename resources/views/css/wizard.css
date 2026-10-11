@@ -182,3 +182,19 @@
 }
 @media (prefers-reduced-motion: reduce) { .ps-check-loading svg { animation: none; } }
 .ps-update-card { align-items: center; } .ps-update-card > div { flex: 1; min-width: 0; }
+
+/* Plugins (Admin tools) ------------------------------------------------------------------- */
+.ps-plugins { display: grid; gap: 12px; }
+.ps-plugins-head { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px; }
+.ps-plugins-head .ps-help { margin: 0; }
+.ps-plugin-list { display: grid; border-top: 1px solid var(--ps-line); }
+.ps-plugin { display: flex; align-items: center; gap: 16px; padding: 14px 2px; border-bottom: 1px solid var(--ps-line); }
+.ps-plugin-main { flex: 1; min-width: 0; }
+.ps-plugin-title { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.ps-plugin-title strong { font-size: 15px; }
+.ps-plugin-main small { color: var(--ps-muted); font-size: 12px; }
+.ps-plugin-main p { margin: 4px 0 0; color: var(--ps-muted); font-size: 13px; }
+.ps-plugin-main .ps-plugin-error { color: var(--ps-danger); }
+.ps-plugin-actions { display: flex; flex: none; gap: 6px; }
+.ps-plugins .ps-ico { width: 16px; height: 16px; }
+@media (max-width: 640px) { .ps-plugin { flex-direction: column; align-items: stretch; } }

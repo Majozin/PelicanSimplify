@@ -171,6 +171,12 @@ class SimplifySettings extends Page implements HasForms
         ];
     }
 
+    private static function featureToggle(string $key): Toggle
+    {
+        $definition = \Simplify\Panel\Services\FeatureSettings::definitions()[$key] ?? [$key, null];
+        return Toggle::make('features.'.$key)->label($definition[0])->helperText($definition[1]);
+    }
+
     public function form(Schema $schema): Schema
     {
         $performance = \Simplify\Panel\Services\PerformanceSettings::FIELDS;
@@ -224,10 +230,11 @@ class SimplifySettings extends Page implements HasForms
             ],
             'Backups & performance' => [
                 Section::make('Automatic backups')->columns(2)->description('Defaults for new servers. Existing servers keep their own policy; change it from the server\'s Backups workspace.')->schema([
-                    ...array_map(fn (array $definition, string $key) => Toggle::make('features.'.$key)->label($definition[0])->helperText($definition[1]), array_filter(\Simplify\Panel\Services\FeatureSettings::definitions(), fn ($item) => ($item[3] ?? '') === 'Automation'), array_keys(array_filter(\Simplify\Panel\Services\FeatureSettings::definitions(), fn ($item) => ($item[3] ?? '') === 'Automation'))),
+                    self::featureToggle('automatic_backups'),
                     Toggle::make('performance.backup_only_when_used')->label('Skip backups while a server has not run')->helperText('An offline server that has not started since its last backup is not backed up again.'),
                     ...array_map($numberField, ['backup_interval_minutes', 'backup_retention']),
                 ]),
+                Section::make('Plugin updates')->description('Applies to every installed plugin with a published update, Simplify included. Updates can also be started by hand from Admin tools → Plugins.')->schema([self::featureToggle('auto_update_plugins')]),
                 Section::make('Refresh rates')->columns(2)->description('Lower values feel livelier but cost more requests to the panel and Wings. Hidden browser tabs and open popups never refresh.')
                     ->schema(array_map($numberField, ['overview_seconds', 'server_seconds', 'restart_seconds', 'health_seconds'])),
             ],

@@ -156,3 +156,46 @@ html.ps-frame[data-ps-frame="editor"][data-ps-editor-actions="external"] .fi-sec
 :is(.ps-theme, html:has(.ssc-wizard)) .tippy-box { padding: 0; border-radius: 8px; border: 1px solid var(--ps-contrast-line); background: var(--ps-contrast-bg) !important; color: var(--ps-contrast-ink) !important; box-shadow: var(--ps-shadow); font: 500 12px/1.4 var(--ps-font); }
 :is(.ps-theme, html:has(.ssc-wizard)) .tippy-box .tippy-content { padding: 7px 10px; }
 :is(.ps-theme, html:has(.ssc-wizard)) .tippy-box .tippy-arrow { color: var(--ps-contrast-bg) !important; }
+
+/* Large dialogs inside a popup (egg import, record forms) open as a side panel on the right, like the file
+   editor: full height, own scroll, the page stays visible beside it. Small confirmations stay centred. */
+html.ps-frame .fi-modal:not(.fi-modal-slide-over) .fi-modal-window-ctn:has(> .fi-modal-window[class*="fi-width-"]:not(.fi-width-xs, .fi-width-sm, .fi-width-md, .fi-width-lg)) {
+  display: flex !important;
+  align-items: stretch !important;
+  justify-content: flex-end !important;
+  min-height: 100% !important;
+  height: 100% !important;
+  padding: 0 !important;
+}
+html.ps-frame .fi-modal:not(.fi-modal-slide-over) .fi-modal-window[class*="fi-width-"]:not(.fi-width-xs, .fi-width-sm, .fi-width-md, .fi-width-lg) {
+  width: min(640px, 62vw) !important;
+  max-width: none !important;
+  height: 100% !important;
+  max-height: none !important;
+  margin: 0 !important;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  border: 0 !important;
+  border-left: 1px solid var(--ps-line) !important;
+  border-radius: 0 !important;
+  box-shadow: -12px 0 32px rgb(0 0 0 / .18) !important;
+  animation: ps-side-panel-in .18s ease-out;
+}
+@keyframes ps-side-panel-in { from { transform: translateX(24px); opacity: .6; } }
+@media (max-width: 720px) { html.ps-frame .fi-modal-window[class*="fi-width-"]:not(.fi-width-xs, .fi-width-sm, .fi-width-md, .fi-width-lg) { width: 100% !important; } }
+@media (prefers-reduced-motion: reduce) { html.ps-frame .fi-modal-window { animation: none !important; } }
+
+/* Wizards opened from admin pages (server or node creation) follow the Simplify wizard look. */
+html.ps-frame .fi-sc-wizard-header { border: 0 !important; border-bottom: 1px solid var(--ps-line) !important; border-radius: 0 !important; background: transparent !important; }
+html.ps-frame .fi-sc-wizard-header-step-icon-ctn { border-color: var(--ps-line-strong) !important; background: var(--ps-surface) !important; }
+html.ps-frame .fi-sc-wizard-header-step.fi-active .fi-sc-wizard-header-step-icon-ctn,
+html.ps-frame .fi-sc-wizard-header-step.fi-completed .fi-sc-wizard-header-step-icon-ctn { border-color: var(--ps-accent) !important; background: color-mix(in srgb, var(--ps-accent) 16%, var(--ps-surface)) !important; color: var(--ps-ink) !important; }
+html.ps-frame .fi-sc-wizard-header-step.fi-active .fi-sc-wizard-header-step-label { color: var(--ps-ink) !important; font-weight: 650; }
+html.ps-frame :is(.fi-sc-wizard-header-step-icon, .fi-sc-wizard-header-step-number) { color: var(--ps-accent) !important; }
+html.ps-frame .fi-sc-wizard-footer { padding-top: 12px !important; border-top: 1px solid var(--ps-line); }
+
+/* Tabbed pages (profile, user edit): the header actions sit on the tab row instead of their own row. */
+html.ps-frame .fi-page:has(.fi-sc-tabs) { position: relative; }
+html.ps-frame .fi-page:has(.fi-sc-tabs) .fi-header:has(.fi-header-actions-ctn > *) { position: absolute; top: 14px; right: 16px; z-index: 3; margin: 0 !important; }
+html.ps-frame .fi-page:has(.fi-sc-tabs) .fi-sc-tabs .fi-tabs { padding-right: 110px !important; }
+html.ps-frame .fi-section:not(.fi-section .fi-section) + .fi-section:not(.fi-section .fi-section) { margin-top: 4px; }

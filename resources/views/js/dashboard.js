@@ -4,7 +4,7 @@
   /** Returned by run() when an action was skipped (busy) or failed (already reported). */
   const SKIPPED = Symbol('skipped');
   const MINECRAFT_VERSION = /(?:^|[^0-9])((?:1\.[0-9]+(?:\.[0-9]+)?|2[6-9]\.[0-9]+(?:\.[0-9]+)?))(?![0-9])/;
-  const OVERVIEW_DEFAULTS = { showMotd: false, largeIcon: 'server', largeName: 'alias', showCpu: true, showRam: true, showQuickActions: true, minecraftAlwaysGreen: true };
+  const OVERVIEW_DEFAULTS = { showMotd: false, largeIcon: 'server', largeName: 'alias', groupByNode: 'auto', showCpu: true, showRam: true, showQuickActions: true, minecraftAlwaysGreen: true };
   const OVERVIEW_SWITCHES = ['showMotd', 'showCpu', 'showRam', 'showQuickActions', 'minecraftAlwaysGreen'];
   const POWER_LABELS = { start: 'Start', stop: 'Stop', restart: 'Restart', kill: 'Force stop' };
   const accentInk = (color) => {
@@ -35,6 +35,9 @@
       noticeHistory: [],
       panelNotices: [],
       adminMenu: false,
+      hostMode: false,
+      hostPage: null,
+      hostServersOpen: false,
       adminPage: null,
       overviewCompact: false,
       overviewPreferences: { ...OVERVIEW_DEFAULTS },
@@ -52,6 +55,8 @@
       overviewHistory: {},
       overviewRefreshing: false,
       gameFilter: 'all',
+      nodeFilter: 'all',
+      nodeSearch: '',
       overviewView: typeof innerWidth !== 'undefined' && innerWidth <= 600 ? 'list' : 'grid',
       // Shell
       accountMenu: false,
@@ -153,11 +158,13 @@
         });
         this.restoreOverviewView();
         this.restoreOverviewPreferences();
+        this.restoreHostMode();
         this.initTheme();
         this.initNotices();
         this.applyFavicon();
         this.enhanceCopyright();
         if (this.$nextTick) this.$nextTick(() => this.initOverviewDock());
+        if (this.$nextTick) this.$nextTick(() => this.openFromLink());
         if (!this.server) {
           this.recordOverview(this.boot.servers);
           this.refreshTimer = setInterval(() => this.modal || this.refreshOverview(), this.intervals.overview);
@@ -167,6 +174,28 @@
         await this.connect();
         if (this.destroyed) return;
         this.startServerTimers();
+      },
+      /** Links from notifications: ?open=<workspace> on a server page, ?admin=<path> for an admin page. */
+      openFromLink() {
+        let params;
+        try {
+          params = new URLSearchParams(location.search);
+        } catch {
+          return;
+        }
+        const admin = params.get('admin');
+        const open = params.get('open');
+        if (admin && admin.startsWith('/')) {
+          const known = this.adminPages().flatMap((group) => group.items).find((item) => new URL(item.url, location.origin).pathname === admin);
+          this.openAdminPage(known || { key: 'link', label: 'Admin', url: admin });
+        } else if (open && this.server && this.widgets.some((widget) => widget.key === open)) {
+          this.open(open);
+        } else return;
+        try {
+          params.delete('admin');
+          params.delete('open');
+          history.replaceState(null, '', location.pathname + (params.toString() ? '?' + params : ''));
+        } catch {}
       },
       startServerTimers() {
         // A restart that is due is followed closely; otherwise the page refreshes at the normal pace.
@@ -294,6 +323,37 @@
       },
       adminPages() {
         return Array.isArray(this.boot.admin_pages) ? this.boot.admin_pages : [];
+      },
+      /** Host mode: an admin choice per user; otherwise automatic for multi-node panels when enabled in settings. */
+      hostModeKey() {
+        return 'pelicanSimplify.hostMode.' + encodeURIComponent(this.boot.user || 'default');
+      },
+      restoreHostMode() {
+        if (!this.adminPages().length) return;
+        let saved = null;
+        try {
+          saved = localStorage.getItem(this.hostModeKey());
+        } catch {}
+        this.hostMode = saved === null ? !!this.boot.host_mode_auto && this.nodeOptions().length > 1 : saved === '1';
+        if (this.hostMode) this.hostPage = this.adminHealthPage() || this.hostPages()[0] || null;
+      },
+      setHostMode(on) {
+        this.hostMode = !!on && this.adminPages().length > 0;
+        if (this.hostMode && !this.hostPage) this.hostPage = this.adminHealthPage() || this.hostPages()[0] || null;
+        try {
+          localStorage.setItem(this.hostModeKey(), this.hostMode ? '1' : '0');
+        } catch {}
+      },
+      hostPages() {
+        const items = this.adminPages().flatMap((group) => group.items);
+        const health = items.find((item) => item.key === 'health');
+        return health ? [health, ...items.filter((item) => item !== health)] : items;
+      },
+      hostNodes() {
+        return this.nodeOptions().map((node) => ({ ...node, servers: (this.boot.servers || []).filter((s) => Number(s.node_id) === node.id) })).filter((node) => node.servers.length);
+      },
+      adminHealthPage() {
+        return this.adminPages().flatMap((group) => group.items).find((item) => item.key === 'health') || null;
       },
       openAdminPage(item) {
         this.adminMenu = false;
@@ -485,7 +545,33 @@
         return [...games].map(([key, label]) => ({ key, label })).sort((a, b) => a.label.localeCompare(b.label));
       },
       visibleServers() {
-        return (this.boot.servers || []).filter((s) => this.gameFilter === 'all' || this.gameKey(s) === this.gameFilter);
+        return (this.boot.servers || []).filter((s) => (this.gameFilter === 'all' || this.gameKey(s) === this.gameFilter) && (this.nodeFilter === 'all' || Number(s.node_id) === this.nodeFilter));
+      },
+      /** Nodes that have servers in the overview (names from the listing, else the health data). */
+      nodeOptions() {
+        const names = new Map((this.boot.host_health?.nodes || []).map((n) => [Number(n.id), n.name]));
+        const nodes = new Map();
+        for (const s of this.boot.servers || []) {
+          const id = Number(s.node_id);
+          if (!nodes.has(id)) nodes.set(id, { id, name: s.node_name || names.get(id) || 'Node ' + id });
+        }
+        return [...nodes.values()].sort((a, b) => a.name.localeCompare(b.name));
+      },
+      groupedByNode() {
+        const mode = this.overviewPreferences.groupByNode;
+        return mode === 'always' || (mode === 'auto' && this.nodeOptions().length > 1);
+      },
+      /** Servers, with a heading row before each node when grouping is on. */
+      overviewItems() {
+        const servers = this.visibleServers();
+        if (!this.groupedByNode()) return servers;
+        const items = [];
+        for (const node of this.nodeOptions()) {
+          const members = servers.filter((s) => Number(s.node_id) === node.id);
+          if (!members.length) continue;
+          items.push({ isNodeHeader: true, uuid: 'node-' + node.id, name: node.name, count: members.length }, ...members);
+        }
+        return items;
       },
       setGameFilter(key) {
         if (key === 'all' || this.gameOptions().some((g) => g.key === key)) this.gameFilter = key;
@@ -501,6 +587,7 @@
             for (const key of OVERVIEW_SWITCHES) if (typeof saved[key] === 'boolean') preferences[key] = saved[key];
             if (['server', 'egg'].includes(saved.largeIcon)) preferences.largeIcon = saved.largeIcon;
             if (['alias', 'name'].includes(saved.largeName)) preferences.largeName = saved.largeName;
+            if (['auto', 'always', 'off'].includes(saved.groupByNode)) preferences.groupByNode = saved.groupByNode;
           }
         } catch {}
         this.overviewPreferences = preferences;
@@ -508,7 +595,7 @@
       setOverviewPreference(key, value) {
         if (OVERVIEW_SWITCHES.includes(key)) {
           if (typeof value !== 'boolean') return;
-        } else if (!({ largeIcon: ['server', 'egg'], largeName: ['alias', 'name'] }[key] || []).includes(value)) return;
+        } else if (!({ largeIcon: ['server', 'egg'], largeName: ['alias', 'name'], groupByNode: ['auto', 'always', 'off'] }[key] || []).includes(value)) return;
         this.overviewPreferences = { ...this.overviewPreferences, [key]: value };
         if (key === 'showQuickActions' && !value) this.powerConfirmation = null;
         try {

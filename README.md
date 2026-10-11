@@ -34,9 +34,11 @@ Planned improvements; scope and release order may change.
 
 **All existing Pelican functionality remains available in the legacy panel, including features that have not yet been implemented in Simplify.**
 
-- **Other game server creation** — guided setup and automatic egg selection for more games.
+- **Easy game server creator** — a second creator next to the easy Minecraft server creator: search any game by name (built from Pelican's egg index), and with the right permission the matching egg is downloaded and installed automatically. See [roadmap](docs/ROADMAP.md).
+- **Clearer server installation** — one clear "initialising" state until the egg and server are ready, and the Minecraft EULA accepted up front without the start/stop loop.
+- **Simplify as the whole panel** — an option in the setup wizard to let Simplify replace the panel, with the legacy panel kept under /legacy or switched off when no other plugins need it.
 - **Egg settings in the dashboard** — edit supported startup variables with clear descriptions and validation.
-- **Dashboard alerts** — warnings for crashes, resource limits and failed backups.
+- **Dashboard alerts** — warnings for crashes and resource limits (Pelican notifications already appear in the bell).
 - **Known server startup fixes** — detect common startup problems and offer guided fixes.
 - **More overview customization (0.3.0)** — additional information fields and layout options.
 - **Server presets** — reusable settings for faster, consistent server creation.

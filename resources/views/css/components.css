@@ -1,14 +1,14 @@
 /* Shared Simplify components. Every page (dashboard, creator, settings, embedded and native pages)
    uses these classes, so a button, field, popup or tooltip looks the same everywhere. */
 
-:where(.ps, .ps-ui, .ps-settings-page, .ssc-wizard) {
+:where(.ps, .ps-ui, .ps-settings-page, .ps-admin-page, .ssc-wizard) {
   font-family: var(--ps-font);
   color: var(--ps-ink);
   -webkit-font-smoothing: antialiased;
 }
-:where(.ps, .ps-ui, .ps-settings-page, .ssc-wizard) *,
-:where(.ps, .ps-ui, .ps-settings-page, .ssc-wizard) *::before,
-:where(.ps, .ps-ui, .ps-settings-page, .ssc-wizard) *::after {
+:where(.ps, .ps-ui, .ps-settings-page, .ps-admin-page, .ssc-wizard) *,
+:where(.ps, .ps-ui, .ps-settings-page, .ps-admin-page, .ssc-wizard) *::before,
+:where(.ps, .ps-ui, .ps-settings-page, .ps-admin-page, .ssc-wizard) *::after {
   box-sizing: border-box;
 }
 .ps[x-cloak], :where(.ps, .ps-ui) [x-cloak] { display: none !important; }
@@ -410,8 +410,12 @@ html:has(.ps-modal-layer[data-open="true"]), html.ps-ui-locked { overflow: hidde
 .ps-notify-item > svg { grid-row: span 2; width: 18px; height: 18px; margin-top: 1px; color: var(--ps-tone); }
 .ps-notify-item strong { font-size: 13px; font-weight: 650; }
 .ps-notify-item small { color: var(--ps-muted); font-size: 12px; line-height: 1.45; }
-.ps-admin-menu { width: min(420px, calc(100vw - 24px)); max-height: min(70vh, 560px); overflow-y: auto; }
-.ps-admin-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 4px; margin-top: 6px; }
+.ps-admin-menu { width: min(460px, calc(100vw - 24px)); max-height: min(70vh, 560px); overflow-y: auto; }
+.ps-admin-groups { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px 12px; margin-top: 10px; }
+.ps-admin-group { display: grid; align-content: start; gap: 2px; }
+.ps-admin-group .ps-label { margin: 0 0 4px 10px; }
+.ps-admin-health { margin-top: 12px; }
+.ps-admin-health svg { width: 16px; height: 16px; color: var(--ps-accent); }
 .ps-admin-item { display: flex; align-items: center; gap: 10px; min-height: var(--ps-h); padding: 6px 10px; border: 1px solid transparent; border-radius: var(--ps-radius); background: transparent; color: var(--ps-ink); font: 550 13px/1.2 var(--ps-font); text-align: left; cursor: pointer; }
 .ps-admin-item:hover, .ps-admin-item:focus-visible { border-color: var(--ps-line); background: var(--ps-raised); }
 .ps-admin-item svg { flex: none; width: 18px; height: 18px; fill: none; stroke: var(--ps-accent); stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
