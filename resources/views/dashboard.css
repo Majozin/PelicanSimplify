@@ -1342,3 +1342,48 @@ body:has(.ps) [data-ps-footer]{padding-top:4px!important}
 body:has(.ps) [data-ps-footer]{flex-direction:row!important}body:has(.ps) [data-ps-copyright-line]{display:block!important;width:auto!important}body:has(.ps) [data-ps-footer][data-ps-copyright-line]{display:block!important;width:100%!important}body:has(.ps) [data-ps-footer] [data-ps-attribution]{display:inline!important}
 
 .ps .ps-server-entry.confirming-power .ps-overview-power-wrap{visibility:visible;opacity:1;pointer-events:auto;transform:none}
+
+/* Keep server identities visible while controls compress the card contents. */
+.ps .ps-server-entry>.ps-server-card:hover{transform:none}
+.ps .ps-server-grid:not(.is-list) .ps-server-entry .ps-server-open{height:320px;display:flex;flex-direction:column;align-items:stretch;padding:18px;transition:padding-bottom .25s}
+.ps .ps-server-grid:not(.is-list) .ps-server-entry .ps-card-head{opacity:1;flex:none;min-height:44px;margin-bottom:18px;transition:margin-bottom .25s}
+.ps .ps-server-grid:not(.is-list) .ps-server-entry .ps-card-title{flex:none;transform:none}
+.ps .ps-server-grid:not(.is-list) .ps-server-entry .ps-card-usage{flex:none;margin-top:22px;transform:none;transition:margin-top .25s}
+.ps .ps-server-grid:not(.is-list) .ps-server-entry .ps-card-graph{height:46px;transition:height .25s}
+.ps .ps-server-grid:not(.is-list) .ps-server-entry .ps-card-bottom{flex:none;margin-top:auto;transform:none}
+.ps .ps-server-grid:not(.is-list) .has-power:is(:hover,:focus-within,.confirming-power) .ps-server-open{padding-bottom:76px}
+.ps .ps-server-grid:not(.is-list) .has-power:is(:hover,:focus-within,.confirming-power) .ps-card-head{opacity:1;margin-bottom:8px}
+.ps .ps-server-grid:not(.is-list) .has-power:is(:hover,:focus-within,.confirming-power) .ps-card-usage{margin-top:10px}
+.ps .ps-server-grid:not(.is-list) .has-power:is(:hover,:focus-within,.confirming-power) .ps-card-graph{height:30px}
+@media(hover:none){.ps .ps-server-grid:not(.is-list) .has-power .ps-server-open{padding-bottom:76px}.ps .ps-server-grid:not(.is-list) .has-power .ps-card-head{opacity:1;margin-bottom:8px}.ps .ps-server-grid:not(.is-list) .has-power .ps-card-usage{margin-top:10px}.ps .ps-server-grid:not(.is-list) .has-power .ps-card-graph{height:30px}}
+/* Compact node summaries share a single row; servers expand underneath. */
+.ps .ps-node-health-list>.ps-node-health{padding:12px;margin-bottom:6px;border:0;background:transparent;transition:background .2s}
+.ps .ps-node-health-list>.ps-node-health:is(:hover,.expanded){background:var(--raised)}
+.ps .ps-node-summary{display:grid;grid-template-columns:minmax(180px,1fr) minmax(0,3fr);gap:18px;align-items:center;cursor:pointer}
+.ps .ps-node-summary>header{margin:0;min-width:0}
+.ps .ps-node-toggle{gap:8px;flex-wrap:wrap}
+.ps .ps-node-toggle .ps-node-name{min-width:0;overflow-wrap:anywhere;font-size:13px}
+.ps .ps-node-toggle .ps-node-symbol{width:20px;height:20px;color:var(--accent)}
+.ps .ps-node-toggle .ps-health-status{font-size:10px}
+.ps .ps-node-summary .ps-node-metrics{grid-template-columns:repeat(4,minmax(0,1fr));gap:14px}
+.ps .ps-node-summary .ps-host-metric{min-width:0}
+.ps .ps-node-summary .ps-host-heading{font-size:10px;gap:5px}
+.ps .ps-node-summary .ps-host-heading svg{width:15px;height:15px}
+.ps .ps-node-summary .ps-node-metrics strong{font-size:12px}
+.ps .ps-node-summary .ps-node-metrics small{font-size:9px}
+.ps .ps-node-server-drawer.expanded .ps-node-servers{padding-top:10px}
+@media(max-width:800px){.ps .ps-node-summary{grid-template-columns:1fr;gap:8px}.ps .ps-node-summary .ps-node-metrics{grid-template-columns:repeat(4,minmax(110px,1fr));overflow-x:auto;padding-bottom:4px}.ps .ps-node-toggle{flex-wrap:nowrap}}
+@media(prefers-reduced-motion:reduce){.ps .ps-server-grid:not(.is-list) .ps-server-entry :is(.ps-server-open,.ps-card-head,.ps-card-usage,.ps-card-graph),.ps .ps-node-health-list>.ps-node-health{transition:none}}
+
+/* List cards use a smaller, horizontal icon pair and a raised title. */
+.ps .ps-server-grid.is-list .ps-card-icons{flex-direction:row;align-items:center;gap:6px;padding-top:0}
+.ps .ps-server-grid.is-list .ps-card-icon{width:48px;height:48px;border-radius:10px}
+.ps .ps-server-grid.is-list .ps-card-icon img{width:100%;height:100%}
+.ps .ps-server-grid.is-list .ps-card-icon svg{width:30px;height:30px}
+.ps .ps-server-grid.is-list .ps-card-egg-icon{width:24px;height:24px}
+.ps .ps-server-grid.is-list .ps-card-head{margin:0;min-height:48px;align-self:start}
+.ps .ps-server-grid.is-list .ps-card-title{align-self:start}
+.ps .ps-server-grid.is-list .ps-server-open{padding:12px 18px;transition:padding .25s;gap:12px}
+@media(min-width:1051px){.ps .ps-server-grid.is-list .ps-server-open{height:84px;grid-template-columns:80px minmax(0,1fr) minmax(100px,240px) minmax(0,1fr) 0px}.ps .ps-server-grid.is-list .has-power:is(:hover,:focus-within,.confirming-power) .ps-server-open{padding:8px 130px 8px 12px}}
+@media(min-width:701px) and (max-width:1050px){.ps .ps-server-grid.is-list .has-power:is(:hover,:focus-within,.confirming-power) .ps-server-open{padding:10px 130px 10px 12px}.ps .ps-server-grid.is-list .has-power:is(:hover,:focus-within,.confirming-power) .ps-card-usage{transform:translateY(-2px)}}
+@media(max-width:700px){.ps .ps-server-grid.is-list .ps-server-open{grid-template-columns:74px minmax(0,1fr);padding:12px 14px}.ps .ps-server-grid.is-list .has-power .ps-server-open{padding-bottom:68px}.ps .ps-server-grid.is-list .has-power:is(:hover,:focus-within,.confirming-power) .ps-server-open{padding:12px 14px 68px}.ps .ps-server-grid.is-list .ps-card-icon{width:42px;height:42px}.ps .ps-server-grid.is-list .ps-card-egg-icon{width:22px;height:22px}.ps .ps-server-grid.is-list .ps-card-head{min-height:42px}}

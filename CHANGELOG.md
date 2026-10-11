@@ -1,5 +1,12 @@
 # Changes
 
+## 0.2.0-alpha.23
+- Shorter list cards use smaller server icons, software icons alongside and raised titles.
+- Taller overview grid cards retain logos and compress their contents when quick controls appear, without hover lift.
+- Original server names appear in parentheses beneath aliases.
+- Compact, borderless node summaries show four metrics in one row, with node icons and persistent expanded highlights.
+
+
 ## 0.2.0-alpha.22
 - Overview titles shrink to fit; aliases and original names use consistent stacked rows.
 - Software labels move into styled icon tooltips with reported versions.
