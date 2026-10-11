@@ -1,5 +1,9 @@
 # Changes
 
+## 0.3.0-beta.16
+- Host mode: the page tabs at the top size to their text; the easy creator is called "Create server".
+- Host mode: the selected menu item, the page header and the active tab use the panel accent colour; section icons keep their own colour.
+
 ## 0.3.0-beta.15
 - Host mode: Servers holds the easy server creator (when on), Eggs and Mounts; the pages of a section are larger tabs centred at the top.
 - Host mode: new Legacy item at the bottom of the menu with Pelican's own create-server form and plugin manager.

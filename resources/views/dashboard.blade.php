@@ -296,7 +296,7 @@
                         </button>
                     </template>
                 </nav>
-                <div class="ps-host-main" :style="{'--ps-tone': hostSection?.color}">
+                <div class="ps-host-main">
                     <header class="ps-host-head" x-show="hostSection">
                         <div class="ps-host-title"><span class="ps-host-rail-icon"><svg aria-hidden="true"><use :href="'#ps-'+(hostSection?.icon||'host')"/></svg></span>
                         <h2 x-text="hostSection?.label"></h2></div>
