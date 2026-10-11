@@ -1,0 +1,20 @@
+const fs=require('fs'),vm=require('vm'),assert=require('assert');
+const context={window:{},setTimeout:()=>0,clearTimeout(){},console};vm.createContext(context);
+vm.runInContext(fs.readFileSync(__dirname+'/../pelican-simplify/resources/views/dashboard.js','utf8'),context);
+(async()=>{
+ let calls=0,saved;
+ const wire={installedPackages:async()=>{calls++;return {context:{kind:'plugins',version:'1.21.3'},files:[]}},saveResourceLimits:async s=>{saved=s},refreshInfo:async()=>({})};
+ const boot={web:true,server:{minecraft:true,package_kind:'',can_resources:true,memory:4096,disk:10240,cpu:200,permissions:{'file.read':true,'file.read-content':true,'file.update':true,'schedule.read':true,'activity.read':true},native_sections:{schedules:'/server/demo/schedules',activity:'/server/demo/activity'},properties:{}}};
+ const d=context.window.pelicanSimplify(wire,boot);d.$nextTick=f=>f();d.$root={querySelector:()=>null};
+ assert.equal(d.showWidget('mods'),false);assert.equal(d.showWidget('plugins'),false);
+ await d.open('mods');assert.equal(calls,0,'vanilla cannot open mods');
+ d.server.package_kind='plugins';assert.equal(d.showWidget('plugins'),true);assert.equal(d.showWidget('mods'),false);
+ d.packageResults=[{project_id:'old-mod'}];d.packageQuery='old';await d.open('plugins');assert.equal(d.modal,'plugins');assert.equal(d.packageResults.length,0);assert.equal(d.packageQuery,'');assert.equal(d.packageVersion,'1.21.3');
+ d.server.package_kind='mods';assert.equal(d.showWidget('plugins'),false);assert.equal(d.showWidget('mods'),true);
+ d.server.permissions['file.read']=false;assert.equal(d.showWidget('mods'),false);
+ assert.equal(d.showWidget('schedules'),true);d.server.native_sections.schedules=null;assert.equal(d.showWidget('schedules'),false);
+ assert.equal(d.showWidget('activity'),true);d.server.permissions['activity.read']=false;assert.equal(d.showWidget('activity'),false);
+ d.server.package_kind='plugins';d.server.permissions['file.read']=true;d.modal='performance';d.fillSettings();await d.saveSettings();assert.deepEqual(Object.keys(saved).sort(),['cpu','disk_mb','memory_gb']);assert.equal(saved.memory_gb,4);
+ const keys=d.widgets.map(w=>w.key);assert.equal(new Set(keys).size,keys.length);assert.equal(keys.includes('packages'),false);
+ console.log('PASS vanilla/plugin/mod visibility, file permissions, hidden-section guards, result reset, native section permissions, resource-only payload');
+})().catch(e=>{console.error(e);process.exit(1)});

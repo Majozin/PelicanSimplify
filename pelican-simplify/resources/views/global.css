@@ -1,0 +1,36 @@
+:root{
+ --ps-bg:#f4f4f5;--ps-surface:#fff;--ps-raised:#eeeef1;--ps-field:#fafafa;
+ --ps-ink:#26262e;--ps-muted:#666672;--ps-line:#dedee5;--ps-accent:#878787;
+}
+:root.dark{--ps-bg:#101012;--ps-surface:#1a1a1f;--ps-raised:#25252c;--ps-field:#141418;--ps-ink:#ededf2;--ps-muted:#b0b0bb;--ps-line:#33333c;--ps-accent:#b0b0bb;color-scheme:dark}
+html.ps-theme{color-scheme:light}
+html.ps-theme.dark{color-scheme:dark}
+.ps-theme body,.ps-theme .fi-layout,.ps-theme .fi-main-ctn{background:var(--ps-bg)!important;color:var(--ps-ink)!important}
+.ps-theme .fi-section,.ps-theme .fi-ta,.ps-theme .fi-sc-wizard.fi-contained,.ps-theme .fi-modal-window,.ps-theme .fi-dropdown-panel,.ps-theme .fi-topbar,.ps-theme .fi-sidebar{background:var(--ps-surface)!important;color:var(--ps-ink)!important;border-color:var(--ps-line)!important;box-shadow:none!important}
+.ps-theme .fi-section-header,.ps-theme .fi-ta-header,.ps-theme .fi-ta-content,.ps-theme .fi-ta-row,.ps-theme .fi-ta-header-cell{background:var(--ps-surface)!important;border-color:var(--ps-line)!important}
+.ps-theme .fi-header-heading,.ps-theme .fi-section-header-heading,.ps-theme .fi-fo-field-label-content,.ps-theme .fi-sc-wizard-step-label,.ps-theme .fi-ta-cell{color:var(--ps-ink)!important}
+.ps-theme .fi-fo-field-helper-text,.ps-theme .fi-section-header-description{color:var(--ps-muted)!important}
+.ps-theme .fi-input-wrp,.ps-theme .fi-input,.ps-theme .fi-textarea,.ps-theme select{background:var(--ps-field)!important;color:var(--ps-ink)!important;border-color:var(--ps-line)!important}
+.ps-theme :is(.fi-btn,.ps-button,.ssc-draft-action){border:1px solid var(--ps-line)!important;border-radius:10px!important;background:var(--ps-raised)!important;color:var(--ps-ink)!important;min-height:38px;box-shadow:none!important;font-weight:600}
+.ps-theme :is(.fi-btn,.ps-button,.ssc-draft-action):hover:enabled{filter:brightness(.96)}
+.ps-theme :is(.fi-btn,.ps-button,.ssc-draft-action):focus-visible{outline:2px solid var(--ps-accent);outline-offset:3px}
+.ps-theme :is(.fi-btn,.ps-button,.ssc-draft-action):disabled{opacity:.45;cursor:not-allowed}
+.ps-theme .ps-button.primary{background:var(--ps-accent)!important;color:var(--ps-surface)!important}
+.ps-theme .ps-button.danger,.ps-theme .fi-btn.fi-color-danger{color:#d24960!important}
+.ps-theme .ssc-wizard{--ssc-border:var(--ps-line);--ssc-muted:var(--ps-muted);--ssc-blue:var(--ps-accent);--ssc-surface:var(--ps-surface);--ssc-raised:var(--ps-raised);--ssc-ink:var(--ps-ink)}
+.ps-theme .ps{--bg:var(--ps-bg);--surface:var(--ps-surface);--raised:var(--ps-raised);--field:var(--ps-field);--ink:var(--ps-ink);--muted:var(--ps-muted);--line:var(--ps-line)}
+.ps-console-dark .ps-console,.ps-console-dark .ps-output,.ps-console-dark .ps-command{background:#09090b!important;color:#e4e4e7!important}
+.ps-console-adaptive .ps-console,.ps-console-adaptive .ps-output,.ps-console-adaptive .ps-command{background:var(--ps-surface)!important;color:var(--ps-ink)!important}
+.ps-console-adaptive .ps-command input{color:var(--ps-ink)!important}
+.ps-frame .fi-topbar,.ps-frame .fi-sidebar,.ps-frame .fi-breadcrumbs{display:none!important}
+.ps-frame .fi-main{max-width:none!important;padding:12px!important}
+.ps-frame .fi-page{padding:8px!important}
+.ps-frame .fi-header-heading{font-size:18px!important}
+.ps-frame[data-ps-frame="native"] :is(.fi-main,.fi-main-ctn,.fi-page,.fi-page-content){padding:0!important;margin:0!important;max-width:none!important;width:100%!important}
+.ps-frame[data-ps-frame="native"] [data-ps-embed-navigation="overview"],.ps-frame[data-ps-frame="native"] .fi-header-heading,.ps-frame[data-ps-frame="native"] .fi-main-ctn>footer{display:none!important}
+.ps-frame[data-ps-frame="create"] .fi-header,.ps-frame[data-ps-frame="create"] .fi-main-ctn>footer{display:none!important}
+.ps-frame[data-ps-frame="create"] :is(.fi-main-ctn,.fi-main,.fi-page,.fi-page-content){margin:0!important;padding:0!important;max-width:none!important;width:100%!important;gap:0!important}
+.ps-frame[data-ps-frame="create"] :is(body,.fi-layout){min-height:0!important;height:auto!important}
+.ps-frame[data-ps-frame="create"]{overflow:hidden!important}
+.ps-frame[data-ps-frame="create"] .ssc-wizard{margin-top:0!important;width:100%!important;max-width:none!important;min-height:0!important}
+@media(prefers-reduced-motion:reduce){.ps-theme *{animation-duration:.01ms!important;transition-duration:.01ms!important}}

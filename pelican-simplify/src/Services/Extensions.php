@@ -1,0 +1,35 @@
+<?php
+declare(strict_types=1);
+namespace Simplify\Panel\Services;
+final class Extensions
+{
+    private array $states=[];
+    public static function enabled(string $id): bool
+    {
+        $self=app(self::class);
+        if(array_key_exists($id,$self->states))return $self->states[$id];
+        $path=base_path('plugins/'.$id.'/plugin.json');
+        if(!is_file($path))return $self->states[$id]=false;
+        $manifest=json_decode(file_get_contents($path),true);
+        return $self->states[$id]=($manifest['id']??'')===$id&&($manifest['meta']['status']??'')==='enabled';
+    }
+    public static function webInstalled(): bool { return self::enabled('server-directory')&&app()->bound('simplify.web'); }
+    public static function web(): bool { return self::webInstalled()&&app('simplify.web')->enabled(); }
+    public static function webAdapter(): ?object { return self::web()?app('simplify.web'):null; }
+    public static function createGames(): array
+    {
+        if(!self::canCreate())return [];
+        if(!FeatureSettings::enabled('easy_creator'))return ['minecraft','other'];
+        return !CreatorAccess::admin()&&!CreatorAccess::settings()['minecraft_enabled']?['other']:['minecraft','other'];
+    }
+    public static function createUrl(): string
+    {
+        return FeatureSettings::enabled('easy_creator')
+            ?\Simplify\Panel\Filament\App\Pages\CreateServer::getUrl(panel:'app')
+            :\App\Filament\Admin\Resources\Servers\ServerResource::getUrl('create',panel:'admin');
+    }
+    public static function canCreate(): bool
+    {
+        return FeatureSettings::enabled('easy_creator')?CreatorAccess::canCreate():\App\Filament\Admin\Resources\Servers\ServerResource::canCreate();
+    }
+}

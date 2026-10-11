@@ -1,0 +1,14 @@
+const fs=require('fs'),vm=require('vm'),assert=require('assert');
+function doc(){const classes=new Set();const nodes={};return {documentElement:{style:{values:{},setProperty(k,v){this.values[k]=v}},dataset:{},classList:{toggle(key,value){value?classes.add(key):classes.delete(key)},add(key){classes.add(key)},contains:key=>classes.has(key)}},getElementById:key=>nodes[key],createElement:()=>({}),head:{append(node){nodes[node.id]=node}},addEventListener(){},querySelectorAll:()=>[]};}
+const document=doc(),values=new Map(),events={};let mediaListener;
+const window={simplifyThemeConfig:{global_theme:true,legacy_theme:true,console_dark:true,accent_color:'#446688',css_url:'/global.css'},dispatchEvent(event){for(const fn of events[event.type]||[])fn(event)},addEventListener(type,fn){(events[type]??=[]).push(fn)}};
+const context={window,document,localStorage:{getItem:key=>values.get(key),setItem:(key,value)=>values.set(key,value)},matchMedia:()=>({matches:false,addEventListener(type,fn){mediaListener=fn}}),CustomEvent:class{constructor(type,{detail}){this.type=type;this.detail=detail}}};
+vm.createContext(context);vm.runInContext(fs.readFileSync(__dirname+'/../pelican-simplify/resources/views/theme.js','utf8'),context);
+const t=window.SimplifyTheme;assert.equal(t.preference(),'system');assert(document.documentElement.classList.contains('ps-theme'));
+const creator={dataset:{},contentDocument:doc()},legacy={dataset:{},contentDocument:doc()};document.querySelectorAll=()=>[creator,legacy];
+t.frame(creator,'create');t.frame(legacy,'native');assert.equal(creator.contentDocument.documentElement.style.values['--ps-accent'],'#446688');assert.equal(legacy.contentDocument.documentElement.style.values['--ps-accent'],'#446688');t.set('dark');assert(document.documentElement.classList.contains('dark'));assert(creator.contentDocument.documentElement.classList.contains('dark'));assert(legacy.contentDocument.documentElement.classList.contains('dark'));assert(document.documentElement.classList.contains('ps-console-dark'));
+assert.equal(creator.contentDocument.getElementById('simplify-global-css').href,'/global.css');
+t.set('light');assert(!creator.contentDocument.documentElement.classList.contains('dark'));assert.equal(values.get('pelicanSimplify.theme'),'light');
+t.configure({...window.simplifyThemeConfig,legacy_theme:false,console_dark:false});assert(!legacy.contentDocument.documentElement.classList.contains('ps-theme'));assert(creator.contentDocument.documentElement.classList.contains('ps-theme'));assert(document.documentElement.classList.contains('ps-console-adaptive'));
+t.configure({...window.simplifyThemeConfig,global_theme:false});assert(!document.documentElement.classList.contains('ps-theme'));t.set('unsupported');assert.equal(t.preference(),'light');
+console.log('PASS theme propagation, shared asset link, saved preference, legacy opt-out, creator exception, console modes and theme opt-out');

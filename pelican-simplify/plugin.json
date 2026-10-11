@@ -1,0 +1,17 @@
+{
+  "id": "pelican-simplify",
+  "name": "PelicanSimplify",
+  "author": "Simplify contributors",
+  "version": "0.2.0-alpha.1",
+  "description": "Unified Simplify dashboard and optional easy server creator with shared theme and setup settings.",
+  "category": "plugin",
+  "namespace": "Simplify\\Panel",
+  "class": "PelicanSimplifyPlugin",
+  "panels": [
+    "app",
+    "server",
+    "admin"
+  ],
+  "panel_version": "1.0.0-beta38",
+  "api_version": 1
+}

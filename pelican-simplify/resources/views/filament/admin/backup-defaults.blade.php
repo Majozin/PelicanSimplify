@@ -1,0 +1,1 @@
+<p class="ssc-backup-defaults">{{ \Simplify\Panel\Services\FeatureSettings::enabled('automatic_backups') ? 'Uses automatic settings: every 30 minutes, with 2 recovery points.' : 'Automatic backups are paused in Simplify settings.' }}</p>
