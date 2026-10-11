@@ -1,7 +1,7 @@
 <x-filament-panels::page>
 @assets
-<link id="simplify-dashboard-css" rel="stylesheet" href="{{ route('simplify.asset',['asset'=>'dashboard.css']) }}?v=0.2.0-alpha.13">
-<script src="{{ route('simplify.asset',['asset'=>'dashboard.js']) }}?v=0.2.0-alpha.13"></script>
+<link id="simplify-dashboard-css" rel="stylesheet" href="{{ route('simplify.asset',['asset'=>'dashboard.css']) }}?v=0.2.0-alpha.14">
+<script src="{{ route('simplify.asset',['asset'=>'dashboard.js']) }}?v=0.2.0-alpha.14"></script>
 @endassets
 <div class="ps" data-simplify-root x-cloak wire:ignore.self x-data="pelicanSimplify($wire,@js($this->initial()))" x-on:resize.window.debounce.100ms="restoreOverviewView()" :class="{'console-closed':collapsed,'dark':themeDark,'server-active':!!server}" :style="accentStyle(server?.uuid || 'overview')">
     <svg class="ps-symbols" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><defs>

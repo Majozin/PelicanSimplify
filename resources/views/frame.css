@@ -1,6 +1,6 @@
 /* Only injected into workspaces opened from Simplify. Native pages keep their own CSS. */
 html.ps-frame { --ps-surface:#fff;--ps-raised:#eeeef1;--ps-field:#fafafa;--ps-ink:#26262e;--ps-muted:#666672;--ps-line:#dedee5;--ps-accent:#878787;font-family:Inter,ui-sans-serif,system-ui,sans-serif;color:var(--ps-ink);color-scheme:light; }
-html.ps-frame[data-ps-dark="1"] { --ps-surface:#1a1a1f;--ps-raised:#26262e;--ps-field:#202027;--ps-ink:#eeeeF1;--ps-muted:#a1a1aa;--ps-line:#393940;color-scheme:dark; }
+html.ps-frame[data-ps-dark="1"] { --ps-surface:#1a1a1f;--ps-raised:#25252c;--ps-field:#141418;--ps-ink:#ededf2;--ps-muted:#b0b0bb;--ps-line:#33333c;color-scheme:dark; }
 .ps-frame body { background:var(--ps-surface)!important;color:var(--ps-ink)!important;font-family:inherit!important; }
 .ps-frame :is(.fi-section,.fi-ta-ctn,.fi-modal-window,.fi-dropdown-panel,.fi-sc-tabs) { background:var(--ps-surface)!important;color:var(--ps-ink)!important;border:1px solid var(--ps-line)!important;border-radius:14px!important;box-shadow:none!important; }
 .ps-frame :is(.fi-ta-header,.fi-ta-header-toolbar,.fi-ta-content,.fi-ta-empty-state,.fi-section-content-ctn,.fi-section-header,.fi-tabs) { background:var(--ps-surface)!important;color:var(--ps-ink)!important; }

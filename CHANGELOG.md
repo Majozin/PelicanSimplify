@@ -1,5 +1,11 @@
 # Changes
 
+## 0.2.0-alpha.14
+
+- Align dark iframe control colors with Simplify and use the panel accent in overview workspaces.
+- Retain the alpha 13 features and correct its browser regression fixture.
+
+
 ## 0.2.0-alpha.13
 
 - Show advisory PHP/Livewire upload capacity and NGINX/proxy configuration guidance; cap banner uploads at the detected application limit.

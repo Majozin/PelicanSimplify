@@ -14,7 +14,7 @@ const html=`<!doctype html><html><head><link rel="stylesheet" href="/global.css"
  try{
   const page=await browser.newPage();await page.goto('http://127.0.0.1:'+server.address().port);await page.waitForLoadState('networkidle');
   await page.evaluate(()=>{SimplifyTheme.frame(document.querySelector('#settings'),'settings');SimplifyTheme.frame(document.querySelector('#creator'),'create');SimplifyTheme.frame(document.querySelector('#legacy'),'native');SimplifyTheme.set('dark');});
-  await page.waitForTimeout(120);
+  await page.waitForFunction(()=>{const doc=document.querySelector('#creator').contentDocument;return doc?.getElementById('simplify-frame-css')?.sheet&&getComputedStyle(doc.querySelector('.fi-btn')).backgroundColor===getComputedStyle(document.querySelector('.fi-btn')).backgroundColor;});
   const colors=await page.evaluate(()=>{const f=document.querySelector('#creator').contentDocument;return {surface:getComputedStyle(document.querySelector('.fi-section')).backgroundColor,button:getComputedStyle(document.querySelector('.fi-btn')).backgroundColor,console:getComputedStyle(document.querySelector('.ps-console')).backgroundColor,creator:getComputedStyle(f.querySelector('.fi-btn')).backgroundColor,legacy:document.querySelector('#legacy').contentDocument.documentElement.classList.contains('dark')};});
   assert.equal(colors.surface,'rgb(26, 26, 31)');assert.equal(colors.button,colors.creator);assert.equal(colors.console,'rgb(9, 9, 11)');assert.equal(colors.legacy,true);
   await page.evaluate(()=>SimplifyTheme.set('light'));
