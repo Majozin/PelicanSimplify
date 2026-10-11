@@ -1,6 +1,8 @@
 # Changes
 
 ## 0.2.0-alpha.25
+- Match solid quick-action bars to the page background in both themes.
+- Show avatar and username in a wider profile button; reveal inline profile-settings and logout icons instead of an account dropdown.
 - Move Light, Dark and System theme controls into the appearance dropdown, also available on server pages.
 - Remove surrounding overview and legacy page backgrounds behind the health dock.
 - Align Host health to the rendered server grid, including platform scrollbar widths.

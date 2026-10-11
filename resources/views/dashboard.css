@@ -1449,7 +1449,7 @@ body:has(.ps) [data-ps-footer]{flex-direction:row!important}body:has(.ps) [data-
 
 /* Solid controls occupy the card edge while its artwork slides clear. */
 .ps .ps-overview-power-wrap{bottom:0;left:0;right:0;opacity:1;transform:translateY(100%);transition:transform .25s,visibility .25s}
-.ps .ps-overview-power{border:0;border-top:1px solid #50505a;border-radius:0;background:#3d3d46}
+.ps .ps-overview-power{border:0;border-top:1px solid #50505a;border-radius:0;background:var(--bg)}
 .ps .ps-server-grid.is-list .ps-overview-power-wrap{top:0;bottom:0;left:auto;right:0;width:104px;transform:translateX(100%)}
 .ps .ps-server-grid.is-list .ps-overview-power{border-top:0;border-left:1px solid #50505a;border-radius:0}
 .ps .ps-server-entry.confirming-power .ps-overview-power-wrap{transform:none}
@@ -1522,3 +1522,16 @@ body:has(.ps.dark) [data-ps-footer]{background:var(--ps-surface,#1a1a1f)!importa
 /* Only the health card and copyright row paint their own surfaces. */
 body:has(.ps:not(.server-active)) :is(.fi-main,.fi-page,.fi-page-content,.fi-page-header-main-ctn,.fi-page-main){background:transparent!important;background-image:none!important}
 .ps:not(.server-active),.ps:not(.server-active) :is(.ps-main,.ps-overview,.ps-server-scroll){background:transparent!important;background-image:none!important}
+
+/* Inline account actions slide beside the avatar instead of opening a menu. */
+.ps .ps-nav-items .ps-account-button,.ps .ps-nav-items .ps-account-button.has-avatar,.ps .ps-nav-items .ps-account-button.has-avatar:hover{flex:0 1 auto;width:auto;max-width:200px;min-width:0;height:40px;padding:4px 10px 4px 4px;border:1px solid var(--line)!important;border-radius:10px;background:var(--surface);gap:8px}
+.ps .ps-nav-items .ps-account-button .ps-account-avatar,.ps .ps-nav-items .ps-account-button.has-avatar .ps-account-avatar{flex:none;width:30px;height:30px}
+.ps .ps-account-username{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:12px;font-weight:600;line-height:1.3}
+.ps .ps-nav-items .ps-account-menu{position:static;display:block;order:-1;flex:none;width:0;min-width:0;max-width:none;height:40px;margin:0;padding:0;border:0;border-radius:0;background:transparent;box-shadow:none;overflow:hidden;opacity:0;transform:translateX(8px);transition:width .24s ease,margin .24s ease,opacity .2s ease,transform .24s ease}
+.ps .ps-nav-items .account-open .ps-account-menu{width:88px;margin-right:8px;opacity:1;transform:none}
+.ps .ps-account-actions-inner{display:flex;align-items:center;gap:8px;width:88px}
+.ps .ps-account-actions-inner button,.ps .ps-account-menu .ps-profile-button{display:grid;place-items:center;flex:none;width:40px;height:40px;min-height:40px;margin:0;padding:0;border-radius:9px;background:var(--raised)}
+.ps .ps-account-actions-inner svg{width:22px;height:22px}
+.ps .ps-account-actions-inner form{flex:none}
+@media(max-width:700px){.ps .ps-nav-items>.ps-account{width:100%}.ps .ps-nav-items .ps-account-button{flex:1 1 auto;max-width:none}.ps .ps-nav-items .ps-account-menu{order:0}.ps .ps-nav-items .account-open .ps-account-menu{margin-right:0;margin-left:8px}}
+@media(prefers-reduced-motion:reduce){.ps .ps-nav-items .ps-account-menu{transition:none}}
