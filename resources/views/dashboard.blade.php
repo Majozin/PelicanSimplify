@@ -271,7 +271,7 @@
                 <nav class="ps-host-rail" aria-label="Admin sections">
                     <span class="ps-label ps-host-rail-title">Admin</span>
                     <div class="ps-host-rail-items">
-                        <template x-for="section in hostSections().filter((x) => !['health', 'legacy'].includes(x.key))" :key="section.key">
+                        <template x-for="section in hostSections().filter((x) => x.key !== 'health')" :key="section.key">
                             <button type="button" class="ps-host-rail-item" :style="{'--ps-tone': section.color}" :aria-current="hostSection?.key===section.key ? 'page' : null" x-on:click="openHostSection(section)" :aria-label="section.label">
                                 <span class="ps-host-rail-icon"><svg aria-hidden="true"><use :href="'#ps-'+section.icon"/></svg></span><span class="ps-host-rail-label" x-text="section.label"></span>
                             </button>
@@ -290,11 +290,6 @@
                             </button>
                         </template>
                     </div>
-                    <template x-for="section in hostSections().filter((x) => x.key === 'legacy')" :key="section.key">
-                        <button type="button" class="ps-host-rail-item is-legacy" :style="{'--ps-tone': section.color}" :aria-current="hostSection?.key===section.key ? 'page' : null" x-on:click="openHostSection(section)" :aria-label="section.label">
-                            <span class="ps-host-rail-icon"><svg aria-hidden="true"><use :href="'#ps-'+section.icon"/></svg></span><span class="ps-host-rail-label" x-text="section.label"></span>
-                        </button>
-                    </template>
                 </nav>
                 <div class="ps-host-main">
                     <header class="ps-host-head" x-show="hostSection">

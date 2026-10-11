@@ -25,6 +25,7 @@ final class FeatureSettings
             'user_schedules'=>['Scheduled tasks for users','Show scheduled tasks to ordinary users with schedule permissions. Administrator managed access controls who can modify them.',false,'User access'],
             'dashboard'=>['Simplify dashboard','Replace the native server overview and console landing page with Simplify.',true,'Interface'],
             'host_mode'=>['Display host mode automatically','Recommended for big hosts with multiple nodes: administrators see servers in a compact list per node and the admin pages as the main workspace. The standard view is perfect for smaller servers. Each admin can still switch views.',false,'Interface'],
+            'legacy_pages'=>['Show legacy pages','Show the Legacy section in Admin tools and host mode, with Pelican\'s own create-server form and plugin manager. Off hides it; the pages themselves keep working.',true,'Interface'],
             'easy_creator'=>['Easy server creator','The guided creator for Minecraft, modpacks and other games, including self-service creation for users. Off disables it completely: servers are created with Pelican\'s native form only. Admins always have access to native creation.',true,'Add-ons'],
             'global_theme'=>['Shared appearance','Apply the same light or dark theme, surfaces, inputs and buttons throughout the panel and creator.',true,'Appearance'],
             'legacy_theme'=>['Style legacy workspaces','Apply the shared theme to embedded files, activity, account and advanced pages.',true,'Appearance'],

@@ -1,5 +1,9 @@
 # Changes
 
+## 0.3.0-beta.19
+- Host mode: Legacy sits right under Panel in the menu.
+- New setting "Show legacy pages" (General → Simplify interface) hides the Legacy section in Admin tools and host mode.
+
 ## 0.3.0-beta.18
 - Notification links stay in Simplify: admin pages (such as Plugins) open in the Simplify popup without leaving or reloading the dashboard, also from the drop-down notice and the "Simplify is available" item.
 - Plugin update, install and uninstall results carry an "Open plugins" link.

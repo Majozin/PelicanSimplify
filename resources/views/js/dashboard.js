@@ -367,12 +367,13 @@
           { key: 'integrations', label: 'Integrations', icon: 'database', color: '#f0a35b', pages: ['databasehostresource', 'apikeyresource', 'webhookresource'] },
           { key: 'plugins', label: 'Plugins', icon: 'plugins', color: '#f472b6', pages: ['pluginresource'] },
           { key: 'panel', label: 'Panel', icon: 'gear', color: '#94a3b8', pages: ['settings', 'listlogs'] },
+          { key: 'legacy', label: 'Legacy', icon: 'legacy', color: '#a8a29e', pages: ['serverresource', 'legacyplugins'] },
           { key: 'extensions', label: 'Extensions', icon: 'grid', color: '#2dd4bf', pages: [] },
           { key: 'health', label: 'Health', icon: 'heart', color: '#f87171', pages: ['health'] },
-          { key: 'legacy', label: 'Legacy', icon: 'legacy', color: '#a8a29e', pages: ['serverresource', 'legacyplugins'] },
         ];
         const items = [...this.adminPages().flatMap((group) => group.items), ...(this.boot.host_extras || [])];
         const known = new Set(plan.flatMap((section) => section.pages));
+        if (this.boot.features?.legacy_pages === false) plan.splice(plan.findIndex((section) => section.key === 'legacy'), 1);
         return plan.map((section) => ({
           ...section,
           pages: section.key === 'extensions' ? items.filter((item) => !known.has(item.key)) : section.pages.map((key) => items.find((item) => item.key === key)).filter(Boolean),

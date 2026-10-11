@@ -67,7 +67,7 @@ final class AdminPages
         try {
             if (FeatureSettings::enabled('easy_creator') && Extensions::canCreate()) $items[] = ['key' => 'easycreator', 'label' => 'Create server', 'url' => Extensions::createUrl(), 'icon' => 'plus'];
             $plugins = \App\Filament\Admin\Resources\Plugins\PluginResource::class;
-            if ($plugins::canViewAny()) $items[] = ['key' => 'legacyplugins', 'label' => 'Plugin manager (legacy)', 'url' => $plugins::getUrl('index', ['simplify_legacy' => 1], panel: 'admin'), 'icon' => 'plugins'];
+            if ($plugins::canViewAny() && FeatureSettings::enabled('legacy_pages')) $items[] = ['key' => 'legacyplugins', 'label' => 'Plugin manager (legacy)', 'url' => $plugins::getUrl('index', ['simplify_legacy' => 1], panel: 'admin'), 'icon' => 'plugins'];
         } catch (\Throwable) {
         }
         return $items;
