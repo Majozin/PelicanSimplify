@@ -14,12 +14,14 @@ namespace Illuminate\Support\Facades {
  class Cache {
   public static function lock(...$a) { return new class { public function get() { return true; } public function release() {} }; }
   public static function remember($k, $t, $c) { return $c(); }
+  public static function forget($k) {}
  }
  class Http {
   public static string $body = 'zip';
   public static array $json = [];
   public static function timeout($s) { return new self; }
   public function connectTimeout($s) { return $this; }
+  public function withHeaders($h) { return $this; }
   public function throw() { return $this; }
   public function get($url) { return $this; }
   public function json() { return self::$json; }
@@ -68,17 +70,17 @@ namespace {
  function check($ok, $m) { if (!$ok) throw new \RuntimeException($m); echo "PASS $m\n"; }
  $reset = function () { File::$fs = ['/plugins/demo/plugin.json' => json_encode(['id' => 'demo', 'version' => '1.0', 'meta' => ['status' => 'enabled']]), '/plugins/demo/code.php' => 'old']; \App\Services\Helpers\PluginService::$extracts = 0; Process::$runs = []; };
 
- $reset(); Http::$body = 'zip'; Http::$json = ['1.0.0-beta38' => ['version' => '2.0', 'sha256' => hash('sha256', 'zip')]]; Process::$installOk = true;
+ $reset(); Http::$body = 'zip'; Http::$json = ['1.0.0-beta38' => ['version' => '2.0', 'download_url' => 'https://example.test/demo.zip', 'sha256' => hash('sha256', 'zip')]]; Process::$installOk = true;
  $r = U::update(new \App\Models\Plugin);
  $manifest = File::json('/plugins/demo/plugin.json');
  check($r['ok'] && $manifest['version'] === '2.0' && $manifest['meta']['status'] === 'enabled', 'update keeps the plugin enabled');
  check((bool) preg_grep('/simplify:plugin-install demo --enable/', Process::$runs), 'install runs in a fresh process with the previous status');
 
- $reset(); Http::$json = ['1.0.0-beta38' => ['version' => '2.0', 'sha256' => str_repeat('0', 64)]];
+ $reset(); Http::$json = ['1.0.0-beta38' => ['version' => '2.0', 'download_url' => 'https://example.test/demo.zip', 'sha256' => str_repeat('0', 64)]];
  $r = U::update(new \App\Models\Plugin);
  check(!$r['ok'] && \App\Services\Helpers\PluginService::$extracts === 0 && File::$fs['/plugins/demo/code.php'] === 'old', 'checksum mismatch never touches the installed plugin');
 
- $reset(); Http::$json = ['1.0.0-beta38' => ['version' => '2.0', 'sha256' => hash('sha256', 'zip')]]; Process::$installOk = false;
+ $reset(); Http::$json = ['1.0.0-beta38' => ['version' => '2.0', 'download_url' => 'https://example.test/demo.zip', 'sha256' => hash('sha256', 'zip')]]; Process::$installOk = false;
  $r = U::update(new \App\Models\Plugin);
  check(!$r['ok'] && File::$fs['/plugins/demo/code.php'] === 'old' && File::json('/plugins/demo/plugin.json')['version'] === '1.0', 'failed install restores the previous version');
 }

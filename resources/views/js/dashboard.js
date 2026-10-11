@@ -34,6 +34,9 @@
       notifyMenu: false,
       noticeHistory: [],
       panelNotices: [],
+      incomingNotice: null,
+      incomingShown: false,
+      incomingQueue: [],
       adminMenu: false,
       hostMode: false,
       hostPage: null,
@@ -218,6 +221,8 @@
         this.destroyed = true;
         window.removeEventListener?.('simplify:theme', this.themeListener);
         window.removeEventListener?.('simplify:notice', this.noticeListener);
+        clearInterval(this.noticeTimer);
+        clearTimeout(this.incomingTimer);
         clearTimeout(this.reconnect);
         this.stopServerTimers();
         if (this.ws) {
@@ -287,6 +292,9 @@
       initNotices() {
         this.noticeHistory = window.Simplify?.history?.() || [];
         this.panelNotices = Array.isArray(this.boot.panel_notifications) ? this.boot.panel_notifications : [];
+        this.seenNoticeKeys = new Set(this.panelNotices.map((n) => n.key));
+        // New Pelican notifications drop down from the top; one small query, skipped while the tab is hidden.
+        if (typeof wire.panelNotifications === 'function') this.noticeTimer = setInterval(() => this.pollPanelNotices(), Math.max(15000, Number(this.intervals?.overview) || 30000));
         this.noticeListener = (event) => (this.noticeHistory = [event.detail, ...this.noticeHistory].slice(0, 20));
         window.addEventListener?.('simplify:notice', this.noticeListener);
       },
@@ -404,6 +412,39 @@
           const items = await wire.panelNotifications();
           if (Array.isArray(items)) this.panelNotices = items;
         } catch {}
+      },
+      async pollPanelNotices() {
+        if (globalThis.document?.hidden || this.destroyed || this.notifyMenu) return;
+        try {
+          const items = await wire.panelNotifications();
+          if (!Array.isArray(items)) return;
+          this.panelNotices = items;
+          const fresh = items.filter((n) => !this.seenNoticeKeys.has(n.key));
+          fresh.forEach((n) => this.seenNoticeKeys.add(n.key));
+          // A finished plugin update needs a fresh page load; it happens once the notice has been shown.
+          if (fresh.some((n) => /^Plugin (updated|installed|uninstalled)$/.test(n.title || ''))) this.reloadAfterNotice = true;
+          this.incomingQueue.push(...fresh.reverse());
+          this.showIncomingNotice();
+        } catch {}
+      },
+      showIncomingNotice() {
+        if (this.incomingNotice || !this.incomingQueue.length) return;
+        this.incomingNotice = this.incomingQueue.shift();
+        this.incomingShown = true;
+        this.holdIncomingNotice();
+      },
+      holdIncomingNotice(delay = 6000) {
+        clearTimeout(this.incomingTimer);
+        this.incomingTimer = setTimeout(() => this.hideIncomingNotice(), delay);
+      },
+      hideIncomingNotice() {
+        clearTimeout(this.incomingTimer);
+        this.incomingShown = false;
+        setTimeout(() => {
+          this.incomingNotice = null;
+          if (!this.incomingQueue.length && this.reloadAfterNotice && !this.modal) return window.location.reload();
+          this.showIncomingNotice();
+        }, 450);
       },
       async markPanelNoticesRead(keys) {
         const ids = keys.filter(Boolean);

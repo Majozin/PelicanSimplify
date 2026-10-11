@@ -12,8 +12,12 @@
                     Automatic updates are off: you get a notification for each new version; install it here. A backup is kept and restored if anything fails.
                 @endif
             </p>
+            @php($age = $this->lastCheckAge())
+            @if($age === null || $age > 300)
+                <p class="ps-plugin-error">The automatic update check {{ $age === null ? 'has not run yet' : 'last ran '.\Carbon\CarbonInterval::seconds($age)->cascade()->forHumans(['parts' => 1]).' ago' }}. Pelican's scheduler is probably not running: add the cron job <code>* * * * * php {{ base_path('artisan') }} schedule:run</code> for the web server user. Updates from this page still work.</p>
+            @endif
         </header>
-        <div class="ps-plugin-list" wire:poll.15s>
+        <div class="ps-plugin-list" @if($this->busy) wire:poll.3s @else wire:poll.15s @endif>
             @forelse($plugins as $plugin)
                 <article class="ps-plugin" wire:key="plugin-{{ $plugin['id'] }}">
                     <div class="ps-plugin-main">
@@ -26,7 +30,7 @@
                         @if($plugin['description'])<p>{{ $plugin['description'] }}</p>@endif
                         @if($plugin['busy_since'])
                             <p class="ps-help">Working on it… you get a notification when it is done.
-                                @if(now()->timestamp - (int) $plugin['busy_since'] > 300)<span class="ps-plugin-error">This is taking long: check that Pelican's queue worker is running.</span>@endif
+                                @if(now()->timestamp - (int) $plugin['busy_since'] > 300)<span class="ps-plugin-error">This is taking long: reload the page; if it stays, check the panel log.</span>@endif
                             </p>
                         @endif
                         @if($plugin['message'] && in_array($plugin['status'], ['errored', 'incompatible', 'not_installed'], true))<p class="ps-plugin-error">{{ $plugin['message'] }}</p>@endif

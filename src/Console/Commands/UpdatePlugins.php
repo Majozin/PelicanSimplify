@@ -14,6 +14,8 @@ final class UpdatePlugins extends Command
     public function handle(): int
     {
         if (!FeatureSettings::enabled('plugin_manager')) return self::SUCCESS;
+        // Heartbeat for the Plugins page: shows whether Pelican's scheduler (cron) is running at all.
+        \Illuminate\Support\Facades\Cache::forever('simplify.plugin-check-at', time());
         $install = $this->option('force') || FeatureSettings::enabled('auto_update_plugins');
         foreach (PluginUpdater::available() as $plugin) {
             PluginUpdater::announce($plugin, $install);

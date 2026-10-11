@@ -1,5 +1,13 @@
 # Changes
 
+## 0.3.0-beta.14
+- New notifications drop down from the bell with a pointer to it and slide back up after a few seconds (hover keeps them open). Checked with one small query every 30 seconds while the tab is visible.
+- After a plugin update, install or uninstall the dashboard and the Plugins page reload by themselves once the change is done.
+- "Check for updates" and updates themselves read update.json straight from GitHub instead of a copy GitHub's CDN keeps for up to five minutes; version, download and checksum always come from the same read.
+- Update, install and uninstall from the Plugins page no longer need Pelican's queue worker.
+- The Plugins page warns when Pelican's scheduler (cron) is not running, so automatic checks cannot run.
+- Pelican's own plugin page and the links in its notifications open Simplify's Plugins page while the plugin manager is on.
+
 ## 0.3.0-beta.13
 - Settings popup: the category menu stays in place while the settings scroll.
 - Host mode: the admin menu is joined to the page it opens and always shows its labels (no more folding); current health check icons sit in a tidy grid under Health.

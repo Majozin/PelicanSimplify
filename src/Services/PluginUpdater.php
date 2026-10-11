@@ -17,32 +17,51 @@ use Illuminate\Support\Facades\Process;
 final class PluginUpdater
 {
     /** Installed plugins with an update for this panel version. */
-    public static function available(): array
+    public static function available(bool $fresh = false): array
     {
         Plugin::refreshRows();
-        return Plugin::all()->filter(function (Plugin $plugin): bool {
+        return Plugin::all()->filter(function (Plugin $plugin) use ($fresh): bool {
             try {
-                return $plugin->status->value !== 'not_installed' && ($latest = self::latestVersion($plugin)) && version_compare($latest, $plugin->version, '>');
+                return $plugin->status->value !== 'not_installed' && ($latest = self::latestVersion($plugin, $fresh)) && version_compare($latest, $plugin->version, '>');
             } catch (\Throwable) {
                 return false;
             }
         })->values()->all();
     }
 
-    /** The version an update file offers for this panel, cached for 50 seconds (GitHub's CDN adds up to five minutes). */
-    public static function latestVersion(Plugin $plugin): ?string
+    /** The version an update file offers for this panel; cached 50 s, or read fresh (past GitHub's CDN) on request. */
+    public static function latestVersion(Plugin $plugin, bool $fresh = false): ?string
     {
         if (!$plugin->update_url) return null;
-        return Cache::remember('simplify.plugin-latest.'.$plugin->id, 50, function () use ($plugin): ?string {
-            try {
-                $data = Http::timeout(5)->connectTimeout(2)->get((string) $plugin->update_url)->throw()->json();
-                $data = is_array($data[$plugin->id] ?? null) ? $data[$plugin->id] : $data;
-                $entry = $data[config('app.version')] ?? $data['*'] ?? null;
-                return is_array($entry) && is_string($entry['version'] ?? null) ? $entry['version'] : null;
-            } catch (\Throwable) {
-                return null;
-            }
+        $key = 'simplify.plugin-latest.'.$plugin->id;
+        if ($fresh) Cache::forget($key);
+        return Cache::remember($key, 50, function () use ($plugin, $fresh): ?string {
+            $entry = self::entry($plugin, $fresh);
+            return is_string($entry['version'] ?? null) ? $entry['version'] : null;
         });
+    }
+
+    /** This panel's entry of the plugin's update.json. Fresh reads of raw.githubusercontent.com go through GitHub's API, which is not held for five minutes by the CDN. */
+    private static function entry(Plugin $plugin, bool $fresh = false): ?array
+    {
+        $url = (string) $plugin->update_url;
+        $read = static fn (string $from, array $headers = []) => Http::timeout(5)->connectTimeout(2)->withHeaders($headers)->get($from)->throw()->json();
+        $data = null;
+        if ($fresh && preg_match('#^https://raw\.githubusercontent\.com/([^/]+)/([^/]+)/([^/]+)/(.+)$#', $url, $m)) {
+            try {
+                $data = $read("https://api.github.com/repos/{$m[1]}/{$m[2]}/contents/{$m[4]}?ref={$m[3]}", ['Accept' => 'application/vnd.github.raw+json']);
+            } catch (\Throwable) {
+                $data = null;
+            }
+        }
+        try {
+            $data = is_array($data) ? $data : $read($url);
+        } catch (\Throwable) {
+            return null;
+        }
+        $data = is_array($data[$plugin->id] ?? null) ? $data[$plugin->id] : $data;
+        $entry = $data[config('app.version')] ?? $data['*'] ?? null;
+        return is_array($entry) ? $entry : null;
     }
 
     /** @return array{ok: bool, message: string} */
@@ -56,8 +75,12 @@ final class PluginUpdater
         $from = $plugin->version;
         $result = null;
         try {
-            $url = $plugin->getDownloadUrlForUpdate();
-            if (!is_string($url) || $url === '') throw new \RuntimeException('No download is published for this panel version.');
+            // Version, download and checksum come from one fresh read, so a stale CDN copy cannot mix versions.
+            $entry = self::entry($plugin, true);
+            $url = $entry['download_url'] ?? null;
+            if (!is_string($url) || !str_starts_with($url, 'https://')) throw new \RuntimeException('No download is published for this panel version.');
+            $sha = $entry['sha256'] ?? null;
+            $expected = is_string($sha) && preg_match('/^[a-f0-9]{64}$/', $sha) ? $sha : null;
             $manifest = File::json($directory.'/plugin.json');
             $meta = is_array($manifest['meta'] ?? null) ? $manifest['meta'] : [];
             $wasEnabled = ($meta['status'] ?? '') === 'enabled';
@@ -67,7 +90,7 @@ final class PluginUpdater
             if (!File::copyDirectory($directory, $backup)) throw new \RuntimeException('Could not back up the current version.');
 
             try {
-                self::download($plugin, $url);
+                self::download($plugin, $url, $expected);
                 // Keep the install status the new plugin.json would otherwise wipe.
                 $next = File::json($directory.'/plugin.json');
                 $next['meta'] = [...(is_array($next['meta'] ?? null) ? $next['meta'] : []), ...$meta, 'status_message' => null];
@@ -101,10 +124,9 @@ final class PluginUpdater
         return $result;
     }
 
-    private static function download(Plugin $plugin, string $url): void
+    private static function download(Plugin $plugin, string $url, ?string $expected): void
     {
         $service = app(\App\Services\Helpers\PluginService::class);
-        $expected = self::publishedChecksum($plugin);
         if ($expected === null) {
             $service->downloadPluginFromUrl($url, $plugin->id);
             return;
@@ -121,19 +143,6 @@ final class PluginUpdater
     }
 
     /** The sha256 an update file publishes for this panel version (Simplify does), if any. */
-    private static function publishedChecksum(Plugin $plugin): ?string
-    {
-        try {
-            $data = Http::timeout(5)->connectTimeout(2)->get((string) $plugin->update_url)->throw()->json();
-            $data = is_array($data[$plugin->id] ?? null) ? $data[$plugin->id] : $data;
-            $entry = $data[config('app.version')] ?? $data['*'] ?? null;
-            $sha = is_array($entry) ? ($entry['sha256'] ?? null) : null;
-            return is_string($sha) && preg_match('/^[a-f0-9]{64}$/', $sha) ? $sha : null;
-        } catch (\Throwable) {
-            return null;
-        }
-    }
-
     private static function restore(string $directory, string $backup): void
     {
         if (!File::isDirectory($backup)) return;

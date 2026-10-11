@@ -76,6 +76,24 @@
 
                     {{-- Notifications: alerts, pending changes and plugin updates in one dropdown. --}}
                     <div class="ps-notify" x-on:click.outside="notifyMenu=false" x-on:keydown.escape.stop="notifyMenu=false; $refs.notifyButton.focus()">
+            {{-- A new notification drops down from the bell and slides back up after a few seconds. --}}
+            <div class="ps-incoming" x-show="incomingShown" x-cloak role="status" aria-live="polite"
+                 x-transition:enter="ps-incoming-move" x-transition:enter-start="is-up" x-transition:leave="ps-incoming-move" x-transition:leave-end="is-up"
+                 x-on:mouseenter="clearTimeout(incomingTimer)" x-on:mouseleave="holdIncomingNotice(2500)">
+                <template x-if="incomingNotice">
+                    <div class="ps-notify-item" :class="'is-'+(incomingNotice.tone || 'info')">
+                        <svg aria-hidden="true"><use :href="'#ps-'+(incomingNotice.tone==='ok'?'check':(incomingNotice.tone||'info')==='info'?'info':'alert')"/></svg>
+                        <strong x-text="incomingNotice.title"></strong>
+                        <small x-text="incomingNotice.text" x-show="incomingNotice.text"></small>
+                        <span class="ps-notify-actions">
+                            <template x-if="incomingNotice.action">
+                                <a class="ps-btn is-sm" :href="incomingNotice.action.url" x-on:click="markPanelNoticesRead([incomingNotice.key])" x-text="incomingNotice.action.label"></a>
+                            </template>
+                            <button type="button" class="ps-btn is-sm is-subtle" x-on:click="hideIncomingNotice()">Dismiss</button>
+                        </span>
+                    </div>
+                </template>
+            </div>
                         <button type="button" x-ref="notifyButton" class="ps-btn is-icon is-subtle" data-tip="Notifications" aria-label="Notifications" aria-controls="ps-notify-menu" :aria-expanded="notifyMenu"
                                 x-on:click="toggleNotifications()">
                             <svg aria-hidden="true"><use href="#ps-bell"/></svg><span class="ps-mobile-label">Notifications</span>

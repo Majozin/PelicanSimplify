@@ -450,3 +450,11 @@ html:has(.ps-modal-layer[data-open="true"]), html.ps-ui-locked { overflow: hidde
   .ps-legacy-return { width: var(--ps-h); padding: 0; }
   .ps-legacy-return > :not(svg:first-child) { display: none; }
 }
+
+/* Incoming notification: drops down from the bell with a pointer to it, then slides back up. */
+.ps-incoming { position: absolute; top: calc(100% + 12px); right: -6px; z-index: 60; width: min(380px, calc(100vw - 24px)); padding: 10px 12px; border: 1px solid var(--ps-line); border-radius: var(--ps-radius-lg); background: var(--ps-surface); box-shadow: 0 18px 40px -18px rgb(0 0 0 / .35); transform-origin: calc(100% - 24px) 0; }
+.ps-incoming::before { content: ""; position: absolute; top: -7px; right: 18px; width: 12px; height: 12px; border-top: 1px solid var(--ps-line); border-left: 1px solid var(--ps-line); background: var(--ps-surface); transform: rotate(45deg); }
+.ps-incoming .ps-notify-item { padding: 0; border: 0; background: none; text-align: left; }
+.ps-incoming-move { transition: transform .42s cubic-bezier(.2, .9, .3, 1.15), opacity .3s ease; }
+.ps-incoming.is-up { opacity: 0; transform: translateY(-14px) scaleY(.6); }
+@media (prefers-reduced-motion: reduce) { .ps-incoming-move { transition: opacity .2s ease; } .ps-incoming.is-up { transform: none; } }

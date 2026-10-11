@@ -19,11 +19,14 @@ final class ManagePlugins extends Page
 
     private function canChange(Plugin $plugin): bool { return (bool) user()?->can('update', $plugin); }
 
-    /** Rows for the view; update lookups are cached for ten minutes. */
+    /** True while an update, install or uninstall started here is running; the page reloads once it is done. */
+    public bool $busy = false;
+
+    /** Rows for the view; update lookups are cached for 50 seconds. */
     public function plugins(): array
     {
         Plugin::refreshRows();
-        return Plugin::query()->orderBy('load_order')->orderBy('name')->get()->map(function (Plugin $plugin): array {
+        $rows = Plugin::query()->orderBy('load_order')->orderBy('name')->get()->map(function (Plugin $plugin): array {
             $latest = $plugin->status->value === 'not_installed' ? null : PluginUpdater::latestVersion($plugin);
             return [
                 'id' => $plugin->id,
@@ -40,6 +43,18 @@ final class ManagePlugins extends Page
                 'busy_since' => \Illuminate\Support\Facades\Cache::get('simplify.plugin-queued.'.$plugin->id),
             ];
         })->all();
+        $busy = collect($rows)->contains(fn (array $row) => $row['updating'] || $row['busy_since']);
+        // New plugin code only takes effect on a fresh page load.
+        if ($this->busy && !$busy) $this->js('window.location.reload()');
+        $this->busy = $busy;
+        return $rows;
+    }
+
+    /** Seconds since the scheduled update check last ran, or null when it never ran. */
+    public function lastCheckAge(): ?int
+    {
+        $at = \Illuminate\Support\Facades\Cache::get('simplify.plugin-check-at');
+        return is_int($at) ? max(0, time() - $at) : null;
     }
 
     public function updatePlugin(string $id): void
@@ -47,7 +62,8 @@ final class ManagePlugins extends Page
         $plugin = Plugin::query()->findOrFail($id);
         abort_unless($this->canChange($plugin), 403);
         \Illuminate\Support\Facades\Cache::put('simplify.plugin-update-queued.'.$id, true, 1200);
-        \Simplify\Panel\Jobs\UpdatePlugin::dispatch($plugin->id, (int) user()->id);
+        $this->busy = true;
+        \Simplify\Panel\Jobs\UpdatePlugin::dispatchAfterResponse($plugin->id, (int) user()->id);
         Notification::make()->title('Update started')->body($plugin->name.' is updated in the background. You get a notification when it is done; if anything fails, the current version is restored.')->info()->send();
     }
 
@@ -66,7 +82,8 @@ final class ManagePlugins extends Page
         $plugin = Plugin::query()->findOrFail($id);
         abort_unless($this->canChange($plugin) && $plugin->status->value === 'not_installed', 403);
         \Illuminate\Support\Facades\Cache::put('simplify.plugin-queued.'.$id, now()->timestamp, 1800);
-        \Simplify\Panel\Jobs\ChangePlugin::dispatch($plugin->id, 'install', (int) user()->id);
+        $this->busy = true;
+        \Simplify\Panel\Jobs\ChangePlugin::dispatchAfterResponse($plugin->id, 'install', (int) user()->id);
         Notification::make()->title('Install started')->body($plugin->name.' is installed in the background. You get a notification when it is done.')->info()->send();
     }
 
@@ -75,7 +92,8 @@ final class ManagePlugins extends Page
         $plugin = Plugin::query()->findOrFail($id);
         abort_unless($this->canChange($plugin) && !in_array($plugin->status->value, ['not_installed', 'errored'], true), 403);
         \Illuminate\Support\Facades\Cache::put('simplify.plugin-queued.'.$id, now()->timestamp, 1800);
-        \Simplify\Panel\Jobs\ChangePlugin::dispatch($plugin->id, 'uninstall', (int) user()->id);
+        $this->busy = true;
+        \Simplify\Panel\Jobs\ChangePlugin::dispatchAfterResponse($plugin->id, 'uninstall', (int) user()->id);
         Notification::make()->title('Uninstall started')->body($plugin->name.' is removed in the background. Its files stay until you delete it.')->info()->send();
     }
 
@@ -101,9 +119,8 @@ final class ManagePlugins extends Page
         return [
             \Filament\Actions\Action::make('checkUpdates')->label('Check for updates')->tooltip('Check for updates now')->icon('tabler-refresh')
                 ->action(function (): void {
-                    Plugin::query()->pluck('id')->each(fn (string $id) => \Illuminate\Support\Facades\Cache::forget('simplify.plugin-latest.'.$id));
                     \Simplify\Panel\Services\UpdateCheck::forget();
-                    $count = Plugin::query()->get()->filter(fn (Plugin $plugin) => ($latest = PluginUpdater::latestVersion($plugin)) && version_compare($latest, $plugin->version, '>'))->count();
+                    $count = count(PluginUpdater::available(true));
                     Notification::make()->title($count ? $count.' update(s) available' : 'Everything is up to date')->success()->send();
                 }),
             \Filament\Actions\Action::make('importUrl')->label('Import from URL')->tooltip('Import from URL')->icon('tabler-world-download')
