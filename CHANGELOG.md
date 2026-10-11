@@ -1,6 +1,7 @@
 # Changes
 
 ## 0.2.0-alpha.26
+- Replace tiny beak dots with two distinct four-point sparkles in the favicon and legacy navigation icon.
 - Center health status between its heading and reporting count, enlarge the heart and clear footer-hook backgrounds.
 - Add accent swatches, custom colors and editable hex values to Appearance settings.
 - Carry global accent colors through Other game creation and aggregate health; tint server-name gradients with their accent.
