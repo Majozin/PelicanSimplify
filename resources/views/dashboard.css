@@ -1077,3 +1077,5 @@ body:has(.ps:not(.server-active)) .fi-main-ctn { height:auto!important;overflow:
 .ps-uploaded-banner{display:flex;flex-direction:column;gap:8px;min-width:0}
 .ps-uploaded-banner>.ps-button{align-self:flex-start}
 @media(max-width:600px){.ps .ps-modal,.ps .ps-modal.is-create,.ps .ps-modal.is-native{max-height:calc(100dvh - 16px)!important}.ps .ps-modal>header{padding:14px}.ps .ps-modal .ps-modal-content{padding:14px}}
+
+.ps .ps-server-info{border-color:var(--accent)}

@@ -2,6 +2,7 @@
 
 ## 0.2.0-alpha.10
 
+- Outline the server title tile in its server accent color.
 - Reuse the outline navigation pelican in the favicon on dark gray.
 - Upload and manage server banners with validated JPG/PNG/WebP images; retain the entire bundled collection.
 - Add uploaded banner management to settings and server image pickers, with server permission checks.
