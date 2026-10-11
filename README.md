@@ -41,13 +41,156 @@ Planned improvements; scope and release order may change.
 
 ## Full feature list
 
-- **Overview:** grid/list views, game filters, saved desktop preferences, mobile list view, server status, player counts, CPU/RAM graphs and host health.
-- **Dashboard:** server banners and artwork, game/version details, live console, start/restart/stop/kill controls, resource metrics and player list.
-- **Creation:** guided Minecraft creation and native other game creation, Vanilla/Paper/modpacks, automatic egg selection, bundled egg import, game/version selection, bird-name generator, server colors, saved drafts, configurable CPU/RAM/disk defaults per type, resource limits and review before creation.
-- **Minecraft:** Modrinth, CurseForge, FTB and supported Technic packs; software/version changes, game settings, MOTD, whitelist, operators and player moderation.
-- **Management:** files and SFTP, mods/plugins, backup recovery points, automatic backup policies and retention, schedules, activity and advanced workspaces, subject to native Pelican permissions.
-- **Appearance:** light/dark/system theme, shared styling, optional legacy styling, always-dark or adaptive console, panel accent, automatic individual server colors and a built-in backgrounds, uploaded server banners and banner library management.
-- **Access:** switchable Friends mode, administrator settings, individual user-feature switches, optional self-service creation and per-user server/resource allowances.
-- **Setup:** PHP/extensions, Composer and icons, Node/Yarn, writable storage, database/cache, queue configuration and validation of compiled CSS/JavaScript; failed checks block progress and can be rerun.
+<details>
+<summary><strong>Expand all features</strong></summary>
+
+### Installation and first setup
+
+- Native Pelican plugin import by URL or ZIP
+- Latest-version download URL and plugin updater
+- Installation preflight and blocking dependency checks
+- PHP version, extensions and Composer package checks
+- Node.js, Yarn and compiled CSS/JavaScript checks
+- Database, cache, queue configuration and writable storage checks
+- Upload-capacity checks for PHP and Livewire
+- NGINX/proxy upload-limit guidance
+- Repair instructions and repeatable checks
+- Separate first-setup stages and numbered navigation
+- Appearance, access, feature and resource-default setup pages
+- Optional system diagnostics in settings
+- Asset rebuilding and compiled-view cache clearing
+- Migration, rollback and backup/reset scripts
+
+### Server overview and host health
+
+- Grid and list views
+- Saved desktop view preference and automatic mobile list view
+- Dynamic game filters
+- Server names, aliases, icons and game badges
+- Live server status and player counts
+- CPU and memory history graphs
+- Host CPU, RAM, storage and gameserver network traffic
+- Healthy, high-load, critical, maintenance and unavailable states
+- Per-node health details
+- Reporting-host counts and partial-availability handling
+- Separate native and guided creator entry points
+
+### Guided server creation
+
+- Minecraft creation wizard with numbered steps and review
+- Vanilla, Paper and supported modpack creation
+- Automatic matching egg selection and bundled egg import
+- Game version and modpack release selection
+- Modrinth, CurseForge, FTB and supported Technic modpacks
+- Bird-name generator
+- Per-server accent-color choice and suggestions
+- Server icon and MOTD setup
+- Configurable CPU, RAM and storage defaults per server type
+- Server/resource allowances and quota validation
+- Advanced resource options
+- Saved drafts, autosave, recovery and discard
+- Native creator popup for other games
+
+### Server dashboard and console
+
+- Game-aware management tiles
+- Server aliases with an icon-only editor
+- Game, software, Minecraft version and modpack information
+- Live Wings console and connection indicator
+- Console commands, command history and log clearing
+- Start, restart, stop and force-stop controls
+- CPU, memory, storage and received/sent network traffic
+- Resource history graphs
+- Minecraft online-player list and player heads
+- Copyable server address
+- Resource editing with permission and quota checks
+- Profile popup and account menu
+- Links back to the native panel and Simplify
+- Build version in the footer
+
+### Appearance and navigation
+
+- Light, dark and system themes
+- Shared panel accent or individual server colors
+- Automatic colors for existing servers
+- Always-dark or adaptive console
+- Bundled Minecraft banners
+- Automatic generic gaming banner for other games
+- Faded broken-heart artwork for offline servers
+- Custom JPG, PNG and WebP banner uploads
+- Banner picker and dedicated settings library
+- Upload, apply and remove banners from settings
+- Permanent bundled banner collection
+- Server-accent styling and outline icons in embedded workspaces
+- Separate standalone settings styling
+- Responsive menus, tiles and popup layouts
+- Content-ready loading to prevent an unstyled page flash
+- Pelican favicon and Simplify GitHub credit links
+
+### Minecraft settings and software
+
+- MOTD and server icon
+- Player capacity, difficulty and game mode
+- View distance and spawn protection
+- PvP, whitelist and flight toggles
+- Whitelist, operator, kick and ban management
+- Software/version and modpack reinstallation
+- Recent successful-backup requirement for software changes
+- Staged settings and restart reminders
+- Immediate or scheduled restart to apply changes
+- Pending-change discard and settings backups
+- Detection of conflicting server.properties changes
+- Modrinth plugin/mod search and compatible-release selection
+- Package installation, tracked updates and removal
+- Archive copies of replaced or removed package files
+- Native startup-variable workspace for other games
+
+### Files and management workspaces
+
+- Embedded native file browser and uploads
+- File list beside the editor
+- Fixed-height file/editor panes with internal scrolling
+- Save closes the editor while preserving the file browser
+- Unsaved-edit warning and keyboard save shortcut
+- File revision check before saving
+- Saved-file restart reminder in the shared dashboard banner
+- Compact SFTP details, username copy and connection link
+- Scheduled-task and activity-log workspaces
+- Database and server-access links where permitted
+- Runtime/container and startup details
+- Confirmed server deletion
+
+### Backups and automation
+
+- Backup recovery points
+- Automatic backup scheduling
+- Configurable intervals and retention
+- Pause/resume automatic backups
+- Successful-backup preservation when a backup fails
+- Backup download and restore
+- Native administrator backup management
+
+### Access and settings
+
+- Switchable Friends mode
+- Native ownership and subuser permission checks
+- Locked cards for servers you cannot manage
+- Administrator-only plugin settings
+- Per-feature visibility switches
+- Separate user access to legacy, advanced and software controls
+- User switches for files, settings, resources, players and packages
+- User switches for backups, schedules and activity
+- Optional self-service server creation
+- Per-user server, CPU, memory, storage and backup allowances
+- Administrator-managed account/sharing/schedule restrictions
+- Dedicated settings categories and banner tab
+
+### Optional integrations
+
+- Website-extension adapter when an extension is installed
+- Website visibility and presentation controls
+- Supported subdomain requests
+
+</details>
 
 MIT licensed. Bundled game eggs retain their upstream licenses.

@@ -1,5 +1,12 @@
 # Changes
 
+## 0.2.0-alpha.16
+
+- Align the host health status and open per-node CPU, memory, storage and gameserver traffic details from the health tile.
+- Display offline player counts as 0 / 0 and fade a large broken-heart symbol into offline artwork.
+- Link header/footer Simplify credits to GitHub with inherited color and an underline.
+- Group the complete feature inventory inside a collapsible README section.
+
 ## 0.2.0-alpha.15
 
 - Remove leaked popup helper sections, empty footers and creator header spacing.

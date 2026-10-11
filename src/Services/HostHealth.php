@@ -8,32 +8,40 @@ final class HostHealth
 {
     public static function snapshot(): array
     {
-        $samples=[];
-        foreach(Node::query()->get() as $node){
-            try{$samples[]=['maintenance'=>$node->isUnderMaintenance(),'stats'=>$node->statistics()];}
-            catch(\Throwable){$samples[]=['maintenance'=>false,'stats'=>[]];}
+        $samples=[];$nodes=[];$rx=0.0;$tx=0.0;$networkAvailable=true;
+        foreach(Node::query()->get() as $index=>$node){
+            try{$sample=['maintenance'=>$node->isUnderMaintenance(),'stats'=>$node->statistics()];}
+            catch(\Throwable){$sample=['maintenance'=>false,'stats'=>[]];}
+            $samples[]=$sample;
+            $traffic=Cache::remember('simplify.node-network.'.($node->id??$index),15,fn()=>self::traffic($node));
+            $health=self::summarize([$sample]);
+            $health['network_rx_bytes']=$traffic['rx_bytes']??null;$health['network_tx_bytes']=$traffic['tx_bytes']??null;
+            $health['metric_states']['network']=$traffic!==null?'healthy':'unavailable';
+            // Publish names and utilization only, never connection addresses or daemon credentials.
+            $nodes[]=['id'=>$node->id??$index,'name'=>$node->name??'Node '.($index+1),...$health];
+            if($traffic===null)$networkAvailable=false;else{$rx+=$traffic['rx_bytes'];$tx+=$traffic['tx_bytes'];}
         }
         $result=self::summarize($samples);
+        $result['nodes']=$nodes;
+        $result['network_rx_bytes']=$networkAvailable?$rx:null;$result['network_tx_bytes']=$networkAvailable?$tx:null;
+        $result['metric_states']['network']=$networkAvailable&&$result['hosts']>0?'healthy':'unavailable';
+        return $result;
+    }
+    private static function traffic(Node $node): ?array
+    {
         // Wings exposes container traffic, not the physical host interface capacity.
-        $traffic=Cache::remember('simplify.host-network',15,function():?array {
+        try {
+            $response=Http::daemon($node)->connectTimeout(1)->timeout(2)->get('/api/servers');
+            if(!$response->successful())return null;
+            $servers=$response->json();if(!is_array($servers)||!array_is_list($servers))return null;
             $rx=0.0;$tx=0.0;
-            foreach(Node::query()->get() as $node){
-                try {
-                    $response=Http::daemon($node)->connectTimeout(1)->timeout(2)->get('/api/servers');
-                    if(!$response->successful())return null;
-                    $servers=$response->json();if(!is_array($servers)||!array_is_list($servers))return null;
-                    foreach($servers as $server){
-                        $network=$server['utilization']['network']??[];
-                        foreach(['rx_bytes','tx_bytes'] as $key)if(!is_numeric($network[$key]??null)||!is_finite((float)$network[$key])||(float)$network[$key]<0)return null;
-                        $rx+=(float)$network['rx_bytes'];$tx+=(float)$network['tx_bytes'];
-                    }
-                }catch(\Throwable){return null;}
+            foreach($servers as $server){
+                $network=$server['utilization']['network']??[];
+                foreach(['rx_bytes','tx_bytes'] as $key)if(!is_numeric($network[$key]??null)||!is_finite((float)$network[$key])||(float)$network[$key]<0)return null;
+                $rx+=(float)$network['rx_bytes'];$tx+=(float)$network['tx_bytes'];
             }
             return ['rx_bytes'=>$rx,'tx_bytes'=>$tx];
-        });
-        $result['network_rx_bytes']=$traffic['rx_bytes']??null;$result['network_tx_bytes']=$traffic['tx_bytes']??null;
-        $result['metric_states']['network']=$traffic!==null&&$result['hosts']>0?'healthy':'unavailable';
-        return $result;
+        }catch(\Throwable){return null;}
     }
     public static function summarize(array $samples): array
     {
