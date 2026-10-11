@@ -28,6 +28,10 @@ use Illuminate\Support\Facades\Storage;
 class SimplifySettings extends Page implements HasForms
 {
     use InteractsWithForms;
+    use \Livewire\WithFileUploads;
+    public $bannerUpload = null;
+    public ?string $bannerServer = null;
+    public bool $useUploadedBanner = true;
     protected static ?string $navigationLabel = 'PelicanSimplify settings';
     protected static ?string $title = 'PelicanSimplify settings';
     protected static ?string $slug = 'pelican-simplify-settings';
@@ -41,6 +45,21 @@ class SimplifySettings extends Page implements HasForms
     public bool $setupStarted = false;
     public bool $showDiagnostics = false;
     #[\Livewire\Attributes\Locked] public bool $embedded = false;
+    public function bannerServers(): array
+    {
+        abort_unless(static::canAccess(),403);
+        return Server::query()->orderBy('name')->pluck('name','uuid')->all();
+    }
+    public function uploadBanner(): void
+    {
+        abort_unless(static::canAccess(),403);
+        $this->validate(['bannerServer'=>'required|string|exists:servers,uuid','bannerUpload'=>'required|file|max:'.max(1,(int)floor(\Simplify\Panel\Services\UploadLimits::bannerBytes()/1024))]);
+        $server=Server::query()->where('uuid',$this->bannerServer)->firstOrFail();
+        $banner=\Simplify\Panel\Services\ServerBanners::upload($server,$this->bannerUpload);
+        if($this->useUploadedBanner)\Simplify\Panel\Services\ServerArtwork::save($server,$banner['id']);
+        $this->bannerUpload=null;
+        Notification::make()->success()->title('Banner uploaded')->send();
+    }
     public function bannerLibrary(): array
     {
         abort_unless(static::canAccess(),403);

@@ -32,9 +32,10 @@ final class PendingChanges
             abort_if(!empty($old['restart_requested']),409,'A restart is already applying these changes.');
             abort_if($old && (int)($old['actor_id']??0)!==(int)user()->id,409,'Another user has pending changes. Apply or discard them first.');
             $data=['actor_id'=>user()->id,'minecraft'=>$minecraft,'properties'=>$prepared['properties'],'icon'=>$prepared['icon'],
-                'hash'=>!empty($old['minecraft'])?($old['hash']??hash('sha256',$original)):hash('sha256',$original),'created_at'=>time(),'restart_at'=>null,'restart_requested'=>false];
+                'hash'=>!empty($old['minecraft'])&&empty($old['file_only'])?($old['hash']??hash('sha256',$original)):hash('sha256',$original),'created_at'=>time(),'restart_at'=>null,'restart_requested'=>false];
+            if(!empty($old['file_changes']))$data['file_changes']=true;
             if (isset($old['resources'])) $data['resources']=$old['resources'];
-            if ($resourcesOnly && $old) foreach (['minecraft','properties','icon','hash'] as $key) if (array_key_exists($key,$old)) $data[$key]=$old[$key];
+            if ($resourcesOnly && $old && empty($old['file_only'])) foreach (['minecraft','properties','icon','hash'] as $key) if (array_key_exists($key,$old)) $data[$key]=$old[$key];
             if (isset($state['memory_gb'],$state['disk_mb'],$state['cpu'])) {
                 Access::owner($s);
                 abort_unless(ManagedResources::canEdit($s),403);
@@ -53,9 +54,23 @@ final class PendingChanges
         $result['pending']=self::read($s)!==null;
         return $result;
     }
+    /** Native file saves are already written; this marker only tracks a restart reminder. */
+    public static function fileChanged(Server $s): void
+    {
+        Access::permission($s,SubuserPermission::FileUpdate);
+        Access::permission($s,SubuserPermission::FileReadContent);
+        Cache::lock('simplify.pending.'.$s->uuid,15)->block(3,function()use($s):void {
+            $data=self::read($s);
+            abort_if(!empty($data['restart_requested']),409,'A restart is already in progress.');
+            abort_if($data && (int)($data['actor_id']??0)!==(int)user()->id,409,'Another user has pending changes.');
+            $data ??= ['actor_id'=>user()->id,'minecraft'=>ManagedSettings::minecraft($s),'file_only'=>true,'properties'=>[],'icon'=>null,'hash'=>'','created_at'=>time(),'restart_at'=>null,'restart_requested'=>false];
+            $data['file_changes']=true;
+            if(!Storage::disk('local')->put(self::path($s),json_encode($data,JSON_THROW_ON_ERROR)))throw new \RuntimeException('Could not save the restart reminder.');
+        });
+    }
     public static function discard(Server $s): void
     {
-        if(ManagedSettings::minecraft($s)) Access::permission($s,SubuserPermission::FileUpdate);else Access::owner($s);
+        if(ManagedSettings::minecraft($s)||!empty(self::read($s)['file_only'])) Access::permission($s,SubuserPermission::FileUpdate);else Access::owner($s);
         Cache::lock('simplify.pending.'.$s->uuid,15)->block(3,function()use($s):void {
             abort_if(!empty(self::read($s)['restart_requested']),409,'Restart is already in progress.');
             Storage::disk('local')->delete(self::path($s));
@@ -101,7 +116,7 @@ final class PendingChanges
             auth()->setUser($restart);if ($startAfter) Access::permission($s,SubuserPermission::ControlRestart);
             if (!$onlyOffline) Access::permission($s,SubuserPermission::ControlStop);
             if ($startAfter) Access::permission($s,SubuserPermission::ControlStart);
-            auth()->setUser($actor);if($data['minecraft']??true){Access::permission($s,SubuserPermission::FileReadContent);Access::permission($s,SubuserPermission::FileUpdate);}else{Access::owner($s);}
+            auth()->setUser($actor);if(($data['minecraft']??true)||!empty($data['file_only'])){Access::permission($s,SubuserPermission::FileReadContent);Access::permission($s,SubuserPermission::FileUpdate);}else{Access::owner($s);}
             $daemon=app(DaemonServerRepository::class)->setServer($s);$status=$daemon->getDetails()['state']??'unknown';
             if ($onlyOffline && $status!=='offline') return;
             if (!empty($data['applied'])) {
@@ -116,7 +131,7 @@ final class PendingChanges
             }
             if ($status!=='offline') return;
             $content='';$merged='';
-            if($data['minecraft']??true){
+            if(($data['minecraft']??true)&&empty($data['file_only'])){
             $files=app(DaemonFileRepository::class)->setServer($s);$content=$files->getContent('/server.properties',1048576);
             abort_unless(hash_equals($data['hash'],hash('sha256',$content)),409,'server.properties changed. Discard and save the settings again.');
             $path='simplify/settings-backups/'.$s->uuid.'/'.(string)\Illuminate\Support\Str::uuid().'.properties';

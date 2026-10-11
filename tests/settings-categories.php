@@ -1,6 +1,7 @@
 <?php
 declare(strict_types=1);
 namespace Test {class Component {public array $options=[];public function __construct(public ?string $label=null){}public static function make($label=null){return new static($label);}public function __call($method,$arguments){$this->options[$method]=$arguments;return $this;}}}
+namespace Livewire {trait WithFileUploads {}}
 namespace Filament\Pages {class Page {}}
 namespace Filament\Forms\Concerns {trait InteractsWithForms {}}
 namespace Filament\Forms\Contracts {interface HasForms {}}

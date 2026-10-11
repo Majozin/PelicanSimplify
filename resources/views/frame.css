@@ -22,3 +22,11 @@ html.ps-frame[data-ps-dark="1"] { --ps-surface:#1a1a1f;--ps-raised:#25252c;--ps-
 .ps-frame :is(.fi-btn,.fi-icon-btn):disabled { opacity:.5;cursor:not-allowed; }
 .ps-frame :is(.fi-btn,.fi-icon-btn):focus-visible { outline:2px solid var(--ps-accent);outline-offset:2px; }
 .ps-frame[data-ps-frame="native"] .fi-ta { border-radius:14px;overflow:hidden; }
+
+/* File workspaces keep a fixed viewport and scroll inside each iframe. */
+html.ps-frame:is([data-ps-frame="files"],[data-ps-frame="editor"]),html.ps-frame:is([data-ps-frame="files"],[data-ps-frame="editor"]) body{overflow:auto!important;height:100%!important;max-height:100%!important;overscroll-behavior:contain}
+.ps-frame:is([data-ps-frame="files"],[data-ps-frame="editor"]) .fi-page{padding:12px!important}
+.ps-frame .ps-frame-icon{fill:none!important;stroke:currentColor!important;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round;color:var(--ps-accent)}
+
+.ps-frame :is(.fi-btn.fi-color-primary,.fi-btn[data-ps-primary="1"]):not(:disabled){background:var(--ps-accent)!important;color:var(--ps-on-accent,#111118)!important;border-color:var(--ps-accent)!important;opacity:1!important}
+.ps-frame :is(.fi-btn.fi-color-primary,.fi-btn[data-ps-primary="1"]) .ps-frame-icon{color:inherit!important}

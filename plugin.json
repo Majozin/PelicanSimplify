@@ -1,8 +1,8 @@
 {
   "id": "pelican-simplify",
   "name": "PelicanSimplify",
-  "author": "Jeroen",
-  "version": "0.2.0-alpha.14",
+  "author": "jera",
+  "version": "0.2.0-alpha.15",
   "description": "Unified Simplify dashboard and optional easy server creator with shared theme and setup settings.",
   "category": "plugin",
   "namespace": "Simplify\\Panel",

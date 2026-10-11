@@ -1,5 +1,6 @@
 <?php
 declare(strict_types=1);
+namespace Livewire {trait WithFileUploads {}}
 namespace Filament\Pages { class Page {public $form;} }
 namespace Filament\Forms\Concerns {trait InteractsWithForms {}}
 namespace Filament\Forms\Contracts {interface HasForms {}}

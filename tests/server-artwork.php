@@ -39,5 +39,6 @@ namespace {
  $before=Illuminate\Support\Facades\Storage::$files;try{A::save($s,'../secret');throw new \Exception('invalid image accepted');}catch(\RuntimeException $e){check($e->getMessage()==='422','invalid image IDs rejected');}
  \Simplify\Panel\Services\Access::$allowed=false;try{A::save($s,'valley');throw new \Exception('unassigned user saved image');}catch(\RuntimeException $e){check($e->getMessage()==='403','background writes enforce server rename permission');}
  check(Illuminate\Support\Facades\Storage::$files===$before,'invalid or unauthorized choices leave saved artwork untouched');
- $s->minecraft=false;check(A::background($s,[])===null,'other games are not assigned Minecraft backgrounds');
+ $s->minecraft=false;check(A::background($s,[])==='/simplify/background/gaming','other games receive generic gaming artwork');
+ \Simplify\Panel\Services\Access::$allowed=true;A::save($s,'harbor');check(A::background($s,[])==='/simplify/background/harbor','other game placeholder can be replaced');A::save($s,'none');check(A::background($s,[])===null,'other game can disable artwork');
 }

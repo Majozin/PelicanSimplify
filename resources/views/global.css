@@ -137,3 +137,15 @@ html.ps-frame,html.ps-frame body{overflow:hidden!important;min-height:0!importan
 
 .ps-check-card.is-warning { border-color:#dca65b!important; }
 .ps-check-card.is-warning .ps-check-card-heading>svg,.ps-check-card.is-warning .ps-check-fix>strong { color:#c58a39!important; }
+
+/* Filament page content can retain its own vertical spacing below a hidden header. */
+.ps-frame :is(.fi-page-content-ctn,.fi-page-main,.fi-page-content){padding-block:0!important;margin-block:0!important;row-gap:0!important}
+.ps-frame[data-ps-frame="create"] .ssc-wizard{margin:0!important;padding-top:0!important}
+.ps-frame[data-ps-frame="create"] .ssc-draft-bar{margin-top:0!important;padding-top:0!important}
+.ps-frame .fi-page-header-main-ctn{display:flex!important;flex-direction:column!important;gap:0!important;margin:0!important;padding:0!important;min-height:0!important}
+
+.ps-banner-upload{display:grid;gap:12px;padding:16px;margin-bottom:24px;border:1px solid var(--ps-line);border-radius:12px;background:var(--ps-field)}
+.ps-banner-upload label:not(.ps-banner-use){display:grid;gap:6px;font-size:13px;font-weight:600}
+.ps-banner-upload select,.ps-banner-upload input[type="file"]{width:100%;min-height:38px;border:1px solid var(--ps-line);border-radius:8px;background:var(--ps-surface);color:var(--ps-ink);padding:8px}
+.ps-banner-use{display:flex;align-items:center;gap:8px;font-size:13px}.ps-banner-upload>button{justify-self:start;padding:8px 14px}
+.ps-theme .ps-banner-upload .fi-btn.fi-color-primary:not(:disabled){background:var(--ps-accent)!important;color:var(--ps-on-accent,#111118)!important;border-color:var(--ps-accent)!important}

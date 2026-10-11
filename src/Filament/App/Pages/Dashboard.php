@@ -45,7 +45,7 @@ final class Dashboard extends Page
         $base=['banner_upload_bytes'=>\Simplify\Panel\Services\UploadLimits::bannerBytes(),'build_version'=>\Simplify\Panel\Services\BuildInfo::version(),'admin_url'=>$admin?\Filament\Facades\Filament::getPanel('admin')->getUrl():(\Simplify\Panel\Services\FeatureSettings::enabled('user_legacy')?route('filament.app.resources.servers.index',['simplify_legacy'=>1]):null),
             'legacy_create_url'=>\App\Filament\Admin\Resources\Servers\ServerResource::canCreate()?\App\Filament\Admin\Resources\Servers\ServerResource::getUrl('create',panel:'admin'):null,'create_url'=>Extensions::createUrl(),'can_create'=>Extensions::canCreate(),'create_games'=>Extensions::createGames(),'web'=>Extensions::web(),
             'native_list_url'=>\Filament\Facades\Filament::getPanel('app')->getUrl(),
-            'profile_url'=>\App\Filament\Pages\Auth\EditProfile::getUrl(panel:'app'),'appearance'=>\Simplify\Panel\Services\AppearanceSettings::all(),'panel_name'=>(string)config('app.name','Pelican'),'features'=>array_replace(\Simplify\Panel\Services\FeatureSettings::all(),array_combine(['settings','files','players','backups','packages','software','resources','advanced','activity','schedules'],array_map(fn($key)=>Access::feature($key),['settings','files','players','backups','packages','software','resources','advanced','activity','schedules']))),'settings_url'=>user()?->isRootAdmin()?\Simplify\Panel\Filament\Admin\Pages\SimplifySettings::getUrl(panel:'app'):null,'website_url'=>Extensions::webAdapter()?->url(),'list_url'=>self::getUrl(panel:'app'),'server'=>null,'servers'=>[],'user'=>user()->username,'avatar'=>user()->getFilamentAvatarUrl(),'favicon_url'=>route('simplify.favicon').'?v=0.2.0-alpha.14'];
+            'profile_url'=>\App\Filament\Pages\Auth\EditProfile::getUrl(panel:'app'),'appearance'=>\Simplify\Panel\Services\AppearanceSettings::all(),'panel_name'=>(string)config('app.name','Pelican'),'features'=>array_replace(\Simplify\Panel\Services\FeatureSettings::all(),array_combine(['settings','files','players','backups','packages','software','resources','advanced','activity','schedules'],array_map(fn($key)=>Access::feature($key),['settings','files','players','backups','packages','software','resources','advanced','activity','schedules']))),'settings_url'=>user()?->isRootAdmin()?\Simplify\Panel\Filament\Admin\Pages\SimplifySettings::getUrl(panel:'app'):null,'website_url'=>Extensions::webAdapter()?->url(),'list_url'=>self::getUrl(panel:'app'),'server'=>null,'servers'=>[],'user'=>user()->username,'avatar'=>user()->getFilamentAvatarUrl(),'favicon_url'=>route('simplify.favicon').'?v=0.2.0-alpha.15'];
         if(!$this->serverUuid){$base['servers']=$this->listing();$base['host_health']=$this->hostHealth();return$base;}
         $s=$this->server();$base['available_colors']=ServerAppearance::choices($s->uuid);$permissions=[];foreach(P::cases() as $p)$permissions[$p->value]=user()->can($p,$s);
         $meta=ManagedSettings::content($s);$mc=MinecraftStatus::get($s);
@@ -66,7 +66,7 @@ final class Dashboard extends Page
             'alias'=>\Simplify\Panel\Services\ServerMetadata::read($s)['server_alias']??'','sftp'=>\Simplify\Panel\Services\SftpDetails::forServer($s),'package_kind'=>Packages::capability($s),'native_sections'=>$this->nativeSections($s),
             'owner'=>user()->isRootAdmin() || (int)$s->owner_id===(int)user()->id,'minecraft'=>ManagedSettings::minecraft($s),'can_resources'=>ManagedResources::canEdit($s),'permissions'=>$permissions,
             'properties'=>array_intersect_key($properties,array_flip(['motd','max-players','difficulty','gamemode','pvp','white-list','allow-flight','view-distance','spawn-protection'])),
-            'properties_available'=>!ManagedSettings::minecraft($s) || !empty($properties),'pending'=>$pending?['pending'=>true,'restart_at'=>$pending['restart_at'],'restart_requested'=>$pending['restart_requested'],'error'=>$pending['error']??null]:null,
+            'properties_available'=>!ManagedSettings::minecraft($s) || !empty($properties),'pending'=>$pending?['pending'=>true,'file_only'=>!empty($pending['file_only']),'file_changes'=>!empty($pending['file_changes']),'restart_at'=>$pending['restart_at'],'restart_requested'=>$pending['restart_requested'],'error'=>$pending['error']??null]:null,
             'pack'=>array_intersect_key($meta,array_flip(['modpack_name','modpack_version','modpack_description','modpack_icon_url','modpack_url','plugins','version','motd','icon_url'])),
             'reported_version'=>$mc['version']??'','status'=>$s->retrieveStatus()->value,'players'=>$mc['players']??null,'max_players'=>$mc['max_players']??null,'player_names'=>$mc['names']??[],
             'software_icon'=>ServerArtwork::softwareIcon($s,$meta),'server_icon'=>ServerArtwork::serverIcon($s)??($mc['icon']??null),
@@ -85,6 +85,7 @@ final class Dashboard extends Page
             'schedules'=>['ScheduleResource','SchedulesResource'],
             'activity'=>['Activity','ActivityLog','ActivityLogs','ActivityResource','ActivitiesResource','ActivityLogResource','ActivityLogsResource'],
             'sftp'=>['Settings'],
+            'startup'=>['Startup'],
             'databases'=>['DatabaseResource','DatabasesResource'],
             'access'=>['UserResource','UsersResource','SubuserResource','SubusersResource'],
         ];
@@ -107,7 +108,7 @@ final class Dashboard extends Page
         foreach($query->get() as $s){
             $linked=user()->isAdmin()||(int)$s->owner_id===(int)user()->id||(bool)$s->simplify_assigned;$m=Extensions::web()?Extensions::webAdapter()->metadata($s):[];
             $status=$s->retrieveStatus()->value;$mc=$status==='offline'?['players'=>0]:MinecraftStatus::get($s);
-            $list[]=['color'=>ServerAppearance::color($s),'uuid'=>$s->uuid,'name'=>$s->name,'software'=>$s->egg?->name,'game'=>ManagedSettings::minecraft($s)?'minecraft':'other','game_label'=>ManagedSettings::minecraft($s)?'Minecraft':($s->egg?->name ?: 'Other game'),'status'=>$status,'linked'=>$linked,
+            $list[]=['alias'=>\Simplify\Panel\Services\ServerMetadata::read($s)['server_alias']??'','color'=>ServerAppearance::color($s),'uuid'=>$s->uuid,'name'=>$s->name,'software'=>$s->egg?->name,'game'=>ManagedSettings::minecraft($s)?'minecraft':'other','game_label'=>ManagedSettings::minecraft($s)?'Minecraft':($s->egg?->name ?: 'Other game'),'status'=>$status,'linked'=>$linked,
                 'url'=>$linked?self::getUrl(['server'=>$s->uuid],panel:'app'):null,
                 'server_icon'=>ServerArtwork::serverIcon($s)??($mc['icon']??null),'software_icon'=>ServerArtwork::softwareIcon($s,$m),'egg_icon'=>$s->egg?->icon,
                 'icon'=>ServerArtwork::icon($s,$m)??($mc['icon']??null),'background'=>ServerArtwork::background($s,$m),'players'=>$mc['players']??null,'max_players'=>$mc['max_players']??null,
@@ -160,6 +161,15 @@ final class Dashboard extends Page
         return PendingChanges::stage($s,$state,null,true);
     }
     public function discard(): void { PendingChanges::discard($this->server()); }
+    #[Renderless]
+    public function fileChanged(string $path,string $previousHash): array
+    {
+        $s=$this->server();Access::permission($s,P::FileUpdate);
+        abort_unless(preg_match('/^[a-f0-9]{64}$/D',$previousHash),422);
+        if(!hash_equals($previousHash,$this->fileRevision($path)))PendingChanges::fileChanged($s);
+        return $this->refreshInfo();
+    }
+    #[Renderless]
     public function restartChanges(int $minutes=0): void { PendingChanges::requestRestart($this->server(),$minutes); }
     public function rename(string $name): void
     {
@@ -191,7 +201,7 @@ final class Dashboard extends Page
         }
         $data=MinecraftStatus::get($s);
         return['color'=>ServerAppearance::color($s),'name'=>$s->name,'server_icon'=>ServerArtwork::serverIcon($s)??($data['icon']??null),'reported_version'=>$data['version']??'','players'=>$data['players']??null,'max_players'=>$data['max_players']??null,'player_names'=>$data['names']??[],
-            'pending'=>$p?['pending'=>true,'restart_at'=>$p['restart_at'],'restart_requested'=>$p['restart_requested'],'error'=>$p['error']??null]:null];
+            'pending'=>$p?['pending'=>true,'file_only'=>!empty($p['file_only']),'file_changes'=>!empty($p['file_changes']),'restart_at'=>$p['restart_at'],'restart_requested'=>$p['restart_requested'],'error'=>$p['error']??null]:null];
     }
     #[Renderless]
     public function availableServerColors(): array { return ServerAppearance::choices($this->server()->uuid); }

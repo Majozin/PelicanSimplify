@@ -1,0 +1,9 @@
+<?php
+namespace App\Models {class Node {public static function query(){return new self;}public function get(){return [(object)new self];}public function isUnderMaintenance(){return false;}public function statistics(){return ['cpu_percent'=>20,'memory_used'=>4,'memory_total'=>16,'disk_used'=>30,'disk_total'=>100];}}}
+namespace Illuminate\Support\Facades {
+ class Cache {public static function remember($key,$ttl,$fn){return $fn();}}
+ class Http {public static array $servers=[['utilization'=>['network'=>['rx_bytes'=>1024,'tx_bytes'=>2048]]],['utilization'=>['network'=>['rx_bytes'=>512,'tx_bytes'=>256]]]];public static bool $ok=true;public static function daemon($node){return new self;}public function connectTimeout($v){return $this;}public function timeout($v){return $this;}public function get($url){if($url!=='/api/servers')throw new \RuntimeException('Unexpected endpoint');return $this;}public function successful(){return self::$ok;}public function json(){return self::$servers;}}
+}
+namespace {require __DIR__.'/../src/Services/HostHealth.php';use Simplify\Panel\Services\HostHealth;use Illuminate\Support\Facades\Http;
+ $check=function($ok){if(!$ok)throw new \RuntimeException('Host network check failed');};$r=HostHealth::snapshot();$check($r['network_rx_bytes']===1536.0&&$r['network_tx_bytes']===2304.0&&$r['metric_states']['network']==='healthy');Http::$ok=false;$r=HostHealth::snapshot();$check($r['network_rx_bytes']===null&&$r['metric_states']['network']==='unavailable'&&$r['state']==='healthy');Http::$ok=true;Http::$servers=[['utilization'=>[]]];$check(HostHealth::snapshot()['network_rx_bytes']===null);Http::$servers=[['utilization'=>['network'=>['rx_bytes'=>-1,'tx_bytes'=>0]]]];$check(HostHealth::snapshot()['network_rx_bytes']===null);Http::$servers=[];$check(HostHealth::snapshot()['network_rx_bytes']===0.0);echo "PASS host network aggregation, unavailable endpoint, missing/invalid counters and empty hosts\n";
+}

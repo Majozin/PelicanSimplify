@@ -2,6 +2,8 @@
 declare(strict_types=1);
 namespace Simplify\Panel\Services;
 use App\Models\Node;
+use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Cache;
 final class HostHealth
 {
     public static function snapshot(): array
@@ -11,7 +13,27 @@ final class HostHealth
             try{$samples[]=['maintenance'=>$node->isUnderMaintenance(),'stats'=>$node->statistics()];}
             catch(\Throwable){$samples[]=['maintenance'=>false,'stats'=>[]];}
         }
-        return self::summarize($samples);
+        $result=self::summarize($samples);
+        // Wings exposes container traffic, not the physical host interface capacity.
+        $traffic=Cache::remember('simplify.host-network',15,function():?array {
+            $rx=0.0;$tx=0.0;
+            foreach(Node::query()->get() as $node){
+                try {
+                    $response=Http::daemon($node)->connectTimeout(1)->timeout(2)->get('/api/servers');
+                    if(!$response->successful())return null;
+                    $servers=$response->json();if(!is_array($servers)||!array_is_list($servers))return null;
+                    foreach($servers as $server){
+                        $network=$server['utilization']['network']??[];
+                        foreach(['rx_bytes','tx_bytes'] as $key)if(!is_numeric($network[$key]??null)||!is_finite((float)$network[$key])||(float)$network[$key]<0)return null;
+                        $rx+=(float)$network['rx_bytes'];$tx+=(float)$network['tx_bytes'];
+                    }
+                }catch(\Throwable){return null;}
+            }
+            return ['rx_bytes'=>$rx,'tx_bytes'=>$tx];
+        });
+        $result['network_rx_bytes']=$traffic['rx_bytes']??null;$result['network_tx_bytes']=$traffic['tx_bytes']??null;
+        $result['metric_states']['network']=$traffic!==null&&$result['hosts']>0?'healthy':'unavailable';
+        return $result;
     }
     public static function summarize(array $samples): array
     {

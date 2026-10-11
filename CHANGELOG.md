@@ -1,5 +1,19 @@
 # Changes
 
+## 0.2.0-alpha.15
+
+- Remove leaked popup helper sections, empty footers and creator header spacing.
+- Adapt server menus to game capabilities; hide Minecraft-only software and player controls.
+- Show temporary gray offline artwork and a replaceable game-controller banner for other games.
+- Add received/sent network traffic to host health and server resource graphs.
+- Set the plugin author to jera.
+- Keep SFTP details compact and inline, with a connection link beside them.
+- Use fixed file viewer/editor heights with internal scrolling; record file saves in the shared restart banner.
+- Allow uploads directly in the settings banner library, with server selection and optional immediate use.
+- Keep host health width independent of server grid size and use a smaller icon-only alias action; show aliases on overview cards too.
+- Match both creator hover patterns in their own accent colors.
+- Replace embedded action and file icons with Simplify outline icons.
+
 ## 0.2.0-alpha.14
 
 - Align dark iframe control colors with Simplify and use the panel accent in overview workspaces.

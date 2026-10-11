@@ -1,5 +1,14 @@
 <section class="ps-banner-library">
-    <header><h2>Server banners</h2><p>Upload banners from a server’s image picker. Manage uploaded images here; the standard collection always stays available.</p></header>
+    <header><h2>Server banners</h2><p>Upload and manage server banners here. The standard collection always stays available.</p></header>
+    <div class="ps-banner-upload">
+        <label>Server<select wire:model="bannerServer"><option value="">Choose a server</option>@foreach($this->bannerServers() as $uuid => $name)<option value="{{ $uuid }}">{{ $name }}</option>@endforeach</select></label>
+        @error('bannerServer')<p role="alert">{{ $message }}</p>@enderror
+        <label>Banner<input type="file" accept="image/png,image/jpeg,image/webp" wire:model="bannerUpload"></label>
+        @error('bannerUpload')<p role="alert">{{ $message }}</p>@enderror
+        <small>JPG, PNG or WebP · up to {{ \Simplify\Panel\Services\UploadLimits::label(\Simplify\Panel\Services\UploadLimits::bannerBytes()) }}</small>
+        <label class="ps-banner-use"><input type="checkbox" wire:model="useUploadedBanner"> Use this banner on the selected server</label>
+        <button type="button" class="fi-btn fi-color-primary" wire:click="uploadBanner" wire:loading.attr="disabled" wire:target="bannerUpload,uploadBanner"><span wire:loading.remove wire:target="bannerUpload,uploadBanner">Upload banner</span><span wire:loading wire:target="bannerUpload,uploadBanner">Uploading…</span></button>
+    </div>
     <h3>Standard banners</h3>
     <div class="ps-banner-library-grid">
         @foreach(\Simplify\Panel\Services\ServerArtwork::BACKGROUNDS as $id => $file)

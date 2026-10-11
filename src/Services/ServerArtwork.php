@@ -7,7 +7,7 @@ use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Storage;
 final class ServerArtwork
 {
-    public const BACKGROUNDS=['valley'=>'minecraft-valley.jpg','harbor'=>'minecraft-harbor.jpg','village'=>'minecraft-village.jpg','survival'=>'preview-world.jpg','town'=>'preview-modpack.jpg'];
+    public const BACKGROUNDS=['valley'=>'minecraft-valley.jpg','harbor'=>'minecraft-harbor.jpg','village'=>'minecraft-village.jpg','survival'=>'preview-world.jpg','town'=>'preview-modpack.jpg','gaming'=>'gaming.svg'];
     public static function serverIcon(Server $server): ?string
     {
         $icon=null;
@@ -52,9 +52,10 @@ final class ServerArtwork
             if (!isset(self::BACKGROUNDS[$id]) && ManagedSettings::minecraft($server)) {
                 // Stable per server, including servers created before Simplify was installed.
                 // Preserve existing/manual selections and require no website extension or storage writes.
-                $choices = array_keys(self::BACKGROUNDS);
+                $choices = array_values(array_diff(array_keys(self::BACKGROUNDS),['gaming']));
                 $id = $choices[hexdec(substr(hash('sha256', $server->uuid), 0, 8)) % count($choices)];
             }
+            if(!isset(self::BACKGROUNDS[$id]) && !ManagedSettings::minecraft($server))$id='gaming';
         }
         return isset(self::BACKGROUNDS[$id])?route('simplify.background',['id'=>$id]):null;
     }
