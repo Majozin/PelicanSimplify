@@ -28,11 +28,15 @@ final class PendingChanges
             $prepared=['properties'=>[],'icon'=>null];$original='';
         }
         $result=Cache::lock('simplify.pending.'.$s->uuid,15)->block(3,function()use($s,$state,$prepared,$original,$minecraft,$resourcesOnly):array {
+            $s->refresh();
             $old=self::read($s);
             abort_if(!empty($old['restart_requested']),409,'A restart is already applying these changes.');
             abort_if($old && (int)($old['actor_id']??0)!==(int)user()->id,409,'Another user has pending changes. Apply or discard them first.');
-            $data=['actor_id'=>user()->id,'minecraft'=>$minecraft,'properties'=>$prepared['properties'],'icon'=>$prepared['icon'],
+            $data=['actor_id'=>user()->id,'minecraft'=>$minecraft,'properties'=>$minecraft?SettingsDifference::properties($prepared['properties'],PropertiesReader::parse($original)):[],'icon'=>$prepared['icon'],
                 'hash'=>!empty($old['minecraft'])&&empty($old['file_only'])?($old['hash']??hash('sha256',$original)):hash('sha256',$original),'created_at'=>time(),'restart_at'=>null,'restart_requested'=>false];
+            if ($data['icon'] !== null) {
+                try {$existingIcon=app(DaemonFileRepository::class)->setServer($s)->getContent('/server-icon.png',102400);if(hash_equals(hash('sha256',$existingIcon),hash('sha256',base64_decode($data['icon'],true))))$data['icon']=null;}catch(\Throwable){}
+            } elseif (!$resourcesOnly && !empty($old['icon'])) $data['icon']=$old['icon'];
             if(!empty($old['file_changes']))$data['file_changes']=true;
             if (isset($old['resources'])) $data['resources']=$old['resources'];
             if ($resourcesOnly && $old && empty($old['file_only'])) foreach (['minecraft','properties','icon','hash'] as $key) if (array_key_exists($key,$old)) $data[$key]=$old[$key];
@@ -45,12 +49,23 @@ final class PendingChanges
                     $limits=CreatorAccess::settings();$limits['max_servers']=PHP_INT_MAX;$limits['max_backups']=max($limits['max_backups'],$s->backup_limit);
                     CreatorAccess::checkQuota(['memory'=>$r['memory_gb']*1024,'disk'=>$r['disk_mb'],'cpu'=>$r['cpu'],'backup_limit'=>$s->backup_limit],['count'=>0,'memory'=>$other->sum('memory'),'disk'=>$other->sum('disk')],$limits);
                 }
-                $data['resources']=$r;
+                if(SettingsDifference::resources($r,$s))$data['resources']=array_map('intval',$r);else unset($data['resources']);
+            }
+            $data['minecraft'] = !empty($data['properties']) || $data['icon'] !== null;
+            $hasChanges = $data['minecraft'] || isset($data['resources']) || !empty($data['file_changes']);
+            if (!$hasChanges) {
+                if ($old) Storage::disk('local')->delete(self::path($s));
+                return ['pending'=>false,'changed'=>$old!==null];
+            }
+            if (!$data['minecraft'] && !empty($data['file_changes'])) $data['file_only']=true;
+            if ($old && ($old['properties']??[])===$data['properties'] && ($old['icon']??null)===$data['icon']
+                && ($old['resources']??null)===($data['resources']??null) && !empty($old['file_changes'])===!empty($data['file_changes'])) {
+                return ['pending'=>true,'changed'=>false,'created_at'=>$old['created_at']];
             }
             if (!Storage::disk('local')->put(self::path($s),json_encode($data,JSON_THROW_ON_ERROR))) throw new \RuntimeException('Could not save pending changes.');
-            return ['pending'=>true,'created_at'=>$data['created_at']];
+            return ['pending'=>true,'changed'=>true,'created_at'=>$data['created_at']];
         });
-        self::progress($s,true);
+        if($result['changed'])self::progress($s,true);
         $result['pending']=self::read($s)!==null;
         return $result;
     }
@@ -138,7 +153,7 @@ final class PendingChanges
             if (!Storage::disk('local')->put($path,$content)) throw new \RuntimeException('Could not create settings backup.');
             $values=$data['properties'];$parsed=PropertiesReader::parse($content);
             foreach(['difficulty'=>['peaceful','easy','normal','hard'],'gamemode'=>['survival','creative','adventure','spectator']] as $key=>$choices) {
-                if (isset($parsed[$key]) && preg_match('/^[0-3]$/',$parsed[$key])) $values[$key]=(string)array_search($values[$key],$choices,true);
+                if (isset($values[$key],$parsed[$key]) && preg_match('/^[0-3]$/',$parsed[$key])) $values[$key]=(string)array_search($values[$key],$choices,true);
             }
             $merged=ServerProperties::merge($content,$values);$files->putContent('/server.properties',$merged)->throw();
             if ($data['icon']) { Access::permission($s,SubuserPermission::FileCreate);$files->putContent('/server-icon.png',base64_decode($data['icon'],true))->throw(); }

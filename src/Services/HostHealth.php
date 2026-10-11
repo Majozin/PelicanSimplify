@@ -8,7 +8,7 @@ final class HostHealth
 {
     public static function snapshot(): array
     {
-        $samples=[];$nodes=[];$rx=0.0;$tx=0.0;$networkAvailable=true;
+        $samples=[];$nodes=[];$rx=0.0;$tx=0.0;$networkAvailable=true;$rxRate=0.0;$txRate=0.0;$ratesAvailable=true;
         foreach(Node::query()->get() as $index=>$node){
             try{$sample=['maintenance'=>$node->isUnderMaintenance(),'stats'=>$node->statistics()];}
             catch(\Throwable){$sample=['maintenance'=>false,'stats'=>[]];}
@@ -16,6 +16,8 @@ final class HostHealth
             $traffic=Cache::remember('simplify.node-network.'.($node->id??$index),15,fn()=>self::traffic($node));
             $health=self::summarize([$sample]);
             $health['network_rx_bytes']=$traffic['rx_bytes']??null;$health['network_tx_bytes']=$traffic['tx_bytes']??null;
+            $health['network_rx_per_second']=$traffic['rx_per_second']??null;$health['network_tx_per_second']=$traffic['tx_per_second']??null;
+            if($health['network_rx_per_second']===null||$health['network_tx_per_second']===null)$ratesAvailable=false;else{$rxRate+=$health['network_rx_per_second'];$txRate+=$health['network_tx_per_second'];}
             $health['metric_states']['network']=$traffic!==null?'healthy':'unavailable';
             // Publish names and utilization only, never connection addresses or daemon credentials.
             $nodes[]=['id'=>$node->id??$index,'name'=>$node->name??'Node '.($index+1),...$health];
@@ -24,6 +26,7 @@ final class HostHealth
         $result=self::summarize($samples);
         $result['nodes']=$nodes;
         $result['network_rx_bytes']=$networkAvailable?$rx:null;$result['network_tx_bytes']=$networkAvailable?$tx:null;
+        $result['network_rx_per_second']=$ratesAvailable&&$result['hosts']>0?$rxRate:null;$result['network_tx_per_second']=$ratesAvailable&&$result['hosts']>0?$txRate:null;
         $result['metric_states']['network']=$networkAvailable&&$result['hosts']>0?'healthy':'unavailable';
         return $result;
     }
@@ -34,13 +37,15 @@ final class HostHealth
             $response=Http::daemon($node)->connectTimeout(1)->timeout(2)->get('/api/servers');
             if(!$response->successful())return null;
             $servers=$response->json();if(!is_array($servers)||!array_is_list($servers))return null;
-            $rx=0.0;$tx=0.0;
+            $rx=0.0;$tx=0.0;$counters=[];
             foreach($servers as $server){
                 $network=$server['utilization']['network']??[];
                 foreach(['rx_bytes','tx_bytes'] as $key)if(!is_numeric($network[$key]??null)||!is_finite((float)$network[$key])||(float)$network[$key]<0)return null;
                 $rx+=(float)$network['rx_bytes'];$tx+=(float)$network['tx_bytes'];
+                $id=$server['configuration']['uuid']??$server['uuid']??null;
+                if(is_string($id))$counters[$id]=['rx_bytes'=>(float)$network['rx_bytes'],'tx_bytes'=>(float)$network['tx_bytes']];
             }
-            return ['rx_bytes'=>$rx,'tx_bytes'=>$tx];
+            return ['rx_bytes'=>$rx,'tx_bytes'=>$tx,...NetworkRates::sample('node-'.$node->id,$counters)];
         }catch(\Throwable){return null;}
     }
     public static function summarize(array $samples): array

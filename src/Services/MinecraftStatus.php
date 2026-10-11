@@ -27,7 +27,9 @@ final class MinecraftStatus
                 if(self::num($socket)!==0)return[];
                 $jsonLen=self::num($socket);if($jsonLen>2097152||$jsonLen<1)return[];
                 $data=json_decode(self::read($socket,$jsonLen),true,512,JSON_THROW_ON_ERROR);
-                return ['online'=>true,'players'=>$data['players']['online']??0,'max_players'=>$data['players']['max']??0,
+                $motd=mb_substr(MinecraftMotd::legacy($data['description']??''),0,2048);
+                \Illuminate\Support\Facades\Cache::put('simplify.public-motd.'.$s->uuid,$motd,86400);
+                return ['motd'=>$motd,'online'=>true,'players'=>$data['players']['online']??0,'max_players'=>$data['players']['max']??0,
                     'names'=>array_values(array_filter($data['players']['sample']??[],fn($p)=>preg_match('/^[A-Za-z0-9_]{1,16}$/',$p['name']??''))),
                     'version'=>$data['version']['name']??'','icon'=>str_starts_with($data['favicon']??'','data:image/png;base64,')?mb_substr($data['favicon'],0,150000):null];
             }catch(\Throwable){return[];}finally{fclose($socket);}

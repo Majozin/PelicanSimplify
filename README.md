@@ -73,8 +73,10 @@ Planned improvements; scope and release order may change.
 - CPU and memory history graphs
 - Host CPU, RAM, storage and gameserver network traffic
 - Healthy, high-load, critical, maintenance and unavailable states
-- Per-node health details
+- Animated upward expansion with per-node and per-server health details
+- Upload/download rates beside cumulative network usage
 - Reporting-host counts and partial-availability handling
+- Animated, permission-aware server power tiles in grid and list views
 - Separate native and guided creator entry points
 
 ### Guided server creation
@@ -133,6 +135,9 @@ Planned improvements; scope and release order may change.
 
 ### Minecraft settings and software
 
+- MOTD color/formatting helper with a live Minecraft-style preview
+- Dark, formatted MOTD panels on the overview and server dashboard
+- Unchanged settings do not create restart reminders
 - MOTD and server icon
 - Player capacity, difficulty and game mode
 - View distance and spawn protection

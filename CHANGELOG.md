@@ -1,5 +1,15 @@
 # Changes
 
+## 0.2.0-alpha.18
+
+- Expand host health upward with animated node details and visible-server resource rows.
+- Show sampled upload/download rates alongside container traffic totals, with reset-safe calculations.
+- Add permission-aware overview power controls below grid cards and alongside list rows.
+- Refine offline heart size and position separately for grid and list views.
+- Avoid restart reminders for unchanged settings, equivalent Minecraft values and unchanged allocations.
+- Add MOTD color/formatting tools and safe live previews; show formatted MOTDs in dark overview and dashboard panels.
+- Scale list top spacing with viewport height.
+
 ## 0.2.0-alpha.17
 
 - Move clickable RAM, CPU and disk presets into creator step 2; reload configured type defaults when returning to step 1 and changing type.
