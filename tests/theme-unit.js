@@ -10,5 +10,6 @@ t.frame(settings,'settings');t.frame(creator,'create');t.frame(legacy,'native');
 assert.equal(creator.contentDocument.getElementById('simplify-global-css').href,'/global.css');
 t.set('light');assert(!creator.contentDocument.documentElement.classList.contains('dark'));assert.equal(values.get('pelicanSimplify.theme'),'light');
 t.configure({...window.simplifyThemeConfig,legacy_theme:false,console_dark:false});assert(!legacy.contentDocument.documentElement.classList.contains('ps-theme'));assert(creator.contentDocument.documentElement.classList.contains('ps-theme'));assert(settings.contentDocument.documentElement.classList.contains('ps-theme'));assert(document.documentElement.classList.contains('ps-console-adaptive'));
+t.configure({...window.simplifyThemeConfig,legacy_page:true});assert(!document.documentElement.classList.contains('ps-theme'));assert(settings.contentDocument.documentElement.classList.contains('ps-theme'));
 t.configure({...window.simplifyThemeConfig,global_theme:false});assert(!document.documentElement.classList.contains('ps-theme'));t.set('unsupported');assert.equal(t.preference(),'light');
 console.log('PASS theme propagation, shared asset link, saved preference, legacy opt-out, creator exception, console modes and theme opt-out');

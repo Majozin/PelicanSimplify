@@ -17,7 +17,6 @@ final class LegacyNavigation
     }
     public static function topbarVisible(): bool
     {
-        // The native server overview has its own page-header button on the right.
-        return !request()->routeIs('filament.app.resources.servers.index') && self::url() !== null;
+        return request()->routeIs('filament.admin.*', 'filament.app.resources.servers.index') && self::url() !== null;
     }
 }

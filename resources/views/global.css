@@ -76,15 +76,15 @@ html.ps-theme.dark{color-scheme:dark}
 .ps-check-placeholder{padding:32px 0;text-align:center;color:var(--ps-muted)}
 .ps-setup-welcome{padding:8px 0 16px}
 .ps-settings-actions{display:flex;justify-content:flex-end;margin-top:24px;padding-top:18px;border-top:1px solid var(--ps-line)}
-.ps-diagnostics-toggle{display:flex;align-items:center;gap:7px;margin-top:24px;color:var(--ps-muted);font-size:12px}
+.ps-diagnostics-toggle{display:flex;align-items:center;gap:7px;margin-top:36px;color:var(--ps-muted);font-size:12px}
 .ps-diagnostics-toggle svg{width:16px;height:16px}
 .ps-diagnostics-toggle:hover{color:var(--ps-ink)}
 .ps-frame[data-ps-frame="settings"] .fi-header,.ps-frame[data-ps-frame="settings"] .fi-main-ctn>footer{display:none!important}
-.ps-frame[data-ps-frame="settings"] :is(.fi-main,.fi-page){margin:0!important;padding:20px!important;max-width:none!important;width:100%!important}
+.ps-frame[data-ps-frame="settings"] :is(.fi-main,.fi-page){margin:0!important;padding:0!important;max-width:none!important;width:100%!important}
 .ps-frame[data-ps-frame="settings"] .fi-main-ctn{padding:0!important}
 @keyframes ps-check-spin{to{transform:rotate(360deg)}}
 @media(prefers-reduced-motion:reduce){.ps-check-loading svg{animation:none}}
-@media(max-width:600px){.ps-check-grid{grid-template-columns:1fr}.ps-setup-heading{align-items:flex-start;gap:12px}.ps-setup-mark{width:42px;height:42px;border-radius:12px}.ps-setup-mark svg{width:22px;height:22px}.ps-check-actions{flex-wrap:wrap}.ps-check-actions>*{flex:1}.ps-frame[data-ps-frame="settings"] :is(.fi-main,.fi-page){padding:10px!important}}
+@media(max-width:600px){.ps-check-grid{grid-template-columns:1fr}.ps-setup-heading{align-items:flex-start;gap:12px}.ps-setup-mark{width:42px;height:42px;border-radius:12px}.ps-setup-mark svg{width:22px;height:22px}.ps-check-actions{flex-wrap:wrap}.ps-check-actions>*{flex:1}}
 .ps-settings-form .fi-tabs{flex-wrap:wrap;gap:6px}
 .ps-settings-form .fi-sc-tabs{min-width:0}
 .ps-settings-form .ssc-progress{border:1px solid var(--ps-line);border-radius:12px;margin-bottom:18px}
@@ -96,3 +96,20 @@ html.ps-theme.dark{color-scheme:dark}
 .ps-legacy-return:hover{background:var(--ps-raised)}
 .ps-legacy-return:focus-visible{outline:2px solid var(--ps-accent);outline-offset:3px}
 @media(max-width:640px){.ps-legacy-return{width:38px;padding:8px}.ps-legacy-return span{display:none}}
+.ps-legacy-return .ps-simplify-sparkles{width:16px;height:16px;color:var(--ps-muted)}
+.ps-creator-choice{display:inline-flex;align-items:center;gap:8px}
+.ps-creator-choice svg{width:16px;height:16px}
+@media(max-width:640px){.ps-legacy-return .ps-simplify-sparkles{display:none}}
+.ps-diagnostics-panel{margin-top:36px}
+.ps-setup-heading{position:relative}
+.ps-diagnostics-panel .ps-setup-heading{padding-right:36px}
+.ps-diagnostics-close{position:absolute;right:0;top:0;display:grid;place-items:center;width:32px;height:32px;border:1px solid var(--ps-line);border-radius:8px;background:var(--ps-raised);color:var(--ps-ink);cursor:pointer}
+.ps-diagnostics-close svg{width:18px;height:18px}
+/* A popup is one surface; native layout heights and nested padding add gaps. */
+.ps-frame :is(body,.fi-layout,.fi-main-ctn){background:var(--ps-surface)!important;min-height:0!important;height:auto!important;margin:0!important}
+.ps-frame :is(.fi-main-ctn,.fi-main,.fi-page,.fi-page-content){min-height:0!important;margin:0!important;max-width:none!important;width:100%!important}
+.ps-frame .fi-main-ctn{padding:0!important;flex:initial!important}
+.ps-frame .fi-main{flex:initial!important}
+.ps-frame .fi-header,.ps-frame .fi-main-ctn>footer{display:none!important}
+.ps-frame[data-ps-frame="settings"] .ps-settings-page{padding:20px;box-sizing:border-box}
+@media(max-width:600px){.ps-frame[data-ps-frame="settings"] .ps-settings-page{padding:14px}}

@@ -12,9 +12,9 @@ namespace {
  function user(){return $GLOBALS['authenticated']?(object)['id'=>1]:null;}
  function request(){return new class{function boolean($key){return $GLOBALS['embed'];}function routeIs(...$patterns){foreach($patterns as $pattern)if(fnmatch($pattern,$GLOBALS['route']))return true;return false;}};}
  function check($ok){if(!$ok)throw new \RuntimeException('Legacy navigation regression');}
- check(N::url()==='/simplify'&&!N::topbarVisible());
+ check(N::url()==='/simplify'&&N::topbarVisible());
  F::$panel='admin';$route='filament.admin.pages.dashboard';check(N::url()==='/simplify'&&N::topbarVisible());
- F::$panel='server';F::$tenant=new \App\Models\Server('server-a');$route='filament.server.pages.console';check(N::url()==='/simplify?server=server-a');
+ F::$panel='server';F::$tenant=new \App\Models\Server('server-a');$route='filament.server.pages.console';check(N::url()==='/simplify?server=server-a'&&!N::topbarVisible());
  \Simplify\Panel\Services\Access::$linked=false;check(N::url()==='/simplify');
  $embed=true;check(N::url()===null);$embed=false;
  foreach(['filament.app.pages.simplify','filament.app.pages.simple-server-creator','filament.app.auth.login','api.servers.index'] as $route)check(N::url()===null);

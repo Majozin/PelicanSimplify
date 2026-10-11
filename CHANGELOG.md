@@ -1,5 +1,14 @@
 # Changes
 
+## 0.2.0-alpha.9
+
+- Place one Simplify return button before notifications on the legacy overview and admin topbar; keep the admin topbar visible.
+- Add a permission-aware creator menu with native and Simplify choices, and stop redirecting native creation.
+- Preserve native legacy styling while matching embedded popup backgrounds and removing nested spacing.
+- Fit the settings popup to its contents and show diagnostics below settings with a close button.
+- Keep creator tiles stationary on hover and isolate each tile’s hover layout.
+- Add sharp gray pelican favicon artwork, an outline Simplify navigation icon and sparkle accents.
+
 ## 0.2.0-alpha.8
 
 - Fixed release ZIP timestamps so updated files no longer share the same date as older builds.

@@ -19,7 +19,7 @@ final class PelicanSimplifyPlugin implements Plugin
         if(!in_array($panel->getId(),['app','admin','server'],true))return;
         $panel->middleware([Http\Middleware\Setup::class,Http\Middleware\CreatorFramePolicy::class]);
         $panel->renderHook('panels::head.end',fn()=>view('pelican-simplify::shared-assets'));
-        $panel->renderHook('panels::topbar.end',fn()=>view('pelican-simplify::legacy-return'));
+        $panel->renderHook('panels::global-search.after',fn()=>view('pelican-simplify::legacy-return'));
         $panel->userMenuItems([
             Action::make('simplify_settings')->label('Simplify settings')->icon('tabler-settings')
                 ->url(fn()=>SimplifySettings::getUrl(panel:$panel->getId()==='server'?'app':$panel->getId()))
@@ -29,18 +29,10 @@ final class PelicanSimplifyPlugin implements Plugin
             $panel->pages([Dashboard::class,CreateServer::class,SimplifySettings::class]);
             $panel->middleware([Http\Middleware\Home::class]);
             $panel->homeUrl(fn()=>FeatureSettings::enabled('dashboard')?Dashboard::getUrl(panel:'app'):route('filament.app.resources.servers.index'));
-            \App\Filament\App\Resources\Servers\Pages\ListServers::registerCustomHeaderActions(\App\Enums\HeaderActionPosition::After,
-                Action::make('simplify_create')->label('Create server')->icon('tabler-plus')
-                    ->url(fn()=>CreateServer::getUrl(panel:'app'))
-                    ->visible(fn()=>FeatureSettings::enabled('easy_creator')&&Services\CreatorAccess::canCreate()));
-            \App\Filament\App\Resources\Servers\Pages\ListServers::registerCustomHeaderActions(\App\Enums\HeaderActionPosition::After,
-                Action::make('simplify_return')->label('Go to Simplify Panel')->icon('tabler-layout-dashboard')->color('gray')
-                    ->url(fn()=>Services\LegacyNavigation::url())
-                    ->visible(fn()=>Services\LegacyNavigation::url()!==null));
         }
         if($panel->getId()==='admin'){
+            $panel->topbar(true);
             $panel->pages([SimplifySettings::class,CreateMinecraftServer::class]);
-            $panel->middleware([Http\Middleware\RedirectServerCreate::class]);
             ServerResource::registerCustomPages(['legacy'=>CreateServerLegacy::route('/create-legacy')]);
         }
         if($panel->getId()==='server')$panel->middleware([Http\Middleware\ServerHome::class]);

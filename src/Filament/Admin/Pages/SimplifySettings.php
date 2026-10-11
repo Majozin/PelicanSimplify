@@ -32,6 +32,10 @@ class SimplifySettings extends Page implements HasForms
     protected static ?string $title = 'PelicanSimplify settings';
     protected static ?string $slug = 'pelican-simplify-settings';
     protected string $view = 'pelican-simplify::admin-settings';
+    public static function getNavigationIcon(): \Illuminate\Contracts\Support\Htmlable
+    {
+        return new \Illuminate\Support\HtmlString(view('pelican-simplify::simplify-icon')->render());
+    }
     public ?array $data = [];
     public array $requirements = [];
     public bool $setupStarted = false;

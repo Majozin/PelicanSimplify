@@ -9,7 +9,8 @@
  const applyDocument=(doc,kind)=>{
   if(!doc?.documentElement)return;
   const root=doc.documentElement;kind=kind||root.dataset.psFrame;
-  const themed=!!options.global_theme&&(!kind||!!options.legacy_theme||['create','settings'].includes(kind));
+  const legacyPage=!kind&&options.legacy_page;
+  const themed=!legacyPage&&!!options.global_theme&&(!kind||!!options.legacy_theme||['create','settings'].includes(kind));
   root.classList.toggle('ps-theme',themed);
   if(root.style&&/^#[0-9a-f]{6}$/i.test(options.accent_color||''))root.style.setProperty('--ps-accent',options.accent_color);
   if(themed)root.classList.toggle('dark',dark());
@@ -34,6 +35,6 @@
  window.addEventListener('storage',event=>{if(event.key===key&&['light','dark','system'].includes(event.newValue)){preference=event.newValue;apply();}});
  // Native Filament theme controls write the same storage event within this document.
  window.addEventListener('theme-changed',event=>{const value=event.detail?.theme??event.detail;if(['light','dark','system'].includes(value))window.SimplifyTheme.set(value);});
- document.addEventListener('livewire:navigated',apply);
+ document.addEventListener('livewire:navigated',()=>window.SimplifyTheme.configure(window.simplifyThemeConfig||options));
  apply();
 })();

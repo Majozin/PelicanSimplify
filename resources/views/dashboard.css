@@ -27,7 +27,7 @@ body:has(.ps) .fi-page { padding: 0!important;gap: 0!important; }
 .ps-eyebrow { font-size: 10px;letter-spacing: 2px;color: #949494;font-weight: 750;margin: 0 0 8px; }
 .ps h2 { font-size: 26px;line-height: 1.25;letter-spacing: -.7px;font-weight: 750;margin: 0 0 9px; }
 .ps-section-line p:not(.ps-eyebrow) { color: var(--muted);margin: 0;font-size: 14px; }
-.ps-server-card:not(.locked):hover { transform: translateY(-5px);box-shadow: 0 16px 40px #48484812;border-color: #d5d5d5; }
+.ps-server-card:not(.locked):not(.ps-create-card):hover { transform: translateY(-5px);box-shadow: 0 16px 40px #48484812;border-color: #d5d5d5; }
 .ps-card-icon svg { width: 29px;height: 29px; }
 .ps-server-card h3 { font-size: 23px;font-weight: 750;letter-spacing: -.6px;margin: 0 0 5px; }
 .ps-server-card.locked { background: #fafbfd; }
@@ -1057,3 +1057,10 @@ body:has(.ps:not(.server-active)) .fi-main-ctn { height:auto!important;overflow:
 .ps-background-actions{display:flex;justify-content:flex-end;gap:10px;margin-top:24px}
 @media(max-width:600px){.ps-background-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.ps-background-choice img{height:90px}}
 .ps .ps-server-info .ps-info-address{padding-right:82px}
+
+.ps .ps-modal-layer.is-create .ps-modal.is-native{height:auto;max-height:none}
+.ps .ps-modal-layer.is-create .ps-modal.is-native iframe{flex:none;height:auto;min-height:0}
+
+/* Creator choices stay put; their internal reveal belongs to one button only. */
+.ps .ps-create-tiles .ps-create-card{transform:none!important;contain:layout;}
+.ps .ps-create-tiles .ps-create-card:hover{transform:none!important;box-shadow:none;}
