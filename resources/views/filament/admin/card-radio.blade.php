@@ -5,7 +5,7 @@
         $packs = $name === 'featured_modpack'
             ? collect(\Simplify\Panel\Services\MinecraftCatalog::featuredModpacks())->keyBy('project_id') : collect();
     @endphp
-    <div {{ $getExtraAttributeBag()->class(['ssc-cards', 'ssc-cards--ram' => $name === 'ram_gb']) }}
+    <div {{ $getExtraAttributeBag()->class(['ssc-cards', 'ssc-cards--ram' => in_array($name, ['ram_gb','cpu_choice','disk_choice'])]) }}
          role="radiogroup" aria-label="{{ $getLabel() }}">
         @foreach ($getOptions() as $value => $label)
             @php
@@ -24,6 +24,8 @@
                         @include('pelican-simplify::filament.admin.outline-icon', ['icon' => $value])
                     @elseif ($name === 'backup_frequency')
                         @include('pelican-simplify::filament.admin.outline-icon', ['icon' => 'clock'])
+                    @elseif (in_array($name, ['cpu_choice','disk_choice']))
+                        @include('pelican-simplify::filament.admin.outline-icon', ['icon' => $name === 'cpu_choice' ? 'cpu' : 'disk'])
                     @elseif ($name === 'ram_gb')
                         @include('pelican-simplify::filament.admin.outline-icon', ['icon' => 'ram'])
                     @elseif ($pack && !empty($pack['icon_url']))

@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace Simplify\Panel\Filament\Admin\Pages;
 
 use App\Models\Egg;
+use App\Models\Role;
+use Filament\Forms\Components\Repeater;
 use App\Models\Node;
 use App\Models\User;
 use App\Models\Server;
@@ -115,7 +117,7 @@ class SimplifySettings extends Page implements HasForms
     {
         abort_unless(static::canAccess(), 403);
         $this->embedded = request()->boolean('simplify_embed');
-        $this->form->fill([...CreatorAccess::settings(),'creation_defaults'=>\Simplify\Panel\Services\CreationDefaults::all(),'appearance'=>AppearanceSettings::all(),'features'=>\Simplify\Panel\Services\FeatureSettings::all(),'web'=>\Simplify\Panel\Services\Extensions::webInstalled()?app('simplify.web')->options():[]]);
+        $this->form->fill([...CreatorAccess::configuration(),'creation_defaults'=>\Simplify\Panel\Services\CreationDefaults::all(),'appearance'=>AppearanceSettings::all(),'features'=>\Simplify\Panel\Services\FeatureSettings::all(),'web'=>\Simplify\Panel\Services\Extensions::webInstalled()?app('simplify.web')->options():[]]);
     }
     public function form(Schema $schema): Schema
     {
@@ -135,6 +137,7 @@ class SimplifySettings extends Page implements HasForms
             Section::make('User resource allowances')->columns(2)->description('Allow selected owners to adjust resources within these limits. The easy creator uses these same grants. This does not grant admin-panel access.')->schema([
                 Toggle::make('enabled')->label('Enable user resource allowances / optional server creation'),
                 Select::make('user_ids')->label('Allowed users')->multiple()->searchable()->options(fn () => User::query()->orderBy('username')->pluck('username', 'id')->all()),
+                Select::make('role_ids')->label('Allowed roles')->multiple()->searchable()->options(fn () => Role::query()->orderBy('name')->pluck('name', 'id')->all())->helperText('Members of these Pelican roles receive the same self-service access as explicitly allowed users.'),
                 Select::make('node_ids')->label('Hosting machine')->multiple()->searchable()->options(fn () => Node::query()->pluck('name', 'id')->all())->helperText('Select the hosting nodes available for self-service creation. Users do not choose ports or nodes.'),
                 Toggle::make('minecraft_enabled')->label('Allow Minecraft'),
                 Select::make('other_egg_ids')->label('Other games available to users')->multiple()->searchable()->options(fn () => Egg::query()->orderBy('name')->pluck('name', 'id')->all()),
@@ -156,7 +159,27 @@ class SimplifySettings extends Page implements HasForms
                 TextInput::make('creation_defaults.'.$type.'.disk_mb')->label('Disk (MB)')->integer()->minValue(1024)->maxValue(10485760)->required(),
             ]), ['vanilla','plus','modded'], ['Vanilla','Vanilla+','Modded / modpacks']))];
         $categories['Creator access'] = [$sections[0]];
-        $categories['Resource limits'] = [$sections[1]];
+        $limitFields = static fn () => [
+            TextInput::make('max_servers')->label('Maximum servers')->integer()->minValue(1)->maxValue(100)->required()->default(2),
+            TextInput::make('max_memory_mb')->label('Total RAM (MB)')->integer()->minValue(1024)->maxValue(131072)->required()->default(8192),
+            TextInput::make('max_disk_mb')->label('Total disk (MB)')->integer()->minValue(1024)->maxValue(10485760)->required()->default(40960),
+            TextInput::make('max_cpu')->label('CPU per server (%)')->integer()->minValue(1)->maxValue(1600)->required()->default(200),
+            TextInput::make('max_backups')->label('Backups per server')->integer()->minValue(0)->maxValue(100)->required()->default(3),
+        ];
+        $categories['Resource limits'] = [$sections[1],
+            Section::make('Role limits')->description('Overrides the shared allowance for matching roles. With multiple roles, the highest value for each resource applies. Limits alone do not grant access.')->schema([
+                Repeater::make('role_limits')->label('Role allowances')->defaultItems(0)->columns(2)->schema([
+                    Select::make('role_id')->label('Role')->required()->distinct()->searchable()->options(fn () => Role::query()->orderBy('name')->pluck('name','id')->all()),
+                    ...$limitFields(),
+                ])->addActionLabel('Add role limits'),
+            ]),
+            Section::make('User limits')->description('A specific user allowance takes precedence over role limits and shared defaults. Limits alone do not grant access.')->schema([
+                Repeater::make('user_limits')->label('User allowances')->defaultItems(0)->columns(2)->schema([
+                    Select::make('user_id')->label('User')->required()->distinct()->searchable()->options(fn () => User::query()->orderBy('username')->pluck('username','id')->all()),
+                    ...$limitFields(),
+                ])->addActionLabel('Add user limits'),
+            ]),
+        ];
         if (\Simplify\Panel\Services\Extensions::webInstalled()) $categories['Website'] = app('simplify.web')->settingsSections();
         if ($this->needsSetup()) {
             return $schema->statePath('data')->components([
@@ -201,12 +224,22 @@ class SimplifySettings extends Page implements HasForms
         }
         AppearanceSettings::save($state['appearance']??[]);
         $data = array_intersect_key($state, CreatorAccess::defaults());
-        foreach (['user_ids' => User::class, 'node_ids' => Node::class, 'other_egg_ids' => Egg::class] as $key => $model) {
+        foreach (['role_ids' => Role::class, 'user_ids' => User::class, 'node_ids' => Node::class, 'other_egg_ids' => Egg::class] as $key => $model) {
             $data[$key] = $model::query()->whereIn('id', $data[$key] ?? [])->pluck('id')->map(fn ($id) => (int) $id)->all();
         }
-        if ($data['enabled'] && (!$data['user_ids'] || !$data['node_ids'] || (!$data['minecraft_enabled'] && !$data['other_egg_ids']))) {
-            throw \Illuminate\Validation\ValidationException::withMessages(['data.enabled' => 'Choose users, a hosting machine and at least one game first.']);
+        if ($data['enabled'] && ((!$data['user_ids'] && !$data['role_ids']) || !$data['node_ids'] || (!$data['minecraft_enabled'] && !$data['other_egg_ids']))) {
+            throw \Illuminate\Validation\ValidationException::withMessages(['data.enabled' => 'Choose users or roles, a hosting machine and at least one game first.']);
         }
+        $rules = [];
+        foreach (['role_limits' => ['role_id','roles'], 'user_limits' => ['user_id','users']] as $key => [$id, $table]) {
+            $data[$key] = array_values($data[$key] ?? []);
+            $rules[$key] = 'array';
+            $rules[$key.'.*.'.$id] = 'required|integer|distinct|exists:'.$table.',id';
+            foreach (['max_servers'=>[1,100], 'max_memory_mb'=>[1024,131072], 'max_disk_mb'=>[1024,10485760], 'max_cpu'=>[1,1600], 'max_backups'=>[0,100]] as $field => [$min,$max]) {
+                $rules[$key.'.*.'.$field] = 'required|integer|min:'.$min.'|max:'.$max;
+            }
+        }
+        validator($data, $rules)->validate();
         \Simplify\Panel\Services\CreationDefaults::save($state['creation_defaults']??[]);
         if (!Storage::disk('local')->put(CreatorAccess::FILE, json_encode($data, JSON_THROW_ON_ERROR | JSON_PRETTY_PRINT))) {
             throw new \RuntimeException('Could not save creator settings.');

@@ -19,12 +19,12 @@ final class CreatorAccess
 
     public static function defaults(): array
     {
-        return ['enabled' => false, 'user_ids' => [], 'node_ids' => [], 'other_egg_ids' => [],
+        return ['enabled' => false, 'user_ids' => [], 'role_ids' => [], 'role_limits' => [], 'user_limits' => [], 'node_ids' => [], 'other_egg_ids' => [],
             'minecraft_enabled' => true, 'max_servers' => 2, 'max_memory_mb' => 8192,
             'max_disk_mb' => 40960, 'max_cpu' => 200, 'max_backups' => 3];
     }
 
-    public static function settings(): array
+    public static function configuration(): array
     {
         $instance=app(self::class);if($instance->cached!==null)return $instance->cached;
         try {
@@ -38,6 +38,40 @@ final class CreatorAccess
         }
     }
 
+    /** User overrides win; for multiple roles, the highest allowance per resource wins. */
+    public static function effective(?object $user, array $settings): array
+    {
+        if ($user === null) return $settings;
+        $keys = ['max_servers','max_memory_mb','max_disk_mb','max_cpu','max_backups'];
+        $roles = self::roleIds($user); $matching = [];
+        foreach ($settings['role_limits'] ?? [] as $profile) {
+            if (in_array((int) ($profile['role_id'] ?? 0), $roles, true)) $matching[] = $profile;
+        }
+        foreach ($keys as $key) {
+            $values = array_column($matching, $key);
+            if ($values) $settings[$key] = max(array_map('intval', $values));
+        }
+        foreach ($settings['user_limits'] ?? [] as $profile) {
+            if ((int) ($profile['user_id'] ?? 0) !== (int) $user->id) continue;
+            foreach ($keys as $key) if (isset($profile[$key])) $settings[$key] = (int) $profile[$key];
+        }
+        return $settings;
+    }
+
+    private static function roleIds(object $user): array
+    {
+        $roles = $user->roles ?? [];
+        $ids = [];
+        foreach ($roles as $role) $ids[] = (int) $role->id;
+        return $ids;
+    }
+
+    public static function settings(): array
+    {
+        $settings = self::configuration();
+        return self::admin() ? $settings : self::effective(user(), $settings);
+    }
+
     public static function admin(): bool
     {
         return (bool) (user()?->isAdmin() && ServerResource::canCreate());
@@ -46,7 +80,8 @@ final class CreatorAccess
     public static function allowed(?object $user, array $settings): bool
     {
         return $user !== null && !empty($settings['enabled'])
-            && in_array((int) $user->id, array_map('intval', $settings['user_ids'] ?? []), true)
+            && (in_array((int) $user->id, array_map('intval', $settings['user_ids'] ?? []), true)
+                || array_intersect(self::roleIds($user), array_map('intval', $settings['role_ids'] ?? [])))
             && !empty($settings['node_ids'])
             && (!empty($settings['minecraft_enabled']) || !empty($settings['other_egg_ids']));
     }

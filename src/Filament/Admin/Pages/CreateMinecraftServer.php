@@ -224,6 +224,8 @@ class CreateMinecraftServer extends Page implements HasForms
             'ram_custom_gb' => $defaultRam,
             'disk_mb' => CreatorAccess::admin() ? $resourceDefaults['disk_mb'] : min($resourceDefaults['disk_mb'], (int) CreatorAccess::settings()['max_disk_mb']),
             'cpu' => CreatorAccess::admin() ? $resourceDefaults['cpu'] : min($resourceDefaults['cpu'], (int) CreatorAccess::settings()['max_cpu']),
+            'cpu_choice' => (string) (CreatorAccess::admin() ? $resourceDefaults['cpu'] : min($resourceDefaults['cpu'], (int) CreatorAccess::settings()['max_cpu'])),
+            'disk_choice' => (string) (CreatorAccess::admin() ? $resourceDefaults['disk_mb'] : min($resourceDefaults['disk_mb'], (int) CreatorAccess::settings()['max_disk_mb'])),
             'egg_id' => $game==='minecraft'?MinecraftCatalog::eggForType('vanilla')?->id:null,
             'skip_scripts' => false,
             'start_on_completion' => false,
@@ -257,7 +259,14 @@ class CreateMinecraftServer extends Page implements HasForms
                     $this->furthestStep=max($this->draftStep,min($this->creationGame==='minecraft'?6:7,$furthest));
                     $this->editingAdvanced = (bool) ($draft['advanced'] ?? false);
                     $this->draftIcon = $draft['icon'] ?? null;
-                    $this->form->fill(array_replace($this->data ?? [], $draft['state'], ['server_icon' => null,'game'=>$game]));
+                    $restored = $draft['state'];
+                    foreach (['cpu_choice'=>'cpu', 'disk_choice'=>'disk_mb'] as $choice=>$resource) {
+                        if (!isset($restored[$choice])) {
+                            $value = (string) ($restored[$resource] ?? $this->data[$resource]);
+                            $restored[$choice] = array_key_exists($value, $this->resourceOptions($resource, $restored['server_type'] ?? 'vanilla')) ? $value : 'custom';
+                        }
+                    }
+                    $this->form->fill(array_replace($this->data ?? [], $restored, ['server_icon' => null,'game'=>$game]));
                 }
             }
         } catch (Throwable $exception) {
@@ -341,12 +350,14 @@ class CreateMinecraftServer extends Page implements HasForms
                                     $set('modpack_version', null);
                                     $profile = \Simplify\Panel\Services\CreationDefaults::forType((string)$state);
                                     $cpu = $profile['cpu'];
-                                    $set('cpu', CreatorAccess::admin() ? $cpu : min($cpu, (int) CreatorAccess::settings()['max_cpu']));
+                                    $cpu = CreatorAccess::admin() ? $cpu : min($cpu, (int) CreatorAccess::settings()['max_cpu']);
+                                    $set('cpu', $cpu); $set('cpu_choice', (string) $cpu);
                                     $disk = $profile['disk_mb'];
                                     $ram = CreatorAccess::admin() ? $profile['ram_gb'] : min($profile['ram_gb'],max(1,(int)floor(CreatorAccess::settings()['max_memory_mb']/1024)));
                                     $set('ram_gb',in_array($ram,[2,4,8,12],true)?(string)$ram:'custom');
                                     $set('ram_custom_gb',$ram);
-                                    $set('disk_mb', CreatorAccess::admin() ? $disk : min($disk, (int) CreatorAccess::settings()['max_disk_mb']));
+                                    $disk = CreatorAccess::admin() ? $disk : min($disk, (int) CreatorAccess::settings()['max_disk_mb']);
+                                    $set('disk_mb', $disk); $set('disk_choice', (string) $disk);
                                 }),
                             TextInput::make('name')
                                 ->label('Server name')
@@ -433,10 +444,7 @@ class CreateMinecraftServer extends Page implements HasForms
                                             ->default($variable->default_value ?? '')
                                             ->rules($variable->rules ?? ['nullable']))->all() : [];
                                 }),
-                        ])
-                        ->afterValidation(fn () => $this->prepareEgg()),
-                    Step::make('Resources & properties')
-                        ->schema([
+                            Section::make('Resources')->description('Starting values follow your server type. Choose a preset or enter your own allocation.')->schema([
                             Radio::make('ram_gb')
                                 ->view('pelican-simplify::filament.admin.card-radio')
                                 ->label('RAM')
@@ -449,6 +457,28 @@ class CreateMinecraftServer extends Page implements HasForms
                                 ->numeric()->minValue(1)->maxValue(fn () => CreatorAccess::admin() ? 128 : max(1, (int) floor(CreatorAccess::settings()['max_memory_mb'] / 1024)))->step(1)
                                 ->required(fn (Get $get) => $get('ram_gb') === 'custom')
                                 ->visible(fn (Get $get) => $get('ram_gb') === 'custom'),
+                            Radio::make('cpu_choice')->label('CPU allocation')
+                                ->view('pelican-simplify::filament.admin.card-radio')->extraAttributes(['class'=>'ssc-ram-options'])
+                                ->options(fn (Get $get) => $this->resourceOptions('cpu', $get('server_type')))
+                                ->default(fn (Get $get) => (string) $get('cpu'))->live()->required()
+                                ->afterStateUpdated(function ($state, Set $set): void { if ($state !== 'custom') $set('cpu', (int) $state); }),
+                            TextInput::make('cpu')->label('Custom CPU (%)')->integer()->minValue(CreatorAccess::admin() ? 0 : 1)
+                                ->maxValue(fn () => CreatorAccess::admin() ? 1600 : (int) CreatorAccess::settings()['max_cpu'])
+                                ->required()->dehydratedWhenHidden()->visible(fn (Get $get) => $get('cpu_choice') === 'custom')
+                                ->helperText('100% = one CPU core; administrators may use 0 for unlimited.'),
+                            Radio::make('disk_choice')->label('Disk allocation')
+                                ->view('pelican-simplify::filament.admin.card-radio')->extraAttributes(['class'=>'ssc-ram-options'])
+                                ->options(fn (Get $get) => $this->resourceOptions('disk_mb', $get('server_type')))
+                                ->default(fn (Get $get) => (string) $get('disk_mb'))->live()->required()
+                                ->afterStateUpdated(function ($state, Set $set): void { if ($state !== 'custom') $set('disk_mb', (int) $state); }),
+                            TextInput::make('disk_mb')->label('Custom disk (MB)')->integer()->minValue(1024)
+                                ->maxValue(fn () => CreatorAccess::admin() ? 10485760 : (int) CreatorAccess::settings()['max_disk_mb'])
+                                ->required()->dehydratedWhenHidden()->visible(fn (Get $get) => $get('disk_choice') === 'custom'),
+                            ]),
+                        ])
+                        ->afterValidation(fn () => $this->prepareEgg()),
+                    Step::make('Server properties')
+                        ->schema([
                             Section::make('Server properties')->visible(fn (Get $get) => ($this->creationGame ?: $get('game')) === 'minecraft')
                                 ->description('Set common Minecraft options before creation. Applied after installation; other installer settings are preserved.')
                                 ->schema([
@@ -468,8 +498,6 @@ class CreateMinecraftServer extends Page implements HasForms
                                 ->imageResizeMode('cover')->imageResizeTargetWidth('64')->imageResizeTargetHeight('64')
                                 ->imageEditor()->imageEditorAspectRatios(['1:1'])->storeFiles(false)
                                 ->helperText('PNG, 64 × 64 pixels, up to 100 KB. Uploaded as server-icon.png after installation.'),
-                            Section::make('Automatic CPU allocation')->visible(fn (Get $get) => ($this->creationGame ?: $get('game')) === 'minecraft')
-                                ->description(fn()=>\Simplify\Panel\Services\CreationDefaults::summary()),
                         ]),
                     ... (\Simplify\Panel\Services\Extensions::webAdapter()?->creatorSteps($this) ?? []),
                     Step::make('Backups')->visible(fn()=>\Simplify\Panel\Services\FeatureSettings::enabled('backups'))->schema([
@@ -497,13 +525,6 @@ class CreateMinecraftServer extends Page implements HasForms
                                         ->options(fn () => Egg::query()->orderBy('name')->pluck('name', 'id')->all())
                                         ->searchable()->required()->live()
                                         ->helperText('Automatically chosen and imported if missing. Existing eggs are kept. Only change if you know what you are doing.'),
-                                    TextInput::make('cpu')
-                                        ->label('CPU limit (%)')
-                                        ->integer()->minValue(0)->maxValue(1600)->required()
-                                        ->helperText('100% = one CPU core; 0 = unlimited.'),
-                                    TextInput::make('disk_mb')
-                                        ->label('Disk space (MB)')
-                                        ->numeric()->integer()->minValue(1024)->required(),
                                     Select::make('java_version')->visible(fn (Get $get) => CreatorAccess::admin() && ($this->creationGame ?: $get('game')) === 'minecraft')->dehydratedWhenHidden()
                                         ->label('Java version')
                                         ->options(['auto' => 'Automatic (recommended)', '8' => 'Java 8', '11' => 'Java 11', '16' => 'Java 16', '17' => 'Java 17', '21' => 'Java 21', '25' => 'Java 25'])
@@ -533,6 +554,17 @@ class CreateMinecraftServer extends Page implements HasForms
                     ->columnSpanFull()
                     ->submitAction(new HtmlString(view('pelican-simplify::filament.admin.create-action')->render())),
             ]);
+    }
+
+    public function resourceOptions(string $resource, ?string $type): array
+    {
+        $default = \Simplify\Panel\Services\CreationDefaults::forType($type ?? 'vanilla')[$resource];
+        $limit = CreatorAccess::admin() ? ($resource === 'cpu' ? 1600 : 10485760) : (int) CreatorAccess::settings()[$resource === 'cpu' ? 'max_cpu' : 'max_disk_mb'];
+        $default = min($default, $limit);
+        $values = array_unique([...($resource === 'cpu' ? [100,150,200,400] : [5120,10240,20480,40960]), $default]);
+        sort($values); $options = [];
+        foreach ($values as $value) if ($value <= $limit) $options[(string) $value] = $resource === 'cpu' ? $value.'%' : round($value / 1024, 2).' GB';
+        return $options + ['custom' => 'Custom'];
     }
 
     public function availableServerColors(): array

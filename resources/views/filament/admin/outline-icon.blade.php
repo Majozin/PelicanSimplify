@@ -15,6 +15,12 @@
             <circle cx="12" cy="12" r="9" />
             <path d="M12 7v5l3 2" />
             @break
+        @case('cpu')
+            <rect x="5" y="5" width="14" height="14" rx="2"/><rect x="9" y="9" width="6" height="6"/><path d="M9 2v3m6-3v3M9 19v3m6-3v3M2 9h3m-3 6h3M19 9h3m-3 6h3"/>
+            @break
+        @case('disk')
+            <rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="11" cy="11" r="4"/><path d="m11 11 6 5M6 17h.01"/>
+            @break
         @case('ram')
             <rect x="3" y="5" width="18" height="13" rx="2" />
             <path d="M6 18v3 M10 18v3 M14 18v3 M18 18v3" />

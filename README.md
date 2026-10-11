@@ -5,7 +5,7 @@
 >
 > Create backups before installing and expect bugs and/or errors, especially in the alpha builds. Plugin is made to work on top of your panel so it won't interfere with the running servers. It runs fine for me, but that's no guarantee.
 
-A fresh interface for Pelican, with simpler server management and guided server creation.
+A fresh interface for Pelican, with simpler server management and guided server creation. Built on [Pelican](https://github.com/pelican/panel) and [Wings](https://github.com/pelican/wings); their existing functionality is credited below.
 
 **Alpha · Pelican 1.0.0-beta38 · PHP 8.3+**
 
@@ -44,10 +44,12 @@ Planned improvements; scope and release order may change.
 <details>
 <summary><strong>Expand all features</strong></summary>
 
+**Implemented from Pelican** marks existing Pelican/Wings functionality presented or reused by Simplify. Other entries describe Simplify additions; server hosting, permissions and game operations still run through Pelican/Wings.
+
 ### Installation and first setup
 
-- Native Pelican plugin import by URL or ZIP
-- Latest-version download URL and plugin updater
+- Native Pelican plugin import by URL or ZIP — **Implemented from Pelican**
+- Simplify latest-version ZIP and update feed using the native updater — **Implemented from Pelican**
 - Installation preflight and blocking dependency checks
 - PHP version, extensions and Composer package checks
 - Node.js, Yarn and compiled CSS/JavaScript checks
@@ -67,7 +69,7 @@ Planned improvements; scope and release order may change.
 - Saved desktop view preference and automatic mobile list view
 - Dynamic game filters
 - Server names, aliases, icons and game badges
-- Live server status and player counts
+- Live server status from Wings (**Implemented from Pelican**) and Minecraft player counts
 - CPU and memory history graphs
 - Host CPU, RAM, storage and gameserver network traffic
 - Healthy, high-load, critical, maintenance and unavailable states
@@ -78,33 +80,35 @@ Planned improvements; scope and release order may change.
 ### Guided server creation
 
 - Minecraft creation wizard with numbered steps and review
-- Vanilla, Paper and supported modpack creation
-- Automatic matching egg selection and bundled egg import
+- Guided Vanilla, Paper and modpack setup using existing eggs and native server creation — **Implemented from Pelican**
+- Automatic matching egg selection; bundled eggs imported through Pelican (upstream egg licenses retained)
 - Game version and modpack release selection
 - Modrinth, CurseForge, FTB and supported Technic modpacks
-- Bird-name generator
+- Bird-name generator — **Implemented from Pelican**
 - Per-server accent-color choice and suggestions
 - Server icon and MOTD setup
-- Configurable CPU, RAM and storage defaults per server type
+- Clickable RAM, CPU and disk presets in step 2
+- Configurable defaults for Vanilla, Vanilla+ and modpacks
+- Resource presets reset when changing server type
 - Server/resource allowances and quota validation
 - Advanced resource options
 - Saved drafts, autosave, recovery and discard
-- Native creator popup for other games
+- Native creator popup for other games — **Implemented from Pelican**
 
 ### Server dashboard and console
 
 - Game-aware management tiles
 - Server aliases with an icon-only editor
 - Game, software, Minecraft version and modpack information
-- Live Wings console and connection indicator
-- Console commands, command history and log clearing
-- Start, restart, stop and force-stop controls
-- CPU, memory, storage and received/sent network traffic
+- Live Wings console and connection indicator — **Implemented from Pelican**
+- Console commands, command history and log clearing — **Implemented from Pelican**
+- Start, restart, stop and force-stop controls — **Implemented from Pelican**
+- CPU, memory, storage and received/sent network traffic — **Implemented from Pelican**
 - Resource history graphs
 - Minecraft online-player list and player heads
-- Copyable server address
+- Copyable server address — **Implemented from Pelican**
 - Resource editing with permission and quota checks
-- Profile popup and account menu
+- Profile popup and account menu — **Implemented from Pelican**
 - Links back to the native panel and Simplify
 - Build version in the footer
 
@@ -143,37 +147,37 @@ Planned improvements; scope and release order may change.
 - Modrinth plugin/mod search and compatible-release selection
 - Package installation, tracked updates and removal
 - Archive copies of replaced or removed package files
-- Native startup-variable workspace for other games
+- Native startup-variable workspace for other games — **Implemented from Pelican**
 
 ### Files and management workspaces
 
-- Embedded native file browser and uploads
+- Embedded native file browser and uploads — **Implemented from Pelican**
 - File list beside the editor
 - Fixed-height file/editor panes with internal scrolling
 - Save closes the editor while preserving the file browser
-- Unsaved-edit warning and keyboard save shortcut
+- Unsaved-edit warning and keyboard save shortcut — **Implemented from Pelican**
 - File revision check before saving
 - Saved-file restart reminder in the shared dashboard banner
-- Compact SFTP details, username copy and connection link
-- Scheduled-task and activity-log workspaces
-- Database and server-access links where permitted
-- Runtime/container and startup details
-- Confirmed server deletion
+- Compact SFTP details, username copy and connection link — **Implemented from Pelican**
+- Scheduled-task and activity-log workspaces — **Implemented from Pelican**
+- Database and server-access links where permitted — **Implemented from Pelican**
+- Runtime/container and startup details — **Implemented from Pelican**
+- Confirmed server deletion — **Implemented from Pelican**
 
 ### Backups and automation
 
-- Backup recovery points
+- Simplify recovery-point overview using native backups — **Implemented from Pelican**
 - Automatic backup scheduling
 - Configurable intervals and retention
 - Pause/resume automatic backups
 - Successful-backup preservation when a backup fails
-- Backup download and restore
-- Native administrator backup management
+- Backup download and restore — **Implemented from Pelican**
+- Native administrator backup management — **Implemented from Pelican**
 
 ### Access and settings
 
 - Switchable Friends mode
-- Native ownership and subuser permission checks
+- Native ownership and subuser permission checks — **Implemented from Pelican**
 - Locked cards for servers you cannot manage
 - Administrator-only plugin settings
 - Per-feature visibility switches
@@ -181,7 +185,8 @@ Planned improvements; scope and release order may change.
 - User switches for files, settings, resources, players and packages
 - User switches for backups, schedules and activity
 - Optional self-service server creation
-- Per-user server, CPU, memory, storage and backup allowances
+- Shared, per-role and per-user server, CPU, RAM, disk and backup allowances
+- Specific user limits override roles; multiple roles use the highest allowance per resource
 - Administrator-managed account/sharing/schedule restrictions
 - Dedicated settings categories and banner tab
 

@@ -15,7 +15,7 @@
             </button>
         </div>
         <nav class="ssc-progress" wire:ignore aria-label="Server creation progress">
-            @foreach(($this->creationGame==='minecraft'?['Server Type','Version & Content','Resources','Website display','Backups','Review']:['Game','Server Type','Content','Resources','Website display','Backups','Review']) as $index=>$label)
+            @foreach(($this->creationGame==='minecraft'?['Server Type','Version & Content','Server properties','Website display','Backups','Review']:['Game','Server Type','Content','Server properties','Website display','Backups','Review']) as $index=>$label)
                 <button type="button" :class="{'is-current':step==={{ $index+1 }},'is-complete':furthestStep>{{ $index+1 }}}" :disabled="{{ $index+1 }}>furthestStep || switching || uploading" :aria-current="step==={{ $index+1 }}?'step':null" x-on:click="goToStep({{ $index+1 }})"><span>{{ $index+1 }}</span>{{ $label }}</button>
                 @unless($loop->last)<span class="ssc-step-arrow" aria-hidden="true">&gt;</span>@endunless
             @endforeach

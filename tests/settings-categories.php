@@ -5,7 +5,7 @@ namespace Livewire {trait WithFileUploads {}}
 namespace Filament\Pages {class Page {}}
 namespace Filament\Forms\Concerns {trait InteractsWithForms {}}
 namespace Filament\Forms\Contracts {interface HasForms {}}
-namespace Filament\Forms\Components {class Toggle extends \Test\Component {}class TextInput extends \Test\Component {}class Select extends \Test\Component {}class ColorPicker extends \Test\Component {}}
+namespace Filament\Forms\Components {class Repeater extends \Test\Component {}class Toggle extends \Test\Component {}class TextInput extends \Test\Component {}class Select extends \Test\Component {}class ColorPicker extends \Test\Component {}}
 namespace Filament\Schemas {class Schema extends \Test\Component {}}
 namespace Filament\Schemas\Components {class View extends \Test\Component {}class Section extends \Test\Component {}class Wizard extends \Test\Component {public static function make($steps=null){$instance=new self;$instance->options['steps']=$steps;return $instance;}}class Tabs extends \Test\Component {}}
 namespace Filament\Schemas\Components\Wizard {class Step extends \Test\Component {}}

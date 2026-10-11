@@ -1,5 +1,13 @@
 # Changes
 
+## 0.2.0-alpha.17
+
+- Move clickable RAM, CPU and disk presets into creator step 2; reload configured type defaults when returning to step 1 and changing type.
+- Add per-role and per-user allowances with backend quota enforcement and explicit access grants.
+- Preserve popup scroll positions during embedded resizing and restore usable fixed file/editor heights.
+- Use a filled broken-heart silhouette fading into the right side of offline cards.
+- Credit existing Pelican/Wings functionality throughout the README feature list.
+
 ## 0.2.0-alpha.16
 
 - Align the host health status and open per-node CPU, memory, storage and gameserver traffic details from the health tile.

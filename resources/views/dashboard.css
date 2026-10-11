@@ -1166,3 +1166,13 @@ body:has(.ps:not(.server-active)) .fi-main-ctn { height:auto!important;overflow:
 .ps .ps-offline-artwork svg{width:clamp(110px,18vw,180px);height:clamp(110px,18vw,180px);opacity:.4}
 .ps .ps-offline-artwork{padding:0}
 .ps .ps-offline-artwork svg{position:absolute;right:-16px;top:50%;transform:translateY(-50%);height:150%;width:auto;aspect-ratio:1;max-width:none;opacity:.4}
+
+/* Keep real scroll containers stable while embedded content is measured. */
+.ps .ps-modal .ps-modal-content{overflow-anchor:none;scroll-behavior:auto}
+.ps .ps-modal.is-files{height:min(760px,calc(100dvh - 48px))!important}
+.ps .ps-modal.is-files .ps-modal-content{flex:1 1 0%!important;overflow:hidden!important}
+.ps .ps-modal.is-native:not(.is-files) .ps-modal-content{display:block!important;overflow:auto!important}
+@media(max-width:800px){.ps .ps-modal.is-files{height:calc(100dvh - 24px)!important}}
+/* Filled split silhouette, visible on the rightmost third of offline cards. */
+.ps .ps-offline-artwork{mask-image:linear-gradient(to right,transparent 55%,#000 78%,#000 100%);-webkit-mask-image:linear-gradient(to right,transparent 55%,#000 78%,#000 100%)}
+.ps .ps-offline-artwork svg{fill:currentColor;stroke:none;right:-6%;height:125%;opacity:.35}
