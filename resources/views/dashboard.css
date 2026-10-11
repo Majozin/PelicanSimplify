@@ -1272,3 +1272,31 @@ body:has(.ps) :is(.fi-footer,.fi-main-ctn>footer){flex:none;margin-top:auto;back
 @media(max-width:700px){.ps .ps-server-grid.is-list .has-power:is(:hover,:focus-within) .ps-card-footer{padding-right:0}}
 @media(hover:none) and (min-width:701px){.ps .ps-server-grid.is-list .has-power .ps-card-footer{padding-right:120px}}
 @media(max-width:900px), (max-height:700px){.ps .ps-health-drawer .ps-node-health-list{max-height:max(60px,min(35dvh,calc(100dvh - 360px)))}}
+
+/* A fixed-height detail workspace keeps the dock stable while nodes expand inline. */
+.ps .ps-health-drawer{--ps-health-details-height:clamp(100px,calc(100dvh - 420px),320px);height:0;transition:height .3s ease,grid-template-rows .3s ease,opacity .25s ease}
+.ps .ps-health-panel.expanded .ps-health-drawer{height:var(--ps-health-details-height)}
+.ps .ps-health-drawer>div{display:flex;flex-direction:column;min-height:0;height:100%;overflow:hidden}
+.ps .ps-health-detail-toolbar{display:flex;flex:none;align-items:center;gap:12px;padding:8px 16px;color:var(--muted);font-size:12px;min-height:42px}
+.ps .ps-health-detail-toolbar .ps-button{padding:5px 10px;min-height:30px;font-size:12px}
+.ps .ps-health-drawer .ps-node-health-list{display:block;flex:1 1 0;min-height:0;height:100%;max-height:none!important;overflow:auto;padding:0 16px 16px}
+.ps .ps-node-health-list>.ps-node-health{margin-bottom:12px}
+.ps .ps-node-health-list>.ps-node-health:last-of-type{margin-bottom:0}
+.ps .ps-node-health.is-selectable{cursor:pointer;transition:border-color .2s,background .2s}
+.ps .ps-node-health.is-selectable:hover{border-color:var(--accent);background:var(--raised)}
+.ps .ps-node-health.is-selectable:focus-visible{outline:2px solid var(--accent);outline-offset:-2px}
+.ps .ps-node-arrow{width:16px;height:16px;color:var(--muted)}
+@media(max-width:600px){.ps .ps-health-drawer{--ps-health-details-height:clamp(80px,calc(100dvh - 440px),320px)}.ps .ps-health-detail-toolbar{padding-inline:10px;font-size:11px}.ps .ps-health-drawer .ps-node-health-list{padding-inline:10px}.ps .ps-node-health{padding:12px}}
+@media(prefers-reduced-motion:reduce){.ps .ps-health-drawer{transition:none}}
+
+.ps .ps-node-toggle{display:flex;align-items:center;gap:12px;width:100%;min-height:36px;padding:0;text-align:left;background:transparent;color:var(--ink);cursor:pointer}
+.ps .ps-node-toggle .ps-node-name{flex:1;font-size:15px;font-weight:700}
+.ps .ps-node-toggle:hover .ps-node-name{color:var(--accent)}
+.ps .ps-node-toggle .ps-node-arrow{transform:rotate(90deg);transition:transform .25s}
+.ps .ps-node-toggle .ps-node-arrow.expanded{transform:rotate(-90deg)}
+.ps .ps-node-server-drawer{display:grid;grid-template-rows:0fr;opacity:0;transition:grid-template-rows .25s,opacity .2s}
+.ps .ps-node-server-drawer.expanded{grid-template-rows:1fr;opacity:1}
+.ps .ps-node-server-drawer>div{min-height:0;overflow:hidden}
+.ps .ps-node-server-drawer .ps-node-servers{margin:0;padding-top:0;transition:padding-top .25s}
+.ps .ps-node-server-drawer.expanded .ps-node-servers{padding-top:16px}
+@media(prefers-reduced-motion:reduce){.ps .ps-node-server-drawer,.ps .ps-node-server-drawer .ps-node-servers,.ps .ps-node-toggle .ps-node-arrow{transition:none}}

@@ -1,5 +1,11 @@
 # Changes
 
+## 0.2.0-alpha.20
+
+- Give expanded host health a fixed, viewport-bounded detail area with internal scrolling.
+- Keep every node visible; expand each node’s servers inline, with independent animated accordions.
+- Preserve aggregate metrics and the upward expansion animation while expanding nodes.
+
 ## 0.2.0-alpha.19
 
 - Redirect to the overview after deletion, without rendering the deleted server.

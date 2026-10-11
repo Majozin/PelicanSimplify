@@ -75,7 +75,7 @@ Planned improvements; scope and release order may change.
 - CPU and memory history graphs
 - Host CPU, RAM, storage and gameserver network traffic
 - Healthy, high-load, critical, maintenance and unavailable states
-- Animated upward expansion with per-node and per-server health details
+- Animated upward expansion into a fixed-height workspace: node health, inline expandable server details and internal scrolling
 - Upload/download rates beside cumulative network usage
 - Reporting-host counts and partial-availability handling
 - Animated, permission-aware power actions inside grid and list server cards
