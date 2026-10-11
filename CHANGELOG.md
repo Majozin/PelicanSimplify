@@ -1,5 +1,17 @@
 # Changes
 
+## 0.3.0-beta.2
+- Fix Next in the server creator: fields that are hidden in the browser (custom RAM, backup schedule) are no longer validated, and CPU/disk presets always win over hidden custom values.
+- Panel name follows the accent colour; server names fade from white (ink) into their accent.
+- MOTDs use the Minecraft-style Monocraft font (SIL OFL) with their dark background on overview cards.
+- Offline artwork is faded and blurred like background banners.
+- Server and egg icons swap place and size with a short animation when "Egg icon" is chosen.
+- New "Large name" choice in the overview menu: alias or server name.
+- Dark tooltips and game labels in dark mode.
+- Compact list rows (about 68 px) with the MOTD beside the name.
+- Quick actions sit on the card background with regular grey buttons.
+- Remove leftover backgrounds behind the footer on the overview.
+
 ## 0.3.0-beta.1
 - Rebuild the frontend on one design system: shared tokens, buttons, fields, switches, badges, dropdowns, popups, tooltips and toasts, used by the dashboard, creator, settings and embedded Pelican pages.
 - Replace every browser confirm, prompt and hover text with Simplify dialogs and tooltips; add a notification bell for pending changes, health warnings, updates and notices.

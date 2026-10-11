@@ -97,6 +97,7 @@ function handler(req, res) {
     if (url.pathname === '/') return send('text/html', dashboardPage(url.searchParams));
     if (url.pathname.startsWith('/assets/')) {
       const name = url.pathname.slice(8);
+      if (name.endsWith('.woff2')) return send('font/woff2', fs.readFileSync(path.join(repo, 'resources/fonts', path.basename(name))));
       const body = asset(name);
       if (body == null) return send('text/plain', 'missing', 404);
       return send(name.endsWith('.css') ? 'text/css' : 'application/javascript', body);

@@ -190,9 +190,17 @@ class CreateMinecraftServer extends Page implements HasForms
     {
         return method_exists(\Filament\Forms\Components\Field::class, 'visibleJs');
     }
-    private static function showWhen(mixed $component, string $js, \Closure $server): mixed
+    /**
+     * Shows a field while the condition holds. With browser-side toggling the server still sees the field
+     * as visible, so a hidden field is also kept out of the saved state and out of validation; otherwise an
+     * empty hidden field (e.g. custom RAM) blocks Next with an error nobody can see.
+     */
+    private static function showWhen(mixed $component, string $js, \Closure $server, bool $keepWhenHidden = false): mixed
     {
-        return self::clientVisibility() ? $component->visibleJs($js) : $component->visible($server);
+        if (!self::clientVisibility()) return $component->visible($server);
+        $component->visibleJs($js);
+        if (!$keepWhenHidden && method_exists($component, 'validatedWhenNotDehydrated')) $component->dehydrated($server)->validatedWhenNotDehydrated(false);
+        return $component;
     }
     /** Fields that only reveal other fields stay local when the browser can do the toggling. */
     private static function liveForVisibility(mixed $component): mixed
@@ -328,6 +336,12 @@ class CreateMinecraftServer extends Page implements HasForms
     {
         if ($this->creationGame!=='') $this->data['game']=$this->creationGame;
         $this->syncResourceChoices();
+    }
+
+    /** Request updates arrive after hydrate(); re-apply presets so a hidden custom field cannot win. */
+    public function updated(string $name): void
+    {
+        if (in_array($name, ['data.cpu_choice', 'data.disk_choice', 'data.cpu', 'data.disk_mb'], true)) $this->syncResourceChoices();
     }
 
     /** CPU/disk presets are plain radios; copy the chosen preset into the value fields once per request. */
@@ -517,7 +531,7 @@ class CreateMinecraftServer extends Page implements HasForms
                                 ->maxValue(fn () => CreatorAccess::admin() ? 1600 : (int) CreatorAccess::settings()['max_cpu'])
                                 ->required()->dehydratedWhenHidden()
                                 ->helperText('100% = one CPU core; administrators may use 0 for unlimited.'),
-                                "\$get('cpu_choice') === 'custom'", fn (Get $get) => $get('cpu_choice') === 'custom'),
+                                "\$get('cpu_choice') === 'custom'", fn (Get $get) => $get('cpu_choice') === 'custom', true),
                             self::liveForVisibility(Radio::make('disk_choice')->label('Disk allocation')
                                 ->view('pelican-simplify::filament.admin.card-radio')->extraAttributes(['class'=>'ssc-ram-options'])
                                 ->options(fn (Get $get) => $this->resourceOptions('disk_mb', $get('server_type')))
@@ -525,7 +539,7 @@ class CreateMinecraftServer extends Page implements HasForms
                             self::showWhen(TextInput::make('disk_mb')->label('Custom disk (MB)')->integer()->minValue(1024)
                                 ->maxValue(fn () => CreatorAccess::admin() ? 10485760 : (int) CreatorAccess::settings()['max_disk_mb'])
                                 ->required()->dehydratedWhenHidden(),
-                                "\$get('disk_choice') === 'custom'", fn (Get $get) => $get('disk_choice') === 'custom'),
+                                "\$get('disk_choice') === 'custom'", fn (Get $get) => $get('disk_choice') === 'custom', true),
                             ]),
                         ])
                         ->afterValidation(fn () => $this->prepareEgg()),

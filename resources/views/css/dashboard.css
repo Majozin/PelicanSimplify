@@ -1,3 +1,7 @@
+@font-face { font-family: "Monocraft"; src: url("monocraft-regular.woff2") format("woff2"); font-weight: 400; font-style: normal; font-display: swap; }
+@font-face { font-family: "Monocraft"; src: url("monocraft-bold.woff2") format("woff2"); font-weight: 700; font-style: normal; font-display: swap; }
+@font-face { font-family: "Monocraft"; src: url("monocraft-italic.woff2") format("woff2"); font-weight: 400; font-style: italic; font-display: swap; }
+@font-face { font-family: "Monocraft"; src: url("monocraft-bold-italic.woff2") format("woff2"); font-weight: 700; font-style: italic; font-display: swap; }
 /* Simplify dashboard layout. Colours, sizes and controls come from tokens.css and components.css;
    this file only places things. Per-server colours arrive as --ps-accent on the card or page root. */
 
@@ -45,6 +49,8 @@ body:has(.ps) :is(.fi-footer, [data-ps-footer]) {
 }
 body:has(.ps) [data-ps-footer-wrapper] { flex: none !important; min-height: 0 !important; padding: 0 !important; margin: 0 !important; background: transparent !important; }
 body:has(.ps) [data-ps-footer] > * { margin: 0 !important; padding: 0 !important; background: transparent !important; }
+/* Whatever wraps or fills the footer (render hooks, layout rows) never paints its own background. */
+body:has(.ps) :is(:has(> .fi-footer), :has(> [data-ps-footer]), :has([data-ps-footer-wrapper]):not(body), [data-ps-footer] *, .fi-footer *) { background: transparent !important; background-image: none !important; box-shadow: none !important; }
 body:has(.ps) [data-ps-copyright-line] { display: block; width: auto; overflow-wrap: anywhere; }
 body:has(.ps) [data-ps-copyright-line] > * { display: inline; }
 .ps-project-link, .ps-project-link:visited, .ps-project-link:hover { color: inherit; text-decoration: underline; text-underline-offset: 2px; }
@@ -64,8 +70,7 @@ body:has(.ps) [data-ps-copyright-line] > * { display: inline; }
 .ps-identity { min-width: 0; }
 .ps h1 { font-size: 25px; font-weight: 750; line-height: 1.25; letter-spacing: -.8px; overflow-wrap: anywhere; }
 .ps-identity small { display: block; margin-top: 5px; color: var(--ps-muted); font-size: 10px; }
-.ps-panel-name { background: linear-gradient(110deg, var(--ps-ink) 8%, var(--ps-brand, #2563eb) 95%); background-clip: text; -webkit-background-clip: text; color: transparent; }
-.ps.dark .ps-panel-name { --ps-brand: #60a5fa; }
+.ps-panel-name { background: linear-gradient(110deg, var(--ps-ink) 8%, var(--ps-brand, var(--ps-accent)) 95%); background-clip: text; -webkit-background-clip: text; color: transparent; }
 .ps-title-pelican { color: var(--ps-muted); }
 .ps-top-actions { position: relative; display: flex; align-items: center; gap: 6px; }
 .ps-nav-items { display: flex; align-items: center; gap: 6px; flex-wrap: nowrap; }
@@ -114,8 +119,9 @@ body:has(.ps) [data-ps-copyright-line] > * { display: inline; }
 .ps-server-card.locked > .ps-server-open { opacity: .62; }
 .ps-card-background { position: absolute; inset: 0 0 0 auto; z-index: -1; width: 80%; height: 100%; object-fit: cover; opacity: .27; filter: blur(1.5px); pointer-events: none; mask-image: linear-gradient(to left, #000, transparent 95%); transition: transform var(--ps-slow); }
 .ps.dark .ps-card-background { opacity: .32; }
-.ps-offline-artwork { position: absolute; inset: 0; z-index: -1; background: linear-gradient(135deg, var(--ps-raised), var(--ps-line)); color: var(--ps-muted); pointer-events: none; mask-image: linear-gradient(to right, transparent 55%, #000 78%); transition: transform var(--ps-slow); }
-.ps-offline-artwork svg { position: absolute; top: 50%; right: -13%; width: auto; height: 70%; aspect-ratio: 1; fill: currentColor; stroke: none; opacity: .35; transform: translateY(-50%); }
+.ps-offline-artwork { position: absolute; inset: 0 0 0 auto; z-index: -1; width: 80%; color: var(--ps-muted); opacity: .27; filter: blur(1.5px); pointer-events: none; mask-image: linear-gradient(to left, #000, transparent 95%); transition: transform var(--ps-slow); }
+.ps.dark .ps-offline-artwork { opacity: .32; }
+.ps-offline-artwork svg { position: absolute; top: 50%; right: -10%; width: auto; height: 80%; aspect-ratio: 1; fill: currentColor; stroke: none; transform: translateY(-50%); }
 .ps-server-open { display: flex; flex-direction: column; width: 100%; height: 320px; padding: 18px; border: 0; background: transparent; color: var(--ps-ink); text-align: left; transition: padding var(--ps-slow); }
 .ps-server-open:disabled { cursor: default; }
 .ps-server-open:focus-visible { outline: 2px solid var(--ps-accent); outline-offset: -4px; border-radius: var(--ps-radius-lg); }
@@ -125,21 +131,34 @@ body:has(.ps) [data-ps-copyright-line] > * { display: inline; }
 .ps-server-grid.no-metrics.no-quick-actions .ps-server-open { height: 200px; }
 .ps-server-grid.no-metrics.no-quick-actions.has-motd .ps-server-open { height: 260px; }
 .ps-card-head { display: flex; flex: none; align-items: flex-start; justify-content: space-between; min-height: 44px; margin-bottom: 18px; transition: margin var(--ps-slow); }
-.ps-card-icons { display: inline-flex; align-items: center; gap: 8px; flex: none; }
-.ps-card-icon { display: grid; place-items: center; width: 48px; height: 48px; overflow: hidden; border-radius: 11px; background: color-mix(in srgb, var(--ps-accent) 12%, transparent); color: var(--ps-accent); }
+/* Server and egg icons keep fixed slots; "Egg icon" swaps their place and size with a short animation. */
+.ps-card-icons {
+  --ps-icon-big: 48px;
+  --ps-icon-small: 28px;
+  --ps-icon-gap: 8px;
+  --ps-icon-small-x: calc(var(--ps-icon-big) + var(--ps-icon-gap));
+  --ps-icon-small-y: calc((var(--ps-icon-big) - var(--ps-icon-small)) / 2);
+  position: relative;
+  display: block;
+  flex: none;
+  width: calc(var(--ps-icon-big) + var(--ps-icon-gap) + var(--ps-icon-small));
+  height: var(--ps-icon-big);
+}
+.ps-card-icon, .ps-card-egg-icon { position: absolute; top: 0; left: 0; display: grid; place-items: center; width: var(--ps-icon-big); height: var(--ps-icon-big); overflow: hidden; border-radius: 11px; transition: left var(--ps-slow), top var(--ps-slow), width var(--ps-slow), height var(--ps-slow), border-radius var(--ps-slow); }
+.ps-card-icons:not(.egg-primary) .ps-card-egg-icon,
+.ps-card-icons.egg-primary .ps-card-icon { top: var(--ps-icon-small-y); left: var(--ps-icon-small-x); width: var(--ps-icon-small); height: var(--ps-icon-small); border-radius: var(--ps-radius-sm); }
+.ps-card-icon { background: color-mix(in srgb, var(--ps-accent) 12%, transparent); color: var(--ps-accent); }
 .ps-card-icon img { display: block; width: 100%; height: 100%; object-fit: cover; image-rendering: pixelated; }
-.ps-card-icon svg { width: 30px; height: 30px; }
-.ps-card-egg-icon { display: grid; place-items: center; flex: none; width: 28px; height: 28px; overflow: hidden; border: 1px solid var(--ps-line); border-radius: var(--ps-radius-sm); background: var(--ps-raised); }
+.ps-card-icon svg { width: 62%; height: 62%; }
+.ps-card-egg-icon { border: 1px solid var(--ps-line); background: var(--ps-raised); }
 .ps-card-egg-icon img { width: 82%; height: 82%; object-fit: contain; }
-.ps-card-icons.egg-primary .ps-card-icon { width: 28px; height: 28px; border-radius: var(--ps-radius-sm); }
-.ps-card-icons.egg-primary .ps-card-icon svg { width: 20px; height: 20px; }
-.ps-card-icons.egg-primary .ps-card-egg-icon { order: -1; width: 48px; height: 48px; border-radius: 11px; }
+@media (prefers-reduced-motion: reduce) { .ps-card-icon, .ps-card-egg-icon { transition: none; } }
 .ps-card-badges { position: absolute; top: 12px; right: 12px; z-index: 2; display: flex; flex-direction: column; align-items: flex-end; gap: 4px; max-width: calc(100% - 112px); transition: right var(--ps-slow); }
 .ps-card-title { flex: none; min-width: 0; }
 .ps-card-title-row { display: flex; flex-direction: column; height: 48px; min-width: 0; }
 .ps-card-title-row h3,
 .ps-game-title h2 {
-  background-image: linear-gradient(115deg, color-mix(in srgb, var(--ps-accent) 75%, var(--ps-ink)), var(--ps-accent));
+  background-image: linear-gradient(115deg, var(--ps-ink) 0%, var(--ps-accent) 75%);
   background-clip: text;
   -webkit-background-clip: text;
   color: transparent;
@@ -178,7 +197,7 @@ body:has(.ps) [data-ps-copyright-line] > * { display: inline; }
   border-radius: var(--ps-radius);
   background: #202024;
   color: #aaa;
-  font: 14px/1.5 var(--ps-mono);
+  font: 14px/1.5 "Monocraft", var(--ps-mono);
   text-shadow: 1px 1px #000;
   white-space: pre-wrap;
   overflow-wrap: anywhere;
@@ -188,7 +207,7 @@ body:has(.ps) [data-ps-copyright-line] > * { display: inline; }
 
 /* Quick power controls slide in from the card edge; the card keeps its footprint. */
 .ps-overview-power-wrap { position: absolute; right: 0; bottom: 0; left: 0; z-index: 4; visibility: hidden; pointer-events: none; transform: translateY(100%); transition: transform var(--ps-slow), visibility var(--ps-slow); }
-.ps-overview-power { position: relative; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px; padding: 7px; border-top: 1px solid var(--ps-line); background: var(--ps-bg); }
+.ps-overview-power { position: relative; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px; padding: 7px; border-top: 1px solid var(--ps-line); background: var(--ps-surface); }
 .ps-overview-power > .ps-btn { width: 100%; transition: opacity var(--ps-fast), transform var(--ps-fast); }
 .ps-overview-power.is-confirming > .ps-btn { visibility: hidden; opacity: 0; transform: translateX(-20px); }
 .ps-power-confirm { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; gap: 8px; padding: 4px; background: inherit; animation: ps-modal-in .2s ease-out; }
@@ -259,9 +278,7 @@ body:has(.ps) [data-ps-copyright-line] > * { display: inline; }
 .ps-server-grid.is-list .ps-server-open { display: grid; grid-template-columns: 80px minmax(0, 1fr) minmax(100px, 240px) 140px; align-items: center; gap: 10px; height: 76px; padding: 10px 16px; }
 .ps-server-grid.is-list.has-motd .ps-server-open { height: 116px; }
 .ps-server-grid.is-list .ps-card-head { align-self: start; min-height: 48px; margin: 0; }
-.ps-server-grid.is-list .ps-card-icons { gap: 6px; }
-.ps-server-grid.is-list .ps-card-egg-icon { width: 24px; height: 24px; }
-.ps-server-grid.is-list .ps-card-icons.egg-primary .ps-card-icon { width: 24px; height: 24px; }
+.ps-server-grid.is-list .ps-card-icons { --ps-icon-small: 24px; --ps-icon-gap: 6px; }
 .ps-server-grid.is-list .ps-card-title { align-self: start; }
 .ps-server-grid.is-list .ps-card-title-row { flex-direction: row; align-items: center; gap: 8px; height: 30px; }
 .ps-server-grid.is-list .ps-card-title-row h3 { flex: 0 1 auto; width: auto; font-size: 21px; }
@@ -284,6 +301,28 @@ body:has(.ps) [data-ps-copyright-line] > * { display: inline; }
   .ps-server-grid.is-list .has-power .ps-card-badges { right: 128px; }
   .ps-server-grid.is-list .has-power .ps-card-footer { padding-right: 104px; }
 }
+/* Wide screens: one compact row. Badges sit side by side, the player count docks under them and the
+   MOTD gets its own column instead of making the row taller. */
+@media (min-width: 1051px) {
+  .ps-server-grid.is-list .ps-server-entry { position: relative; }
+  .ps-server-grid.is-list .ps-server-open { grid-template-columns: 84px minmax(0, 1fr) minmax(100px, 240px) 190px; height: 66px; padding: 8px 16px; }
+  .ps-server-grid.is-list.has-motd .ps-server-open { height: 66px; }
+  .ps-server-grid.is-list .ps-card-head { align-self: center; min-height: 0; }
+  .ps-server-grid.is-list .ps-card-title { align-self: center; }
+  .ps-server-grid.is-list .ps-server-entry.has-card-motd .ps-card-title { flex-direction: row; align-items: center; gap: 16px; }
+  .ps-server-grid.is-list .ps-server-entry.has-card-motd .ps-card-title-row { flex: 1 1 0; min-width: 0; }
+  .ps-server-grid.is-list .ps-card-motd { flex: 0 1 340px; min-width: 0; margin: 0; }
+  .ps-server-grid.is-list .ps-card-usage { align-self: center; }
+  .ps-server-grid.is-list .ps-card-mini-metric { padding: 3px 6px; }
+  .ps-server-grid.is-list .ps-card-graph { height: 18px; margin-top: 2px; }
+  .ps-server-grid.is-list .ps-card-badges { top: 9px; right: 16px; flex-direction: row; }
+  .ps-server-grid.is-list .ps-card-footer { position: absolute; right: 8px; bottom: 6px; z-index: 3; border: 0; background: transparent; }
+  .ps-server-grid.is-list .ps-list-player-count { min-height: 0; padding: 2px 8px; }
+  .ps-server-grid.is-list .has-power:is(:hover, :focus-within, .confirming-power) .ps-card-footer { padding-right: 0; right: 112px; }
+}
+@media (hover: none) and (min-width: 1051px) {
+  .ps-server-grid.is-list .has-power .ps-card-footer { padding-right: 0; right: 112px; }
+}
 @media (max-width: 1050px) {
   .ps-server-grid.is-list .ps-server-open { grid-template-columns: 80px minmax(0, 1fr) 130px; height: auto; }
   .ps-server-grid.is-list.has-motd .ps-server-open { height: auto; }
@@ -292,9 +331,7 @@ body:has(.ps) [data-ps-copyright-line] > * { display: inline; }
 @media (max-width: 700px) {
   .ps-server-grid.is-list .ps-server-open { grid-template-columns: 56px minmax(0, 1fr); padding: 12px 14px; }
   .ps-server-grid.is-list .ps-card-head { min-height: 42px; }
-  .ps-server-grid.is-list .ps-card-icon { width: 42px; height: 42px; }
-  .ps-server-grid.is-list .ps-card-egg-icon { width: 22px; height: 22px; }
-  .ps-server-grid.is-list .ps-card-icons { flex-direction: column; }
+  .ps-server-grid.is-list .ps-card-icons { --ps-icon-big: 42px; --ps-icon-small: 22px; --ps-icon-gap: 4px; --ps-icon-small-x: calc((var(--ps-icon-big) - var(--ps-icon-small)) / 2); --ps-icon-small-y: calc(var(--ps-icon-big) + var(--ps-icon-gap)); width: var(--ps-icon-big); height: calc(var(--ps-icon-big) + var(--ps-icon-gap) + var(--ps-icon-small)); }
   .ps-server-grid.is-list .ps-card-title-row { flex-direction: column; align-items: stretch; gap: 0; height: 48px; }
   .ps-server-grid.is-list .ps-card-real-name { max-width: 100%; }
   .ps-server-grid.is-list .ps-card-real-name.no-alias { display: block; }

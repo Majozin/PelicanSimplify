@@ -88,6 +88,6 @@ html.ps-frame :is(body, .fi-body) { height: 100%; margin: 0; overflow: auto; ove
 .ps-frame .fi-section { border-radius: var(--ps-radius-lg) !important; }
 
 /* Filament's own tooltips (Tippy) match .ps-tooltip. */
-:is(.ps-theme, html:has(.ssc-wizard)) .tippy-box { padding: 0; border-radius: 8px; background: var(--ps-ink) !important; color: var(--ps-surface) !important; box-shadow: var(--ps-shadow); font: 500 12px/1.4 var(--ps-font); }
+:is(.ps-theme, html:has(.ssc-wizard)) .tippy-box { padding: 0; border-radius: 8px; border: 1px solid var(--ps-contrast-line); background: var(--ps-contrast-bg) !important; color: var(--ps-contrast-ink) !important; box-shadow: var(--ps-shadow); font: 500 12px/1.4 var(--ps-font); }
 :is(.ps-theme, html:has(.ssc-wizard)) .tippy-box .tippy-content { padding: 7px 10px; }
-:is(.ps-theme, html:has(.ssc-wizard)) .tippy-box .tippy-arrow { color: var(--ps-ink) !important; }
+:is(.ps-theme, html:has(.ssc-wizard)) .tippy-box .tippy-arrow { color: var(--ps-contrast-bg) !important; }

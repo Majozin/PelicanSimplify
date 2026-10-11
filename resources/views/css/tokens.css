@@ -10,6 +10,9 @@
   --ps-muted: #666672;
   --ps-line: #dedee5;
   --ps-line-strong: #c8c8d0;
+  --ps-contrast-bg: #26262e;
+  --ps-contrast-ink: #fafafa;
+  --ps-contrast-line: transparent;
   --ps-accent: #878787;
   --ps-on-accent: #111118;
   --ps-backdrop: rgb(24 24 28 / .32);
@@ -78,6 +81,9 @@
   --ps-muted: #b0b0bb;
   --ps-line: #33333c;
   --ps-line-strong: #4a4a55;
+  --ps-contrast-bg: #2c2c34;
+  --ps-contrast-ink: #ededf2;
+  --ps-contrast-line: #45454f;
   --ps-backdrop: rgb(0 0 0 / .5);
   --ps-ok: #86cf9d;
   --ps-warn: #f3be78;

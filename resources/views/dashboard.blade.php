@@ -15,7 +15,7 @@
         <header class="ps-top">
             <div class="ps-heading">
                 <div class="ps-identity">
-                    <a :href="boot.list_url"><h1><span class="ps-panel-name" x-text="boot.panel_name || 'Pelican'"></span> <span class="ps-title-pelican">× Pelican</span></h1></a>
+                    <a :href="boot.list_url"><h1><span class="ps-panel-name" :style="brandStyle()" x-text="boot.panel_name || 'Pelican'"></span> <span class="ps-title-pelican">× Pelican</span></h1></a>
                     <small>Enhanced by <a class="ps-project-link" href="https://github.com/jerajerajerajera/PelicanSimplify" target="_blank" rel="noopener noreferrer">Simplify</a></small>
                 </div>
                 <a x-show="server" :href="boot.list_url" class="ps-btn ps-back-overview">
@@ -114,6 +114,13 @@
                                         </div>
                                     </div>
                                     <div class="ps-dropdown-section">
+                                        <span class="ps-label">Large name</span>
+                                        <div class="ps-segmented" role="group" aria-label="Large server name">
+                                            <button type="button" :aria-pressed="overviewPreferences.largeName==='alias'" x-on:click="setOverviewPreference('largeName','alias')">Alias</button>
+                                            <button type="button" :aria-pressed="overviewPreferences.largeName==='name'" x-on:click="setOverviewPreference('largeName','name')">Server name</button>
+                                        </div>
+                                    </div>
+                                    <div class="ps-dropdown-section">
                                         <span class="ps-label">Server details</span>
                                         <template x-for="option in [{key:'showMotd',label:'Minecraft MOTD'},{key:'showCpu',label:'CPU tile'},{key:'showRam',label:'RAM tile'},{key:'showQuickActions',label:'Show quick actions on server overview'},{key:'minecraftAlwaysGreen',label:'Always keep Minecraft creation green'}]" :key="option.key">
                                             <button type="button" class="ps-toggle" role="switch" :aria-checked="overviewPreferences[option.key]" x-on:click="setOverviewPreference(option.key, !overviewPreferences[option.key])">
@@ -192,12 +199,12 @@
                                             </span>
                                         </div>
                                         <div class="ps-card-title">
-                                            <div class="ps-card-title-row" x-data="{observer:null,width:0,init(){this.observer=new ResizeObserver(()=>{const w=this.$el.clientWidth;if(w!==this.width){this.width=w;this.fitCardTitle(this.$el,s.alias||s.name)}});this.observer.observe(this.$el)},destroy(){this.observer?.disconnect()}}"
-                                                 x-effect="const name=s.alias||s.name; $nextTick(()=>fitCardTitle($el,name))">
-                                                <h3 x-text="s.alias || s.name"></h3>
-                                                <small class="ps-card-real-name" :class="{'no-alias': !s.alias}" x-text="s.alias ? '('+s.name+')' : ' '"></small>
+                                            <div class="ps-card-title-row" x-data="{observer:null,width:0,init(){this.observer=new ResizeObserver(()=>{const w=this.$el.clientWidth;if(w!==this.width){this.width=w;this.fitCardTitle(this.$el,cardNames(s).large)}});this.observer.observe(this.$el)},destroy(){this.observer?.disconnect()}}"
+                                                 x-effect="const name=cardNames(s).large; $nextTick(()=>fitCardTitle($el,name))">
+                                                <h3 x-text="cardNames(s).large"></h3>
+                                                <small class="ps-card-real-name" :class="{'no-alias': !cardNames(s).small}" x-text="cardNames(s).small ? '('+cardNames(s).small+')' : ' '"></small>
                                             </div>
-                                            <div class="ps-card-motd ps-motd-display" x-show="overviewPreferences.showMotd && s.game==='minecraft' && s.motd"><template x-for="(part,index) in motdPreview(s.motd)" :key="index"><span :style="part.style" x-text="part.text"></span></template></div>
+                                            <div class="ps-card-motd ps-motd-preview ps-motd-display" x-show="overviewPreferences.showMotd && s.game==='minecraft' && s.motd"><template x-for="(part,index) in motdPreview(s.motd)" :key="index"><span :style="part.style" x-text="part.text"></span></template></div>
                                         </div>
                                         <div class="ps-card-usage" x-show="overviewMetrics().length" :class="{'single-metric': overviewMetrics().length===1}">
                                             <template x-for="metric in overviewMetrics()" :key="metric.key">

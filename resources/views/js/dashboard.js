@@ -4,7 +4,7 @@
   /** Returned by run() when an action was skipped (busy) or failed (already reported). */
   const SKIPPED = Symbol('skipped');
   const MINECRAFT_VERSION = /(?:^|[^0-9])((?:1\.[0-9]+(?:\.[0-9]+)?|2[6-9]\.[0-9]+(?:\.[0-9]+)?))(?![0-9])/;
-  const OVERVIEW_DEFAULTS = { showMotd: false, largeIcon: 'server', showCpu: true, showRam: true, showQuickActions: true, minecraftAlwaysGreen: true };
+  const OVERVIEW_DEFAULTS = { showMotd: false, largeIcon: 'server', largeName: 'alias', showCpu: true, showRam: true, showQuickActions: true, minecraftAlwaysGreen: true };
   const OVERVIEW_SWITCHES = ['showMotd', 'showCpu', 'showRam', 'showQuickActions', 'minecraftAlwaysGreen'];
   const POWER_LABELS = { start: 'Start', stop: 'Stop', restart: 'Restart', kill: 'Force stop' };
   const accentInk = (color) => {
@@ -211,6 +211,12 @@
         for (const c of String(id)) hash = Math.imul(hash ^ c.charCodeAt(0), 16777619) >>> 0;
         return { '--ps-accent': `hsl(${hash % 360} 42% ${this.themeDark ? 70 : 40}%)`, '--ps-on-accent': this.themeDark ? '#111118' : '#ffffff' };
       },
+      /** Panel name gradient: the common accent, else the page accent (blue on an uncoloured overview). */
+      brandStyle() {
+        const common = this.boot.appearance?.accent_color;
+        if (/^#[0-9a-f]{6}$/i.test(common || '')) return { '--ps-brand': common };
+        return this.server ? {} : { '--ps-brand': this.themeDark ? '#60a5fa' : '#2563eb' };
+      },
       currentAccentHex() {
         const accent = this.accentStyle(this.server?.uuid || 'overview')['--ps-accent'];
         if (/^#[0-9a-f]{6}$/i.test(accent)) return accent;
@@ -409,6 +415,11 @@
           this.overviewPowerBusy = null;
         }
       },
+      /** Large and secondary card names, following the "Large name" preference. */
+      cardNames(s) {
+        if (!s.alias) return { large: s.name, small: '' };
+        return this.overviewPreferences.largeName === 'name' ? { large: s.name, small: s.alias } : { large: s.alias, small: s.name };
+      },
       fitCardTitle(row, name) {
         const title = row.querySelector('h3');
         if (!title) return;
@@ -452,6 +463,7 @@
           if (saved && typeof saved === 'object') {
             for (const key of OVERVIEW_SWITCHES) if (typeof saved[key] === 'boolean') preferences[key] = saved[key];
             if (['server', 'egg'].includes(saved.largeIcon)) preferences.largeIcon = saved.largeIcon;
+            if (['alias', 'name'].includes(saved.largeName)) preferences.largeName = saved.largeName;
           }
         } catch {}
         this.overviewPreferences = preferences;
@@ -459,7 +471,7 @@
       setOverviewPreference(key, value) {
         if (OVERVIEW_SWITCHES.includes(key)) {
           if (typeof value !== 'boolean') return;
-        } else if (key !== 'largeIcon' || !['server', 'egg'].includes(value)) return;
+        } else if (!({ largeIcon: ['server', 'egg'], largeName: ['alias', 'name'] }[key] || []).includes(value)) return;
         this.overviewPreferences = { ...this.overviewPreferences, [key]: value };
         if (key === 'showQuickActions' && !value) this.powerConfirmation = null;
         try {

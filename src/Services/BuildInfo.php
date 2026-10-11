@@ -13,6 +13,8 @@ final class BuildInfo
         'dashboard.js' => ['js/dashboard.js'],
         'wizard.js' => ['js/wizard.js'],
     ];
+    /** Web fonts under resources/fonts (Monocraft, SIL Open Font License; see Monocraft-OFL.txt). */
+    public const FONTS = ['monocraft-regular.woff2', 'monocraft-bold.woff2', 'monocraft-italic.woff2', 'monocraft-bold-italic.woff2'];
     private static ?string $version = null;
     private static array $hashes = [];
 
