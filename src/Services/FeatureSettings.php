@@ -24,7 +24,7 @@ final class FeatureSettings
             'user_activity'=>['Activity log for users','Show recorded actions to users with activity permissions.',true,'User access'],
             'user_schedules'=>['Scheduled tasks for users','Show scheduled tasks to ordinary users with schedule permissions. Administrator managed access controls who can modify them.',false,'User access'],
             'dashboard'=>['Simplify dashboard','Replace the native server overview and console landing page with Simplify.',true,'Interface'],
-            'easy_creator'=>['Use easy server creator','Use the guided game and modpack creator. Off restores native Pelican creation for administrators.',true,'Interface'],
+            'easy_creator'=>['Use easy server creator','The guided creator for Minecraft, modpacks and other games, including self-service creation for users. Off disables it completely: servers are created with Pelican\'s native form only. Admins always have access to native creation.',true,'Interface'],
             'global_theme'=>['Shared appearance','Apply the same light or dark theme, surfaces, inputs and buttons throughout the panel and creator.',true,'Appearance'],
             'legacy_theme'=>['Style legacy workspaces','Apply the shared theme to embedded files, activity, account and advanced pages.',true,'Appearance'],
             'console_dark'=>['Always dark console','Keep the console black in both light and dark modes.',true,'Appearance'],

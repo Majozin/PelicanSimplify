@@ -183,9 +183,14 @@
                                 <span class="ps-create-plus"><svg aria-hidden="true"><use href="#ps-creeper"/></svg><span class="ps-create-add"><svg aria-hidden="true"><use href="#ps-plus"/></svg></span></span>
                                 <h3><span>Create</span><strong>Minecraft</strong><span>server</span></h3>
                             </button>
-                            <button type="button" :disabled="!canCreateGame('other')" x-on:click="openCreate('other')" class="ps-server-card ps-create-card is-other" :style="creationAccent('other')" aria-label="Create other game server with legacy creator" aria-haspopup="dialog">
+                            <button type="button" x-show="!canCreateGame('native')" :disabled="!canCreateGame('other')" x-on:click="openCreate('other')" class="ps-server-card ps-create-card is-other" :style="creationAccent('other')" aria-label="Create other game server with legacy creator" aria-haspopup="dialog">
                                 <span class="ps-create-plus"><svg aria-hidden="true"><use href="#ps-gamepad"/></svg><span class="ps-create-add"><svg aria-hidden="true"><use href="#ps-plus"/></svg></span></span>
                                 <h3><span>Create</span><strong>Other game</strong><span>server</span></h3>
+                            </button>
+                            {{-- Easy creator off: one tile for Pelican's native creation (administrators). --}}
+                            <button type="button" x-show="canCreateGame('native')" x-on:click="openCreate('native')" class="ps-server-card ps-create-card is-native" :style="creationAccent('native')" aria-label="Create server with Pelican's creator" aria-haspopup="dialog">
+                                <span class="ps-create-plus"><svg aria-hidden="true"><use href="#ps-host"/></svg><span class="ps-create-add"><svg aria-hidden="true"><use href="#ps-plus"/></svg></span></span>
+                                <h3><span>Create</span><strong>New</strong><span>server</span></h3>
                             </button>
                         </div>
                         <template x-for="s in visibleServers()" :key="s.uuid">
@@ -495,7 +500,7 @@
                 <div x-show="loading" class="ps-modal-loading" role="status"><span class="ps-spinner"></span><span>Loading your workspace…</span></div>
 
                 <template x-if="modal==='create'">
-                    <iframe :data-ps-frame="createGame==='other' ? 'native' : 'create'" :data-ps-accent="currentAccentHex()" :src="createFrameUrl()" title="Create server" x-on:load="createFrameLoaded($el)"></iframe>
+                    <iframe :data-ps-frame="createGame==='minecraft' ? 'create' : 'native'" :data-ps-accent="currentAccentHex()" :src="createFrameUrl()" title="Create server" x-on:load="createFrameLoaded($el)"></iframe>
                 </template>
                 <template x-if="modal==='panel-settings'">
                     <iframe data-ps-frame="settings" :data-ps-accent="currentAccentHex()" :src="panelSettingsUrl()" title="Simplify settings" x-on:load="panelSettingsLoaded($el)"></iframe>

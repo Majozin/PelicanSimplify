@@ -1,5 +1,8 @@
 # Changes
 
+## 0.3.0-beta.4
+- "Use easy server creator" off now disables the whole guided creator (Minecraft, modpacks, other games and user self-service). The overview shows one "Create server" tile that opens Pelican's native creation; admins always have access to native creation.
+
 ## 0.3.0-beta.3
 - Fix Next in the server creator for real (verified on Pelican 1.0.0-beta38 / Filament 5 / Livewire 4): the hidden allocation field lost its options on single-node panels, and the draft step watcher lost track when Livewire 4 re-rendered the wizard.
 - Embedded pages no longer flip the dashboard to light mode (Filament's start-up theme event is ignored).

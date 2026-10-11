@@ -19,7 +19,7 @@ final class Extensions
     public static function createGames(): array
     {
         if(!self::canCreate())return [];
-        if(!FeatureSettings::enabled('easy_creator'))return ['minecraft','other'];
+        if(!FeatureSettings::enabled('easy_creator'))return ['native'];
         return !CreatorAccess::admin()&&!CreatorAccess::settings()['minecraft_enabled']?['other']:['minecraft','other'];
     }
     public static function createUrl(): string

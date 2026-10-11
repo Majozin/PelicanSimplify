@@ -675,17 +675,18 @@
         }
       },
       createFrameUrl() {
-        const url = this.frameUrl(this.createGame === 'other' ? this.boot.legacy_create_url : this.boot.create_url);
+        const url = this.frameUrl(this.createGame === 'minecraft' ? this.boot.create_url : this.boot.legacy_create_url);
         if (!url) return '';
         const target = new URL(url);
-        target.searchParams.set('game', this.createGame);
+        if (this.createGame !== 'native') target.searchParams.set('game', this.createGame);
         return target.href;
       },
       canCreateGame(game) {
-        return !!this.boot.can_create && (game !== 'other' || !!this.boot.legacy_create_url) && ['minecraft', 'other'].includes(game) && (this.boot.create_games || ['minecraft', 'other']).includes(game);
+        // 'native' is the only choice when the easy creator is off (Pelican's own form, administrators).
+        return !!this.boot.can_create && (game === 'minecraft' || !!this.boot.legacy_create_url) && ['minecraft', 'other', 'native'].includes(game) && (this.boot.create_games || ['minecraft', 'other']).includes(game);
       },
       openCreate(game = 'minecraft') {
-        if (!['minecraft', 'other'].includes(game) || this.busy || this.server || !this.canCreateGame(game)) return;
+        if (!['minecraft', 'other', 'native'].includes(game) || this.busy || this.server || !this.canCreateGame(game)) return;
         this.createGame = game;
         this.openPopup('create');
       },
@@ -705,7 +706,7 @@
         try {
           const current = new URL(frame.contentWindow.location.href, location.origin);
           const list = new URL(this.boot.list_url, location.origin);
-          const creator = new URL(this.createGame === 'other' ? this.boot.legacy_create_url : this.boot.create_url, location.origin);
+          const creator = new URL(this.createGame === 'minecraft' ? this.boot.create_url : this.boot.legacy_create_url, location.origin);
           if (current.origin === location.origin) {
             completed = current.pathname === list.pathname && /^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/i.test(current.searchParams.get('server') || '');
             if (completed) createdUrl = current.href;
@@ -729,7 +730,7 @@
           this.toast('Server created. Installation has started.', 'ok');
           return;
         }
-        this.styleFrame(frame, this.createGame === 'other' ? 'native' : 'create');
+        this.styleFrame(frame, this.createGame === 'minecraft' ? 'create' : 'native');
       },
       panelSettingsUrl() {
         const url = this.frameUrl(this.boot.settings_url);
@@ -962,7 +963,7 @@
         if (this.modal === 'alias') return 'Change server alias';
         if (this.modal === 'background') return 'Server background';
         if (this.modal === 'panel-settings') return this.settingsSection === 'banners' ? 'Server banners' : 'Simplify settings';
-        if (this.modal === 'create') return this.createGame === 'other' ? 'Create other game server' : 'Create Minecraft server';
+        if (this.modal === 'create') return { other: 'Create other game server', native: 'Create server' }[this.createGame] || 'Create Minecraft server';
         if (this.modal === 'account') return 'Profile';
         const widget = this.widgets.find((w) => w.key === this.modal);
         return (widget ? this.widgetTitle(widget) : null) || (this.modal === 'restart' ? 'Schedule restart' : 'Workspace');
