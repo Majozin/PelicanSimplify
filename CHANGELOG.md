@@ -1,5 +1,9 @@
 # Changes
 
+## 0.3.0-beta.18
+- Notification links stay in Simplify: admin pages (such as Plugins) open in the Simplify popup without leaving or reloading the dashboard, also from the drop-down notice and the "Simplify is available" item.
+- Plugin update, install and uninstall results carry an "Open plugins" link.
+
 ## 0.3.0-beta.17
 - Much faster Simplify updates: the install step skips Pelican's panel-wide `yarn install` and `yarn build` (minutes on a small server). Simplify ships its own compiled CSS and JS; other plugins still get the full build.
 

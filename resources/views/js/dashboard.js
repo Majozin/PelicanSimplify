@@ -447,6 +447,31 @@
           this.showIncomingNotice();
         }, 450);
       },
+      /** Notification links stay in Simplify: admin pages open in the popup, Simplify links without a reload. */
+      followNotice(event, notice) {
+        const action = notice?.action;
+        if (!action) return;
+        if (notice.pelican) this.markPanelNoticesRead([notice.key]);
+        if (action.run) {
+          event.preventDefault();
+          this.notifyMenu = false;
+          return action.run();
+        }
+        let url;
+        try {
+          url = new URL(action.url, location.origin);
+        } catch {
+          return;
+        }
+        if (url.origin !== location.origin) return;
+        const admin = url.pathname.startsWith('/admin') ? url.pathname : url.searchParams.get('admin');
+        if (!admin || !admin.startsWith('/') || !this.adminPages().length) return;
+        event.preventDefault();
+        this.notifyMenu = false;
+        this.incomingShown = false;
+        const known = this.hostSections().flatMap((section) => section.pages).find((item) => new URL(item.url, location.origin).pathname === admin);
+        this.openAdminPage(known || { key: 'link', label: action.label || 'Admin', url: admin });
+      },
       async markPanelNoticesRead(keys) {
         const ids = keys.filter(Boolean);
         if (!ids.length) return;

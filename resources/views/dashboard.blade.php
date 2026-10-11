@@ -96,7 +96,7 @@
                         <small x-text="incomingNotice.text" x-show="incomingNotice.text"></small>
                         <span class="ps-notify-actions">
                             <template x-if="incomingNotice.action">
-                                <a class="ps-btn is-sm" :href="incomingNotice.action.url" x-on:click="markPanelNoticesRead([incomingNotice.key])" x-text="incomingNotice.action.label"></a>
+                                <a class="ps-btn is-sm" :href="incomingNotice.action.url" x-on:click="followNotice($event, {...incomingNotice, pelican: true})" x-text="incomingNotice.action.label"></a>
                             </template>
                             <button type="button" class="ps-btn is-sm is-subtle" x-on:click="hideIncomingNotice()">Dismiss</button>
                         </span>
@@ -122,7 +122,7 @@
                                         <small class="ps-notify-time" x-show="item.time" x-text="item.time"></small>
                                         <span class="ps-notify-actions" x-show="item.action || item.pelican">
                                             <template x-if="item.action">
-                                                <a class="ps-btn is-sm" :href="item.action.url" x-on:click="if(item.action.run){$event.preventDefault(); notifyMenu=false; item.action.run()} else if(item.pelican){markPanelNoticesRead([item.key])}" x-text="item.action.label"></a>
+                                                <a class="ps-btn is-sm" :href="item.action.url" x-on:click="followNotice($event, item)" x-text="item.action.label"></a>
                                             </template>
                                             <button type="button" class="ps-btn is-sm is-subtle" x-show="item.pelican" x-on:click="markPanelNoticesRead([item.key])">Mark read</button>
                                         </span>

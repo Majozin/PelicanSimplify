@@ -228,6 +228,7 @@ final class PluginUpdater
             $users = $userId ? \App\Models\User::query()->whereKey($userId)->get() : \App\Models\User::query()->get()->filter(fn ($user) => $user->isRootAdmin());
             $notification = \Filament\Notifications\Notification::make()->title($result['ok'] ? $titles[0] : $titles[1])->body($result['message']);
             $result['ok'] ? $notification->success() : $notification->danger();
+            if (FeatureSettings::enabled('plugin_manager')) $notification->actions([\Filament\Actions\Action::make('open')->label('Open plugins')->url(\Simplify\Panel\Filament\Admin\Pages\ManagePlugins::getUrl(panel: 'admin'))]);
             // Delivered right away: the result must arrive even when the queue worker is busy or down.
             foreach ($users as $user) $user->notifyNow($notification->toDatabase());
         } catch (\Throwable $exception) {
