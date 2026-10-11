@@ -40,6 +40,18 @@ class SimplifySettings extends Page implements HasForms
     public array $requirements = [];
     public bool $setupStarted = false;
     public bool $showDiagnostics = false;
+    #[\Livewire\Attributes\Locked] public bool $embedded = false;
+    public function bannerLibrary(): array
+    {
+        abort_unless(static::canAccess(),403);
+        return \Simplify\Panel\Services\ServerBanners::entries();
+    }
+    public function deleteBanner(string $id): void
+    {
+        abort_unless(static::canAccess(),403);
+        \Simplify\Panel\Services\ServerBanners::delete($id);
+        Notification::make()->success()->title('Banner removed')->send();
+    }
     public function refreshRequirements(): void
     {
         abort_unless(static::canAccess(), 403);
@@ -82,6 +94,7 @@ class SimplifySettings extends Page implements HasForms
     public function mount(): void
     {
         abort_unless(static::canAccess(), 403);
+        $this->embedded = request()->boolean('simplify_embed');
         $this->form->fill([...CreatorAccess::settings(),'creation_defaults'=>\Simplify\Panel\Services\CreationDefaults::all(),'appearance'=>AppearanceSettings::all(),'features'=>\Simplify\Panel\Services\FeatureSettings::all(),'web'=>\Simplify\Panel\Services\Extensions::webInstalled()?app('simplify.web')->options():[]]);
     }
     public function form(Schema $schema): Schema

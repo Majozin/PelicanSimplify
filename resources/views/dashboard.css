@@ -1064,3 +1064,16 @@ body:has(.ps:not(.server-active)) .fi-main-ctn { height:auto!important;overflow:
 /* Creator choices stay put; their internal reveal belongs to one button only. */
 .ps .ps-create-tiles .ps-create-card{transform:none!important;contain:layout;}
 .ps .ps-create-tiles .ps-create-card:hover{transform:none!important;box-shadow:none;}
+
+/* Let content determine height. The outer content area is the only vertical scroller. */
+.ps .ps-modal-layer,.ps.server-active .ps-modal-layer,.ps.server-active.console-closed .ps-modal-layer{inset:0!important;margin:0!important;padding:clamp(8px,2vw,20px)!important;align-items:center!important;overflow:hidden!important}
+.ps .ps-modal,.ps .ps-modal.is-create,.ps .ps-modal.is-native{width:min(100%,1100px);height:auto!important;max-height:calc(100dvh - 40px)!important;margin:0!important;min-height:0;box-sizing:border-box}
+.ps .ps-modal>header{flex:none;padding:16px 20px}
+.ps .ps-modal .ps-modal-content{flex:0 1 auto!important;min-height:0!important;overflow:auto!important;overscroll-behavior:contain;scrollbar-gutter:auto;padding:20px}
+.ps .ps-modal.is-create .ps-modal-content{padding:0!important}
+.ps .ps-modal .ps-iframe-wrap{display:block!important;flex:none!important;min-height:0!important}
+.ps .ps-modal iframe{display:block;flex:none!important;min-height:0!important;max-width:100%;width:100%;height:auto;border:0;border-radius:0;background:var(--surface)}
+.ps .ps-modal>footer{display:none}
+.ps-uploaded-banner{display:flex;flex-direction:column;gap:8px;min-width:0}
+.ps-uploaded-banner>.ps-button{align-self:flex-start}
+@media(max-width:600px){.ps .ps-modal,.ps .ps-modal.is-create,.ps .ps-modal.is-native{max-height:calc(100dvh - 16px)!important}.ps .ps-modal>header{padding:14px}.ps .ps-modal .ps-modal-content{padding:14px}}

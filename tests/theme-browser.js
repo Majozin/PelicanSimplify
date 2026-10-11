@@ -32,6 +32,21 @@ const html=`<!doctype html><html><head><link rel="stylesheet" href="/global.css"
   const before=await snapshot();await choices.nth(0).hover();await hoverPage.waitForTimeout(350);const hovered=await snapshot();
   assert.equal(hovered[0].transform,'none');assert.equal(hovered[0].width,before[0].width);assert.equal(hovered[0].height,before[0].height);assert.deepEqual(hovered[1],before[1]);
   await hoverPage.locator('article').hover();await hoverPage.waitForTimeout(250);assert.notEqual(await hoverPage.locator('article').evaluate(el=>getComputedStyle(el).transform),'none');await hoverPage.close();
+  const popup=await browser.newPage({viewport:{width:1200,height:900}});
+  await popup.goto('http://127.0.0.1:'+server.address().port);await popup.waitForLoadState('networkidle');
+  await popup.addStyleTag({content:fs.readFileSync(root+'dashboard.css','utf8')});
+  await popup.addScriptTag({content:fs.readFileSync(root+'dashboard.js','utf8')});
+  await popup.evaluate(()=>{document.body.innerHTML='<main class="ps"><div class="ps-modal-layer is-create"><section class="ps-modal is-create is-native"><header><h2>Settings</h2><button class="ps-close">×</button></header><div class="ps-modal-content"><iframe src="/child" title="Test workspace"></iframe></div></section></div></main>';});
+  const embedded=popup.frames().find(f=>f.parentFrame());await embedded.waitForSelector('.ps-settings-page');
+  await popup.evaluate(()=>{const frame=document.querySelector('iframe');const workspace=pelicanSimplify({},{});workspace.$root=document.querySelector('.ps');workspace.styleFrame(frame,'settings');window.testWorkspace=workspace;});
+  await popup.waitForTimeout(150);
+  const geometry=()=>popup.evaluate(()=>{const iframe=document.querySelector('iframe'),content=document.querySelector('.ps-modal-content'),modal=document.querySelector('.ps-modal');return {scroll:content.scrollHeight>content.clientHeight+1,innerScroll:iframe.contentDocument.body.scrollHeight>iframe.clientHeight+1,width:modal.getBoundingClientRect().width,height:modal.getBoundingClientRect().height};});
+  assert.equal((await geometry()).scroll,false);assert.equal((await geometry()).innerScroll,false);
+  await embedded.evaluate(()=>{document.querySelector('.ps-settings-page').style.height='1600px';});await popup.waitForTimeout(150);
+  assert.equal((await geometry()).scroll,true);assert.equal((await geometry()).innerScroll,false);
+  await popup.setViewportSize({width:390,height:844});await popup.waitForTimeout(150);const mobile=await geometry();assert(mobile.width<=390&&mobile.height<=828);assert.equal(mobile.innerScroll,false);
+  await popup.evaluate(()=>testWorkspace.releaseCreatorFrame());await popup.close();
+  const markup=fs.readFileSync(root+'dashboard.blade.php','utf8');assert(!markup.includes('keydown.escape.window="close()"'));assert(!markup.includes('click.self='));assert.equal((markup.match(/x-on:click="close\(\)"/g)||[]).length,1);
   console.log('PASS shared dark/light controls, creator and native frames, black console, persistence, legacy opt-out, adaptive console and mobile theme');
  }finally{await browser.close();await new Promise(resolve=>server.close(resolve));}
 })().catch(e=>{console.error(e);process.exit(1)});

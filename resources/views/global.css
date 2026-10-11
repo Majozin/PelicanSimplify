@@ -113,3 +113,21 @@ html.ps-theme.dark{color-scheme:dark}
 .ps-frame .fi-header,.ps-frame .fi-main-ctn>footer{display:none!important}
 .ps-frame[data-ps-frame="settings"] .ps-settings-page{padding:20px;box-sizing:border-box}
 @media(max-width:600px){.ps-frame[data-ps-frame="settings"] .ps-settings-page{padding:14px}}
+/* Remove the native shell around embedded content, including simple account layouts. */
+html.ps-frame,html.ps-frame body{overflow:hidden!important;min-height:0!important;height:auto!important;width:100%!important;max-width:100%!important}
+.ps-frame :is(.fi-layout,.fi-main-ctn,.fi-main,.fi-page,.fi-page-main,.fi-page-content,.fi-simple-layout,.fi-simple-main-ctn,.fi-simple-main){box-sizing:border-box!important;min-width:0!important;min-height:0!important;height:auto!important;max-width:none!important;width:100%!important;margin:0!important;padding:0!important;flex:initial!important;gap:0!important}
+.ps-frame .fi-layout-sidebar-toggle-btn-ctn,.ps-frame .fi-sidebar-close-overlay,.ps-frame .fi-footer{display:none!important}
+.ps-frame :is(.fi-simple-layout,.fi-simple-main-ctn){align-items:stretch!important;justify-content:flex-start!important}
+.ps-frame[data-ps-frame="native"] .fi-page,.ps-frame[data-ps-frame="account"] .fi-simple-main{padding:16px!important}
+.ps-banner-library{margin-top:32px;color:var(--ps-ink)}
+.ps-banner-library header{margin-bottom:20px}
+.ps-banner-library h2{font-size:20px;font-weight:650;margin:0 0 8px}
+.ps-banner-library header p{font-size:13px;line-height:1.5;color:var(--ps-muted)}
+.ps-banner-library h3{font-size:14px;font-weight:600;margin:24px 0 12px}
+.ps-banner-library-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,180px),1fr));gap:14px}
+.ps-banner-library-grid article{border:1px solid var(--ps-line);border-radius:12px;background:var(--ps-surface);overflow:hidden;min-width:0}
+.ps-banner-library-grid img{display:block;width:100%;aspect-ratio:16/9;object-fit:cover}
+.ps-banner-library-grid article>div{padding:12px;display:grid;gap:6px}
+.ps-banner-library-grid strong{font-size:13px;overflow-wrap:anywhere}
+.ps-banner-library-grid small,.ps-banner-empty{font-size:12px;color:var(--ps-muted)}
+.ps-banner-library-grid button{justify-self:start;margin-top:6px;color:#dc6b35;font-size:12px;font-weight:600;cursor:pointer}

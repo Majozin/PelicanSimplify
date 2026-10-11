@@ -31,6 +31,7 @@ final class Dashboard extends Page
     protected string $view='pelican-simplify::dashboard';
     #[Locked] public ?string $serverUuid=null;
     public $iconUpload=null;
+    public $bannerUpload=null;
     public function boot(): void { app()->setLocale('en'); }
     public function mount(): void
     {
@@ -42,9 +43,9 @@ final class Dashboard extends Page
     {
         $admin=user()->canAccessPanel(\Filament\Facades\Filament::getPanel('admin'));
         $base=['build_version'=>\Simplify\Panel\Services\BuildInfo::version(),'admin_url'=>$admin?\Filament\Facades\Filament::getPanel('admin')->getUrl():(\Simplify\Panel\Services\FeatureSettings::enabled('user_legacy')?route('filament.app.resources.servers.index',['simplify_legacy'=>1]):null),
-            'create_url'=>Extensions::createUrl(),'can_create'=>Extensions::canCreate(),'create_games'=>Extensions::createGames(),'web'=>Extensions::web(),
+            'legacy_create_url'=>\App\Filament\Admin\Resources\Servers\ServerResource::canCreate()?\App\Filament\Admin\Resources\Servers\ServerResource::getUrl('create',panel:'admin'):null,'create_url'=>Extensions::createUrl(),'can_create'=>Extensions::canCreate(),'create_games'=>Extensions::createGames(),'web'=>Extensions::web(),
             'native_list_url'=>\Filament\Facades\Filament::getPanel('app')->getUrl(),
-            'profile_url'=>\App\Filament\Pages\Auth\EditProfile::getUrl(panel:'app'),'appearance'=>\Simplify\Panel\Services\AppearanceSettings::all(),'panel_name'=>(string)config('app.name','Pelican'),'features'=>array_replace(\Simplify\Panel\Services\FeatureSettings::all(),array_combine(['settings','files','players','backups','packages','software','resources','advanced','activity','schedules'],array_map(fn($key)=>Access::feature($key),['settings','files','players','backups','packages','software','resources','advanced','activity','schedules']))),'settings_url'=>user()?->isRootAdmin()?\Simplify\Panel\Filament\Admin\Pages\SimplifySettings::getUrl(panel:'app'):null,'website_url'=>Extensions::webAdapter()?->url(),'list_url'=>self::getUrl(panel:'app'),'server'=>null,'servers'=>[],'user'=>user()->username,'avatar'=>user()->getFilamentAvatarUrl(),'favicon_url'=>route('simplify.favicon').'?v=0.2.0-alpha.9'];
+            'profile_url'=>\App\Filament\Pages\Auth\EditProfile::getUrl(panel:'app'),'appearance'=>\Simplify\Panel\Services\AppearanceSettings::all(),'panel_name'=>(string)config('app.name','Pelican'),'features'=>array_replace(\Simplify\Panel\Services\FeatureSettings::all(),array_combine(['settings','files','players','backups','packages','software','resources','advanced','activity','schedules'],array_map(fn($key)=>Access::feature($key),['settings','files','players','backups','packages','software','resources','advanced','activity','schedules']))),'settings_url'=>user()?->isRootAdmin()?\Simplify\Panel\Filament\Admin\Pages\SimplifySettings::getUrl(panel:'app'):null,'website_url'=>Extensions::webAdapter()?->url(),'list_url'=>self::getUrl(panel:'app'),'server'=>null,'servers'=>[],'user'=>user()->username,'avatar'=>user()->getFilamentAvatarUrl(),'favicon_url'=>route('simplify.favicon').'?v=0.2.0-alpha.10'];
         if(!$this->serverUuid){$base['servers']=$this->listing();$base['host_health']=$this->hostHealth();return$base;}
         $s=$this->server();$base['available_colors']=ServerAppearance::choices($s->uuid);$permissions=[];foreach(P::cases() as $p)$permissions[$p->value]=user()->can($p,$s);
         $meta=ManagedSettings::content($s);$mc=MinecraftStatus::get($s);
@@ -59,6 +60,7 @@ final class Dashboard extends Page
         }
         $artworkMeta=Extensions::web()?Extensions::webAdapter()->metadata($s):$meta;
         $base['background_choices']=array_map(fn($id)=>['id'=>$id,'name'=>ucfirst($id),'url'=>route('simplify.background',['id'=>$id])],array_keys(ServerArtwork::BACKGROUNDS));
+        $base['uploaded_backgrounds']=\Simplify\Panel\Services\ServerBanners::entries($s);
         $base['server']=['background_id'=>ServerArtwork::selection($s) ?? ($artworkMeta['background_id'] ?? 'auto'),'color'=>ServerAppearance::color($s),'uuid'=>$s->uuid,'short'=>$s->uuid_short,'name'=>$s->name,'address'=>$s->allocation?->address,
             'memory'=>$s->memory,'disk'=>$s->disk,'cpu'=>$s->cpu,'software'=>$s->egg?->name,'image'=>user()->can(P::StartupRead,$s)?$s->image:'Restricted','startup'=>user()->can(P::StartupRead,$s)?$s->startup:'Restricted',
             'package_kind'=>Packages::capability($s),'native_sections'=>$this->nativeSections($s),
@@ -150,6 +152,17 @@ final class Dashboard extends Page
     public function saveServerBackground(string $id): array
     {
         return ServerArtwork::save($this->server(), $id);
+    }
+    public function uploadServerBanner(): array
+    {
+        $server=$this->server();$data=\Simplify\Panel\Services\ServerBanners::upload($server,$this->bannerUpload);
+        $this->bannerUpload=null;
+        return [...ServerArtwork::save($server,$data['id']),'uploaded_backgrounds'=>\Simplify\Panel\Services\ServerBanners::entries($server)];
+    }
+    public function deleteServerBanner(string $id): array
+    {
+        $server=$this->server();\Simplify\Panel\Services\ServerBanners::delete($id,$server);
+        return ['background_id'=>ServerArtwork::selection($server)??'auto','background'=>ServerArtwork::background($server,[]),'uploaded_backgrounds'=>\Simplify\Panel\Services\ServerBanners::entries($server)];
     }
     #[Renderless]
     public function refreshInfo(): array

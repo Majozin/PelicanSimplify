@@ -1,5 +1,15 @@
 # Changes
 
+## 0.2.0-alpha.10
+
+- Reuse the outline navigation pelican in the favicon on dark gray.
+- Upload and manage server banners with validated JPG/PNG/WebP images; retain the entire bundled collection.
+- Add uploaded banner management to settings and server image pickers, with server permission checks.
+- Use content-sized embedded workspaces and one scrolling popup area; remove native shell spacing.
+- Keep popups open until their close icon is used, including after saving.
+- Style standalone settings separately from embedded settings.
+- Open Other game creation in an embedded native creator until its configurator is ready.
+
 ## 0.2.0-alpha.9
 
 - Place one Simplify return button before notifications on the legacy overview and admin topbar; keep the admin topbar visible.

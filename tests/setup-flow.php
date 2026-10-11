@@ -13,6 +13,7 @@ namespace Simplify\Panel\Services {
  class Extensions {public static function webInstalled(){return false;}}
 }
 namespace {
+ function request(){return new class{function boolean($key){return false;}};}
  require __DIR__.'/../src/Filament/Admin/Pages/SimplifySettings.php';
  function user(){return new class {function isRootAdmin(){return true;}};}
  function abort_unless($ok,$code){if(!$ok)throw new \RuntimeException((string)$code);}

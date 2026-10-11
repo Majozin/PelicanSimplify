@@ -40,6 +40,10 @@ final class ServerArtwork
         if (($meta['background_id'] ?? '') === 'none') return null;
         if(!empty($meta['screenshot_url']))return $meta['screenshot_url'];
         $id=$meta['background_id']??'auto';
+        if (str_starts_with($id,'upload-')) {
+            if (ServerBanners::belongsTo($id,$server)) return route('simplify.banner',['id'=>$id]);
+            $id='auto'; // Deleted uploads fall back to bundled artwork.
+        }
         if($id==='auto'){
             $disk=Storage::disk('local');$path='server-directory/backgrounds/'.$server->uuid.'.json';
             $raw=$disk->exists($path)?$disk->get($path):null;
@@ -60,12 +64,12 @@ final class ServerArtwork
         $path = 'simplify/backgrounds/'.$server->uuid.'.json';
         $data = $disk->exists($path) ? json_decode($disk->get($path), true) : [];
         $id = is_array($data) ? ($data['background_id'] ?? null) : null;
-        return is_string($id) && ($id === 'auto' || $id === 'none' || isset(self::BACKGROUNDS[$id])) ? $id : null;
+        return is_string($id) && ($id === 'auto' || $id === 'none' || isset(self::BACKGROUNDS[$id]) || ServerBanners::belongsTo($id,$server)) ? $id : null;
     }
     public static function save(Server $server, string $id): array
     {
         Access::permission($server, \App\Enums\SubuserPermission::SettingsRename);
-        abort_unless($id === 'auto' || $id === 'none' || isset(self::BACKGROUNDS[$id]), 422);
+        abort_unless($id === 'auto' || $id === 'none' || isset(self::BACKGROUNDS[$id]) || ServerBanners::belongsTo($id,$server), 422);
         if (!Storage::disk('local')->put('simplify/backgrounds/'.$server->uuid.'.json', json_encode(['background_id' => $id], JSON_THROW_ON_ERROR))) {
             throw new \RuntimeException('Could not save server background.');
         }

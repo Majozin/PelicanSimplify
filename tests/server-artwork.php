@@ -11,6 +11,7 @@ namespace {
  function abort_unless($ok,$code){if(!$ok)throw new \RuntimeException((string)$code);}
  function app($c){return new $c;}function route($name,$args){return '/simplify/background/'.$args['id'];}
  function check($v,$message){if(!$v)throw new \RuntimeException($message);echo "PASS $message\n";}
+ require __DIR__.'/../src/Services/ServerBanners.php';
  require __DIR__.'/../src/Services/ServerArtwork.php';
  use Simplify\Panel\Services\ServerArtwork as A;
  use App\Repositories\Daemon\DaemonFileRepository as F;
