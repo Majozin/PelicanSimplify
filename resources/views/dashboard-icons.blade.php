@@ -7,6 +7,7 @@
         <symbol id="ps-cube" viewBox="0 0 24 24"><path d="m12 3 9 5v8l-9 5-9-5V8zM3 8l9 5 9-5m-9 5v8M7 5.8l9 5"/></symbol>
         <symbol id="ps-menu" viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h16"/></symbol>
         <symbol id="ps-creeper" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="1"/><path fill="currentColor" stroke="none" d="M6 7h4v4H6zm8 0h4v4h-4zm-4 4h4v3h3v5h-3v-3h-4v3H7v-5h3z"/></symbol>
+        <symbol id="ps-simplify" viewBox="0 0 24 24"><path d="M5 20h11l3-4-5-6V6l-3-3-3 2v5l-4 5 1 5Z"/><path d="m14 6 8 3h-8M5 17l7-5 4 5M11 6h.01"/><path d="M20.40 0.30C20.40 2.75 21.35 3.70 23.80 3.70C21.35 3.70 20.40 4.65 20.40 7.10C20.40 4.65 19.45 3.70 17.00 3.70C19.45 3.70 20.40 2.75 20.40 0.30ZM23.00 6.60C23.00 7.32 23.28 7.60 24.00 7.60C23.28 7.60 23.00 7.88 23.00 8.60C23.00 7.88 22.72 7.60 22.00 7.60C22.72 7.60 23.00 7.32 23.00 6.60Z" style="fill:currentColor;stroke:none"/></symbol>
         <symbol id="ps-gear" viewBox="0 0 24 24"><path d="m9 3-.7 3-2 .9-2.7-.8-2 3.4 2.1 2v2l-2.1 2 2 3.4 2.7-.8 2 .9.7 3h4l.7-3 2-.9 2.7.8 2-3.4-2.1-2v-2l2.1-2-2-3.4-2.7.8-2-.9L13 3Z"/><circle cx="11" cy="12" r="3"/></symbol>
         <symbol id="ps-wand" viewBox="0 0 24 24"><path d="m3 21 12-12 3 3L6 24Z M12 12l3 3M18 2l.8 2.2L21 5l-2.2.8L18 8l-.8-2.2L15 5l2.2-.8ZM6 2l.6 1.4L8 4l-1.4.6L6 6l-.6-1.4L4 4l1.4-.6ZM21 15l.6 1.4L23 17l-1.4.6L21 20l-.6-2.4L19 17l1.4-.6Z"/></symbol>
         <symbol id="ps-settings" viewBox="0 0 24 24"><path d="M4 7h16M4 17h16M8 4v6m8 4v6"/><circle cx="8" cy="7" r="2"/><circle cx="16" cy="17" r="2"/></symbol>

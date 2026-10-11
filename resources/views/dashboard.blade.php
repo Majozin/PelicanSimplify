@@ -35,7 +35,7 @@
                         <svg aria-hidden="true"><use href="#ps-legacy"/></svg><span class="ps-mobile-label">Legacy panel</span>
                     </a>
                     <button type="button" x-show="boot.settings_url" x-on:click="openPanelSettings()" class="ps-btn is-icon is-subtle" data-tip="Simplify settings" aria-label="Simplify settings" aria-haspopup="dialog">
-                        <svg aria-hidden="true"><use href="#ps-gear"/></svg><span class="ps-mobile-label">Simplify settings</span>
+                        <span class="ps-settings-mark" aria-hidden="true"><svg><use href="#ps-simplify"/></svg><svg class="ps-settings-gear"><use href="#ps-gear"/></svg></span><span class="ps-mobile-label">Simplify settings</span>
                     </button>
 
                     {{-- Admin tools: Pelican admin pages Simplify does not replace, opened in a popup (admins only). --}}

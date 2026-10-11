@@ -97,10 +97,10 @@ final class PluginUpdater
                 File::put($directory.'/plugin.json', json_encode($next, JSON_THROW_ON_ERROR | JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES));
                 $to = (string) ($next['version'] ?? '?');
 
-                $install = Process::path(base_path())->timeout(1100)->run(array_values(array_filter([PHP_BINARY, 'artisan', 'simplify:plugin-install', $id, $wasEnabled ? '--enable' : null])));
+                $install = Process::path(base_path())->timeout(1100)->run(array_values(array_filter([self::php(), 'artisan', 'simplify:plugin-install', $id, $wasEnabled ? '--enable' : null])));
                 if (!$install->successful()) throw new \RuntimeException(self::output($install) ?: 'The new version could not be installed.');
                 // A second fresh process proves the panel still boots with the new code.
-                $boot = Process::path(base_path())->timeout(120)->run([PHP_BINARY, 'artisan', 'list', '--raw']);
+                $boot = Process::path(base_path())->timeout(120)->run([self::php(), 'artisan', 'list', '--raw']);
                 if (!$boot->successful()) throw new \RuntimeException('The panel does not start with the new version: '.self::output($boot));
                 $result = ['ok' => true, 'message' => $plugin->name.' updated from '.$from.' to '.$to.'.'];
             } catch (\Throwable $exception) {
@@ -149,7 +149,7 @@ final class PluginUpdater
         File::deleteDirectory($directory);
         File::copyDirectory($backup, $directory);
         try {
-            Process::path(base_path())->timeout(120)->run([PHP_BINARY, 'artisan', 'view:clear']);
+            Process::path(base_path())->timeout(120)->run([self::php(), 'artisan', 'view:clear']);
         } catch (\Throwable) {}
     }
 
@@ -175,18 +175,34 @@ final class PluginUpdater
         }
     }
 
+    /**
+     * The PHP command-line binary. Under php-fpm PHP_BINARY points at php-fpm itself, which cannot run artisan;
+     * that is why updates started from the web page failed while scheduled ones (CLI) worked.
+     */
+    private static function php(): string
+    {
+        static $binary = null;
+        if ($binary !== null) return $binary;
+        if (PHP_SAPI === 'cli' && PHP_BINARY !== '') return $binary = PHP_BINARY;
+        $found = (new \Symfony\Component\Process\PhpExecutableFinder())->find(false);
+        foreach (array_filter([$found ?: null, PHP_BINDIR.'/php', '/usr/bin/php', '/usr/local/bin/php']) as $candidate) {
+            if (is_file($candidate) && is_executable($candidate) && !str_contains(basename($candidate), 'fpm')) return $binary = $candidate;
+        }
+        return $binary = 'php';
+    }
+
     /** Installs or uninstalls a plugin in a fresh process and always reports the outcome as a notification. */
     public static function change(Plugin $plugin, string $action, ?int $userId = null): array
     {
         $label = $action === 'install' ? 'installed' : 'uninstalled';
         try {
             if ($action === 'install') {
-                $run = Process::path(base_path())->timeout(1100)->run([PHP_BINARY, 'artisan', 'simplify:plugin-install', $plugin->id, '--enable']);
+                $run = Process::path(base_path())->timeout(1100)->run([self::php(), 'artisan', 'simplify:plugin-install', $plugin->id, '--enable']);
                 if (!$run->successful()) throw new \RuntimeException(self::output($run) ?: 'The plugin could not be installed.');
             } else {
                 app(\App\Services\Helpers\PluginService::class)->uninstallPlugin($plugin);
             }
-            $boot = Process::path(base_path())->timeout(120)->run([PHP_BINARY, 'artisan', 'list', '--raw']);
+            $boot = Process::path(base_path())->timeout(120)->run([self::php(), 'artisan', 'list', '--raw']);
             if (!$boot->successful()) throw new \RuntimeException('The panel does not start with this plugin: '.(self::output($boot) ?: 'unknown error'));
             $result = ['ok' => true, 'message' => $plugin->name.' was '.$label.'. Reload the panel to see the change.'];
         } catch (\Throwable $exception) {

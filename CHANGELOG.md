@@ -1,5 +1,10 @@
 # Changes
 
+## 0.3.0-beta.21
+- Fix: updates, installs and removals started from the Plugins page ran the install step with php-fpm instead of the PHP command line (PHP_BINARY under php-fpm), so they only completed once the scheduled update took over. Simplify now finds the PHP CLI binary.
+- New Simplify icon: the pelican with one clear twinkle on its beak, in the favicon and the legacy panel navigation.
+- The Simplify settings button shows the Simplify pelican with a small gear.
+
 ## 0.3.0-beta.20
 - Other games creator: one searchable grid with the games on this panel and 170+ games from the official Pelican egg repositories (bundled index, searched in the browser), with Popular and Installed filters.
 - Picking a game that is not on the panel downloads its egg (pinned to a commit, checksum-checked) and imports it with Pelican's own importer when you continue. Administrators can always do this; other roles need the new "Install new games" ability (off by default). Root admins get a notification, and the game becomes available for self-service.

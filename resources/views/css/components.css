@@ -464,3 +464,7 @@ html:has(.ps-modal-layer[data-open="true"]), html.ps-ui-locked { overflow: hidde
 .ps-incoming-move { transition: transform .42s cubic-bezier(.2, .9, .3, 1.15), opacity .3s ease; }
 .ps-incoming.is-up { opacity: 0; transform: translateY(-14px) scaleY(.6); }
 @media (prefers-reduced-motion: reduce) { .ps-incoming-move { transition: opacity .2s ease; } .ps-incoming.is-up { transform: none; } }
+
+/* Simplify settings button: the Simplify pelican with a small gear, so it reads as Simplify's own settings. */
+.ps-settings-mark { position: relative; display: inline-grid; place-items: center; }
+.ps-settings-mark .ps-settings-gear { position: absolute; right: -6px; bottom: -5px; width: 13px !important; height: 13px !important; padding: 1px; border-radius: 50%; background: var(--ps-bg); stroke-width: 2.2; }
