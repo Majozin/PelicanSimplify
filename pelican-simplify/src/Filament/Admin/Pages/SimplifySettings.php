@@ -33,12 +33,23 @@ class SimplifySettings extends Page implements HasForms
     protected static ?string $slug = 'pelican-simplify-settings';
     protected string $view = 'pelican-simplify::admin-settings';
     public ?array $data = [];
+    public array $requirements = [];
+    public function refreshRequirements(): void
+    {
+        abort_unless(static::canAccess(), 403);
+        $this->requirements = \Simplify\Panel\Services\DependencyCheck::inspect(base_path(), plugin_path('pelican-simplify'));
+    }
+    public function requirementsReady(): bool
+    {
+        return \Simplify\Panel\Services\DependencyCheck::ready($this->requirements);
+    }
 
     public static function canAccess(): bool { return (bool) user()?->isRootAdmin(); }
     public function needsSetup(): bool { return !\Simplify\Panel\Services\FeatureSettings::enabled('setup_completed'); }
     public function mount(): void
     {
         abort_unless(static::canAccess(), 403);
+        $this->refreshRequirements();
         $this->form->fill([...CreatorAccess::settings(),'appearance'=>AppearanceSettings::all(),'features'=>\Simplify\Panel\Services\FeatureSettings::all(),'web'=>\Simplify\Panel\Services\Extensions::webInstalled()?app('simplify.web')->options():[]]);
     }
     public function form(Schema $schema): Schema
@@ -87,6 +98,11 @@ class SimplifySettings extends Page implements HasForms
     public function save(): void
     {
         abort_unless(static::canAccess(), 403);
+        $this->refreshRequirements();
+        if (!$this->requirementsReady()) {
+            Notification::make()->title('Setup blocked')->body('Fix the failed dependency checks and check again.')->danger()->send();
+            return;
+        }
         $state=$this->form->getState();
         AppearanceSettings::save($state['appearance']??[]);
         if(!empty($state['appearance']['server_uuid'])&&!empty($state['appearance']['server_color'])){

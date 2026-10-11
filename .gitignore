@@ -6,3 +6,4 @@ server-directory/
 **/config/compatibility.json
 **/config/legacy-web.json
 .env
+!dist/*.zip

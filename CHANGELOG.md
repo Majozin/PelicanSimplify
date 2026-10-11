@@ -1,6 +1,13 @@
 # Changes
 
-## 0.2.0-alpha.1
+## 0.2.0-alpha.2
+
+- Added blocking dependency checks to the native installer, migration installer and setup/settings save.
+- Validate PHP extensions, Composer/icons, Node/Yarn, actual compiled CSS/JS, storage, database/cache and queue configuration.
+- Show failed requirements with repair instructions and a Check again action.
+- Shortened the README, added highlighted features, screenshots, full feature list and AI disclosure.
+
+## 0.2.0-alpha.2
 
 - Folded the standalone creator into Simplify; removed duplicate services and game resources.
 - Added a shared feature registry, grouped settings and first-install wizard.

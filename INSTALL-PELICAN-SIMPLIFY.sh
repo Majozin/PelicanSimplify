@@ -16,6 +16,8 @@ for ID in "${PLUGINS[@]}"; do
     [[ ! -L "$PANEL/plugins/$ID" ]] || { echo "Refusing symlink: $ID" >&2; exit 1; }
     while IFS= read -r -d '' FILE; do php -l "$FILE" >/dev/null; done < <(find "$PACKAGE/$ID" -name '*.php' ! -name '*.blade.php' -print0)
 done
+# Validate as the same user that serves the panel, before replacing anything.
+sudo -u www-data php "$PACKAGE/preflight.php" "$PANEL"
 BACKUP=$(mktemp -d /var/backups/pelican-simplify-XXXXXXXX)
 AFFECTED=("${PLUGINS[@]}")
 if [[ -d "$PANEL/plugins/simple-server-creator" ]]; then

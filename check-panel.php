@@ -4,6 +4,7 @@ $marker=$argv[2]??null;
 $panel=$argv[1]??'/var/www/pelican';
 require $panel.'/vendor/autoload.php';$app=require $panel.'/bootstrap/app.php';
 $app->make(\Illuminate\Contracts\Console\Kernel::class)->bootstrap();
+\Simplify\Panel\Services\DependencyCheck::assertReady(\Simplify\Panel\Services\DependencyCheck::inspect($panel, $panel.'/plugins/pelican-simplify'));
 foreach(['Simplify\\Panel\\Filament\\App\\Pages\\Dashboard','Simplify\\Panel\\Filament\\Admin\\Pages\\SimplifySettings'] as $class){if(!class_exists($class))throw new RuntimeException('Missing class: '.$class);}
 foreach(['filament.app.pages.simple-server-creator','filament.app.pages.pelican-simplify-settings','simplify.asset'] as $route)if(!\Illuminate\Support\Facades\Route::has($route))throw new RuntimeException('Missing route: '.$route);
 if(!\Illuminate\Support\Facades\Route::has('filament.app.pages.simplify'))throw new RuntimeException('Dashboard route was not registered.');

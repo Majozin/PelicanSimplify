@@ -1,62 +1,39 @@
-# PelicanSimplify 0.2
+# PelicanSimplify
 
-Simplify combines a server dashboard and an optional easy server creator in one Pelican plugin. The separate Web extension is private and is not part of the public source package.
+![Designed by Jeroen. Coded by AI. This plugin may contain bugs or errors.](docs/ai-disclaimer.svg)
 
-**Status: 0.2.0-alpha.1. Target: Pelican 1.0.0-beta38 and PHP 8.3.** Local lint and regression checks pass. This version still requires a real Pelican/Filament/Wings integration test before a stable release. The architecture and integration layers are rewritten; working game, quota and backup algorithms from the previous version are retained as single shared implementations.
+A fresh interface for Pelican, with simpler server management and guided server creation.
 
-## Features
+**Alpha · Pelican 1.0.0-beta38 · PHP 8.3+**
 
-- One core plugin, one namespace, one shared game catalog and one set of services.
-- A first-install wizard and grouped settings in the left navigation and account menu. Only the root administrator can change installation-wide settings.
-- Friends mode: all signed-in users see server summaries, while opening and managing a server still requires ownership, assignment or administrator access. Switch it off to list only owned and assigned servers.
-- Independent user switches for legacy mode, advanced tools, software changes, resources, game settings, files, players, backups, packages, activity and schedules. Advanced, software, schedules and legacy access are off for ordinary users by default. Enabling a feature does not grant any Pelican permission.
-- Shared light/dark/system appearance for the dashboard, creator and embedded native pages. The black console can be kept in both themes or made adaptive.
-- Optional easy creation, packages, player management, resource controls, software changes, host health and automatic backups.
-- Panel name from `app.name`; bird-name examples and randomization use Pelican's `RandomWordService`. No installation-specific names, addresses or paths are included.
-- Web contributes its own settings, fields, navigation and presentation only when installed and enabled.
+## Highlighted features
 
-Appearance settings include a panel accent, a switch between uniform and separate server colors, and a server color picker. Turning separate colors off preserves each server’s saved color.
+- **UI overhaul** — a unified server overview, dashboard and live console.
+- **Guided server creation** — choose your game or modpack; Simplify selects the matching egg automatically.
+- **Friends mode** — see every server, manage only those you own or are assigned to.
+- **Make it yours** — light/dark themes and shared or individual server accent colors.
 
-## Installation and upgrade
+## Screenshots
 
-Extract the package and run:
+![Server overview](docs/screenshots/server-overview.png)
+![Server dashboard](docs/screenshots/server-dashboard.png)
+![Guided server creation](docs/screenshots/server-creator.png)
 
-```bash
-sudo bash INSTALL-PELICAN-SIMPLIFY.sh /var/www/pelican core
-```
+## Getting started
 
-The path can be changed for another installation. The installer validates checksums, preserves existing plugin configuration, saves a rollback copy and retires the former standalone `simple-server-creator` folder. Existing encrypted drafts, quota grants, appearances and metadata remain on their existing paths. A dynamic compatibility mapping preserves queued property jobs from a previous namespace.
+Download the [plugin ZIP](https://github.com/jerajerajerajera/PelicanSimplify/raw/refs/heads/main/dist/pelican-simplify-v0.2.0-alpha.2.zip), import it in **Admin → Plugins**, click **Install**, then complete the setup checks. Missing dependencies block installation or setup and show how to fix them. Node.js 22.12+ or 24+, Yarn, a running queue worker and scheduler are required.
 
-Open the panel as the root administrator and complete **Features → Access → Limits**. Settings can be changed later without reinstalling. Shared Web options appear only if the private Web extension is installed. Public downloads contain no Web folder; `all` is only valid for the private two-plugin bundle.
+For migration from the standalone creator, see [installation notes](docs/INSTALLATION.md). This alpha still needs testing on a real Pelican/Wings installation. Report problems through [Issues](https://github.com/jerajerajerajera/PelicanSimplify/issues).
 
-Rollback uses the exact backup path printed during installation:
+## Full feature list
 
-```bash
-sudo bash ROLLBACK-PELICAN-SIMPLIFY.sh /var/backups/pelican-simplify-XXXXXXXX /var/www/pelican
-```
+- **Overview:** grid/list views, game filters, saved desktop preferences, mobile list view, server status, player counts, CPU/RAM graphs and host health.
+- **Dashboard:** server banners and artwork, game/version details, live console, start/restart/stop/kill controls, resource metrics and player list.
+- **Creation:** Minecraft or other games, Vanilla/Paper/modpacks, automatic egg selection, bundled egg import, game/version selection, bird-name generator, server colors, saved drafts, resource limits and review before creation.
+- **Minecraft:** Modrinth, CurseForge, FTB and supported Technic packs; software/version changes, game settings, MOTD, whitelist, operators and player moderation.
+- **Management:** files and SFTP, mods/plugins, backup recovery points, automatic backup policies and retention, schedules, activity and advanced workspaces, subject to native Pelican permissions.
+- **Appearance:** light/dark/system theme, shared styling, optional legacy styling, always-dark or adaptive console, panel accent and separate server colors.
+- **Access:** switchable Friends mode, administrator settings, individual user-feature switches, optional self-service creation and per-user server/resource allowances.
+- **Setup:** PHP/extensions, Composer and icons, Node/Yarn, writable storage, database/cache, queue configuration and validation of compiled CSS/JavaScript; failed checks block progress and can be rerun.
 
-Pelican's existing queue worker and scheduler are required for queued settings and automatic backups. Server creation accepts the Minecraft EULA, queues settings before the first start, and leaves the server stopped.
-
-## Runtime cost
-
-Settings and plugin-state reads are request-scoped. Assignment visibility uses a database existence projection instead of a separate subuser query for each card. Hidden browser tabs skip summary refreshes; overlapping refreshes are prevented. The console retains its existing single WebSocket. Shared CSS/JS is browser-cacheable instead of embedded repeatedly, and frame resize mutations are coalesced per animation frame. Offline servers skip Minecraft TCP status probes. Maintenance reads policy and pending-work files and queries candidate servers in batches of 100 instead of loading every server and all relations at once.
-
-These are code-level reductions; no CPU, memory or latency percentage is claimed. Resource use must be measured on a real installation with a representative number of servers and viewers.
-
-## Development
-
-```bash
-bash tests/run.sh
-```
-
-PHP 8.3 and Node.js are required. Tests use explicit boundary doubles and do not create real game servers. For the optional rendered theme check:
-
-```bash
-npm ci
-npx playwright install chromium
-RUN_BROWSER_TESTS=1 bash tests/run.sh
-```
-
-`check-panel.php` also validates real plugin bootstrapping, routes and compiled Blade templates during installation. Browser appearance, native Filament form behavior, server creation and Wings operations must still be verified on the target panel.
-
-See [Pelican plugin documentation](https://pelican.dev/docs/panel/advanced/plugins/) for the native plugin installation and discovery model. Bundled game eggs retain their original upstream license and source notices.
+MIT licensed. Bundled game eggs retain their upstream licenses.
