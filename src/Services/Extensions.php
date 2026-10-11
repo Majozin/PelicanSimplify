@@ -19,17 +19,21 @@ final class Extensions
     public static function createGames(): array
     {
         if(!self::canCreate())return [];
-        if(!FeatureSettings::enabled('easy_creator'))return ['native'];
-        return !CreatorAccess::admin()&&!CreatorAccess::settings()['minecraft_enabled']?['other']:['minecraft','other'];
+        $easy=FeatureSettings::enabled('easy_creator');$games=FeatureSettings::enabled('game_creator');
+        if(!$easy&&!$games)return ['native'];
+        $minecraft=$easy&&(CreatorAccess::admin()||CreatorAccess::settings()['minecraft_enabled']);
+        // "Other game" opens the game creator, or Pelican's own form for administrators when that add-on is off.
+        $other=$games||CreatorAccess::admin();
+        return array_values(array_filter([$minecraft?'minecraft':null,$other?'other':null]));
     }
     public static function createUrl(): string
     {
-        return FeatureSettings::enabled('easy_creator')
+        return FeatureSettings::enabled('easy_creator')||FeatureSettings::enabled('game_creator')
             ?\Simplify\Panel\Filament\App\Pages\CreateServer::getUrl(panel:'app')
             :\App\Filament\Admin\Resources\Servers\ServerResource::getUrl('create',panel:'admin');
     }
     public static function canCreate(): bool
     {
-        return FeatureSettings::enabled('easy_creator')?CreatorAccess::canCreate():\App\Filament\Admin\Resources\Servers\ServerResource::canCreate();
+        return FeatureSettings::enabled('easy_creator')||FeatureSettings::enabled('game_creator')?CreatorAccess::canCreate():\App\Filament\Admin\Resources\Servers\ServerResource::canCreate();
     }
 }

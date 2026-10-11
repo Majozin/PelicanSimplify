@@ -1,5 +1,11 @@
 # Changes
 
+## 0.3.0-beta.22
+- The game creator is its own add-on: "Easy game server creator" under General → Add-ons, with its own settings tab (approved games, how installing new games works). It can be switched on and off separately from the Minecraft creator.
+- "Other game" on the dashboard now opens the game creator (it still opened Pelican's own form); with the add-on off, administrators get Pelican's form as before. Host mode and Admin tools list "Create game server" next to "Create server".
+- The creator no longer shows a redundant "Other game" choice when the game is already chosen.
+- Choosing a game that is not on the panel shows an "Installing …" screen with the steps while its egg is downloaded, checked and imported; the creator continues by itself when it is done.
+
 ## 0.3.0-beta.21
 - Fix: updates, installs and removals started from the Plugins page ran the install step with php-fpm instead of the PHP command line (PHP_BINARY under php-fpm), so they only completed once the scheduled update took over. Simplify now finds the PHP CLI binary.
 - New Simplify icon: the pelican with one clear twinkle on its beak, in the favicon and the legacy panel navigation.

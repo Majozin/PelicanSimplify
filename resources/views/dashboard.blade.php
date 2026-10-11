@@ -334,7 +334,7 @@
                                 <span class="ps-create-plus"><svg aria-hidden="true"><use href="#ps-creeper"/></svg><span class="ps-create-add"><svg aria-hidden="true"><use href="#ps-plus"/></svg></span></span>
                                 <h3><span>Create</span><strong>Minecraft</strong><span>server</span></h3>
                             </button>
-                            <button type="button" x-show="!canCreateGame('native')" :disabled="!canCreateGame('other')" x-on:click="openCreate('other')" class="ps-server-card ps-create-card is-other" :style="creationAccent('other')" aria-label="Create other game server with legacy creator" aria-haspopup="dialog">
+                            <button type="button" x-show="!canCreateGame('native')" :disabled="!canCreateGame('other')" x-on:click="openCreate('other')" class="ps-server-card ps-create-card is-other" :style="creationAccent('other')" :aria-label="boot.game_create_url ? 'Create other game server' : 'Create other game server with Pelican\'s form'" aria-haspopup="dialog">
                                 <span class="ps-create-plus"><svg aria-hidden="true"><use href="#ps-gamepad"/></svg><span class="ps-create-add"><svg aria-hidden="true"><use href="#ps-plus"/></svg></span></span>
                                 <h3><span>Create</span><strong>Other game</strong><span>server</span></h3>
                             </button>

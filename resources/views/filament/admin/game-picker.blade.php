@@ -19,7 +19,37 @@
             initials(name) { return name.replace(/[^A-Za-z0-9 ]/g, ' ').split(' ').filter(Boolean).slice(0, 2).map((w) => w[0]).join('').toUpperCase() || '?'; },
             hue(name) { let h = 0; for (const ch of name) h = (h * 31 + ch.charCodeAt(0)) % 360; return h; },
             selected() { return this.cards.find((c) => c.key === this.state) || null; },
+            installing: null,
+            phase: 0,
+            timer: null,
+            init() {
+                // Next on an index game installs its egg first: show that as its own screen until the step changes.
+                this.$root.closest('.fi-sc-wizard')?.addEventListener('click', (event) => {
+                    const button = event.target.closest('button');
+                    if (!button || !/\bnext\b/i.test(button.textContent) || !this.selected() || this.selected().installed) return;
+                    this.installing = this.selected().name;
+                    this.phase = 0;
+                    clearInterval(this.timer);
+                    this.timer = setInterval(() => this.phase = Math.min(this.phase + 1, 2), 1600);
+                }, true);
+                window.Livewire?.hook?.('commit', ({ succeed, fail }) => {
+                    if (!this.installing) return;
+                    const done = () => setTimeout(() => { clearInterval(this.timer); this.installing = null; }, 150);
+                    succeed(done);
+                    fail(done);
+                });
+            },
          }">
+        <div class="ssc-games-install" x-show="installing" x-cloak role="status" aria-live="polite">
+            <span class="ssc-games-install-spinner" aria-hidden="true"></span>
+            <strong>Installing <span x-text="installing"></span></strong>
+            <ol>
+                <li :class="{'is-done': phase > 0, 'is-now': phase === 0}">Downloading the egg from the Pelican egg index</li>
+                <li :class="{'is-done': phase > 1, 'is-now': phase === 1}">Checking it against the published checksum</li>
+                <li :class="{'is-now': phase === 2}">Adding it to this panel</li>
+            </ol>
+            <small>The creator continues by itself when the game is ready.</small>
+        </div>
         <div class="ssc-games-bar">
             <label class="ssc-games-search">
                 <x-tabler-search class="ssc-games-search-icon" />

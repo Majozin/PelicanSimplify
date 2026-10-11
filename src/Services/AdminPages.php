@@ -65,7 +65,8 @@ final class AdminPages
         if (!user()?->isAdmin()) return [];
         $items = [];
         try {
-            if (FeatureSettings::enabled('easy_creator') && Extensions::canCreate()) $items[] = ['key' => 'easycreator', 'label' => 'Create server', 'url' => Extensions::createUrl(), 'icon' => 'plus'];
+            if (FeatureSettings::enabled('easy_creator') && Extensions::canCreate()) $items[] = ['key' => 'easycreator', 'label' => 'Create server', 'url' => \Simplify\Panel\Filament\App\Pages\CreateServer::getUrl(['game' => 'minecraft'], panel: 'app'), 'icon' => 'plus'];
+            if (FeatureSettings::enabled('game_creator') && Extensions::canCreate()) $items[] = ['key' => 'gamecreator', 'label' => 'Create game server', 'url' => \Simplify\Panel\Filament\App\Pages\CreateServer::getUrl(['game' => 'other'], panel: 'app'), 'icon' => 'gamepad'];
             $plugins = \App\Filament\Admin\Resources\Plugins\PluginResource::class;
             if ($plugins::canViewAny() && FeatureSettings::enabled('legacy_pages')) $items[] = ['key' => 'legacyplugins', 'label' => 'Plugin manager (legacy)', 'url' => $plugins::getUrl('index', ['simplify_legacy' => 1], panel: 'admin'), 'icon' => 'plugins'];
         } catch (\Throwable) {

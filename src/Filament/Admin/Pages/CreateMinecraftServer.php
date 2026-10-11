@@ -170,7 +170,7 @@ class CreateMinecraftServer extends Page implements HasForms
 
     public static function canAccess(): bool
     {
-        return \Simplify\Panel\Services\FeatureSettings::enabled('easy_creator') && CreatorAccess::canCreate();
+        return (\Simplify\Panel\Services\FeatureSettings::enabled('easy_creator') || \Simplify\Panel\Services\FeatureSettings::enabled('game_creator')) && CreatorAccess::canCreate();
     }
 
     #[\Livewire\Attributes\Locked] public string $nameExample='';
@@ -214,7 +214,11 @@ class CreateMinecraftServer extends Page implements HasForms
         abort_unless(static::canAccess(), 403);
         $requestedGame=request()->query('game');
         abort_unless($requestedGame===null || in_array($requestedGame,['minecraft','other'],true),422);
-        $this->creationGame=$requestedGame??(CreatorAccess::admin() || CreatorAccess::settings()['minecraft_enabled']?'minecraft':'other');
+        $minecraftAllowed=\Simplify\Panel\Services\FeatureSettings::enabled('easy_creator');
+        $gamesAllowed=\Simplify\Panel\Services\FeatureSettings::enabled('game_creator');
+        $this->creationGame=$requestedGame??($minecraftAllowed && (CreatorAccess::admin() || CreatorAccess::settings()['minecraft_enabled'])?'minecraft':'other');
+        // Each add-on can be switched off on its own: the other creator then refuses that game.
+        abort_unless($this->creationGame==='minecraft' ? $minecraftAllowed : $gamesAllowed,403);
         abort_unless($this->creationGame!=='minecraft' || CreatorAccess::admin() || CreatorAccess::settings()['minecraft_enabled'],403);
         $game=$this->creationGame ?: (CreatorAccess::admin() || CreatorAccess::settings()['minecraft_enabled']?'minecraft':'other');
         $this->draftSession = microtime(true);
@@ -373,10 +377,10 @@ class CreateMinecraftServer extends Page implements HasForms
         return $schema
             ->statePath('data')
             ->components([
-                Hidden::make('game')->default('minecraft')->visible(fn () => $this->creationGame==='minecraft')->required()->in(['minecraft']),
+                Hidden::make('game')->default(fn () => $this->creationGame ?: 'minecraft')->visible(fn () => $this->creationGame!=='')->required()->in(fn () => [$this->creationGame ?: 'minecraft']),
                 Wizard::make([
                     ...($this->creationGame==='minecraft' ? [] : [Step::make('Game')->afterValidation(fn () => $this->installSelectedGame())->schema([
-                        Radio::make('game')->hiddenLabel()->extraAttributes(['class' => 'ssc-game-options'])
+                        Radio::make('game')->hiddenLabel()->extraAttributes(['class' => 'ssc-game-options'])->visible(fn () => $this->creationGame==='')
                             ->view('pelican-simplify::filament.admin.card-radio')
                             ->options(fn () => $this->creationGame!=='' ? [$this->creationGame=>$this->creationGame==='minecraft'?'Minecraft':'Other game'] : (CreatorAccess::admin() || CreatorAccess::settings()['minecraft_enabled']
                                 ? ['minecraft' => 'Minecraft', 'other' => 'Other game'] : ['other' => 'Other game']))

@@ -361,7 +361,7 @@
       /** Admin pages merged into a few colour-coded sections; pages from other plugins go to Extensions. */
       hostSections() {
         const plan = [
-          { key: 'servers', label: 'Servers', icon: 'host', color: '#5fb87a', pages: ['easycreator', 'eggresource', 'mountresource'] },
+          { key: 'servers', label: 'Servers', icon: 'host', color: '#5fb87a', pages: ['easycreator', 'gamecreator', 'eggresource', 'mountresource'] },
           { key: 'nodes', label: 'Nodes', icon: 'monitor', color: '#5b9cf0', pages: ['noderesource', 'backuphostresource'] },
           { key: 'people', label: 'People', icon: 'players', color: '#a78bfa', pages: ['userresource', 'roleresource'] },
           { key: 'integrations', label: 'Integrations', icon: 'database', color: '#f0a35b', pages: ['databasehostresource', 'apikeyresource', 'webhookresource'] },
@@ -874,7 +874,7 @@
         }
       },
       createFrameUrl() {
-        const url = this.frameUrl(this.createGame === 'minecraft' ? this.boot.create_url : this.boot.legacy_create_url);
+        const url = this.frameUrl(this.createGame === 'minecraft' ? this.boot.create_url : this.createGame === 'other' && this.boot.game_create_url ? this.boot.game_create_url : this.boot.legacy_create_url);
         if (!url) return '';
         const target = new URL(url);
         if (this.createGame !== 'native') target.searchParams.set('game', this.createGame);
@@ -882,7 +882,7 @@
       },
       canCreateGame(game) {
         // 'native' is the only choice when the easy creator is off (Pelican's own form, administrators).
-        return !!this.boot.can_create && (game === 'minecraft' || !!this.boot.legacy_create_url) && ['minecraft', 'other', 'native'].includes(game) && (this.boot.create_games || ['minecraft', 'other']).includes(game);
+        return !!this.boot.can_create && (game === 'minecraft' || (game === 'other' && !!this.boot.game_create_url) || !!this.boot.legacy_create_url) && ['minecraft', 'other', 'native'].includes(game) && (this.boot.create_games || ['minecraft', 'other']).includes(game);
       },
       openCreate(game = 'minecraft') {
         if (!['minecraft', 'other', 'native'].includes(game) || this.busy || this.server || !this.canCreateGame(game)) return;

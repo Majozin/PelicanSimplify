@@ -146,6 +146,7 @@ class SimplifySettings extends Page implements HasForms
     /** Optional add-ons, switched on under General → Add-ons; each keeps its own settings tab after the core categories. */
     private const ADDONS = [
         'Easy server creator' => 'tabler-server-bolt',
+        'Easy game server creator' => 'tabler-device-gamepad-2',
         'Plugin manager' => 'tabler-plug',
     ];
 
@@ -230,9 +231,8 @@ class SimplifySettings extends Page implements HasForms
                     ->schema(array_map($numberField, ['overview_seconds', 'server_seconds', 'restart_seconds', 'health_seconds'])),
             ],
             'Easy server creator' => [
-                Section::make('Self-service creation')->columns(2)->description('Where and what users may create. Who may create servers is set per role under Users & access ("Create servers").')->schema([
+                Section::make('Self-service creation')->columns(2)->description('Where users may create Minecraft servers (also used by the game creator). Who may create servers is set per role under Users & access ("Create servers").')->schema([
                     Select::make('node_ids')->label('Hosting machines')->multiple()->searchable()->options(fn () => Node::query()->pluck('name', 'id')->all())->helperText('Nodes used for self-service creation. Users do not choose ports or nodes.'),
-                    Select::make('other_egg_ids')->label('Other games')->multiple()->searchable()->options(fn () => Egg::query()->orderBy('name')->pluck('name', 'id')->all()),
                     Toggle::make('minecraft_enabled')->label('Allow Minecraft'),
                 ]),
                 Section::make('Starting resources')->description('CPU, RAM and disk for each Minecraft type. Applies to new servers within the user\'s limits; existing servers keep theirs.')
@@ -241,6 +241,13 @@ class SimplifySettings extends Page implements HasForms
                         TextInput::make('creation_defaults.'.$type.'.ram_gb')->label('RAM (GB)')->integer()->minValue(1)->maxValue(128)->required(),
                         TextInput::make('creation_defaults.'.$type.'.disk_mb')->label('Disk (MB)')->integer()->minValue(1024)->maxValue(10485760)->required(),
                     ]), ['vanilla', 'plus', 'modded'], ['Vanilla', 'Vanilla+', 'Modded / modpacks'])),
+            ],
+            'Easy game server creator' => [
+                Section::make('Games for self-service')->description('Games users may create with the game creator. Administrators can pick any game, including the 170+ games from the official Pelican egg index.')->schema([
+                    Select::make('other_egg_ids')->label('Approved games')->multiple()->searchable()->options(fn () => Egg::query()->orderBy('name')->pluck('name', 'id')->all())
+                        ->helperText('A game installed from the egg index through the creator is added here automatically.'),
+                ]),
+                Section::make('Installing new games')->description('Administrators can always install a game that is not on the panel yet: its egg is downloaded from the official Pelican egg repositories, checked and imported when they continue in the creator. To let other people do this, give their role the "Install new games" ability under Users & access. Root admins get a notification for every game installed this way.'),
             ],
             'Plugin manager' => [
                 Section::make('Plugin updates')->description('Applies to every installed plugin with a published update, Simplify included. Updates can also be started by hand from Admin tools → Plugins. Needs the plugin manager add-on.')->schema([self::featureToggle('auto_update_plugins')]),
