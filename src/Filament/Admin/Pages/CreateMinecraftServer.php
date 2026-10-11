@@ -316,7 +316,8 @@ class CreateMinecraftServer extends Page implements HasForms
 
     public function wizardStepLabels(): array
     {
-        $labels=$this->creationGame==='minecraft'?['Server Type','Version & Content','Server properties']:['Game','Server Type','Content','Server properties'];
+        // Other games have no Minecraft server properties step.
+        $labels=$this->creationGame==='minecraft'?['Server Type','Version & Content','Server properties']:['Game','Server','Game settings'];
         foreach (\Simplify\Panel\Services\Extensions::webAdapter()?->creatorSteps($this) ?? [] as $step) $labels[]=(string)($step->getLabel() ?? 'Website display');
         if (\Simplify\Panel\Services\FeatureSettings::enabled('backups')) $labels[]='Backups';
         return [...$labels,'Review'];
@@ -416,7 +417,7 @@ class CreateMinecraftServer extends Page implements HasForms
                         Hidden::make('game_egg_id'),
                     ])]),
                     Step::make('Type')
-                        ->label('Server Type')
+                        ->label(fn () => $this->creationGame === 'other' ? 'Server' : 'Server Type')
                         ->schema([
                             Radio::make('server_type')
                                 ->label('Server type')->hiddenLabel()->visible(fn (Get $get) => ($this->creationGame ?: $get('game')) === 'minecraft')
@@ -495,7 +496,7 @@ class CreateMinecraftServer extends Page implements HasForms
                             }
                         }),
                     Step::make('Content')
-                        ->label('Version & Content')
+                        ->label(fn () => $this->creationGame === 'other' ? 'Game settings' : 'Version & Content')
                         ->schema([
                             Section::make('Minecraft content')->visible(fn (Get $get) => ($this->creationGame ?: $get('game')) === 'minecraft')->schema([
                             Select::make('minecraft_version')
@@ -571,7 +572,7 @@ class CreateMinecraftServer extends Page implements HasForms
                             ]),
                         ])
                         ->afterValidation(fn () => $this->prepareEgg()),
-                    Step::make('Server properties')
+                    Step::make('Server properties')->visible(fn () => $this->creationGame !== 'other')
                         ->schema([
                             Section::make('Server properties')->visible(fn (Get $get) => ($this->creationGame ?: $get('game')) === 'minecraft')
                                 ->description('Set common Minecraft options before creation. Applied after installation; other installer settings are preserved.')

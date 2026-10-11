@@ -574,8 +574,18 @@
                 </div>
             </article>
 
+            {{-- A new or reinstalled server: nothing to click until Pelican has finished installing it. --}}
+            <div class="ps-setup-state" x-show="serverSetup()" x-cloak role="status" aria-live="polite" :class="'is-'+serverSetup()">
+                <span class="ps-setup-spinner" x-show="serverSetup()==='installing'" aria-hidden="true"></span>
+                <svg x-show="serverSetup()!=='installing'" aria-hidden="true"><use href="#ps-alert"/></svg>
+                <div>
+                    <strong x-text="serverSetup()==='installing' ? 'Setting up your server…' : serverSetup()==='restoring_backup' ? 'Restoring a backup…' : 'The installation did not finish'"></strong>
+                    <small x-text="serverSetup()==='installing' ? 'Pelican is downloading and installing the game files. This can take a few minutes, longer for big Steam games. Everything opens as soon as it is ready; the console shows the progress.' : serverSetup()==='restoring_backup' ? 'The workspaces open again when the restore is done.' : 'Check the console for the error. An administrator can reinstall the server from its settings.'"></small>
+                </div>
+            </div>
+
             <div class="ps-server-workspace">
-                <div class="ps-settings-column">
+                <div class="ps-settings-column" :inert="['installing','restoring_backup'].includes(serverSetup())" :class="{'is-locked': ['installing','restoring_backup'].includes(serverSetup())}">
                     <div class="ps-widget-grid">
                         <template x-for="widget in widgets" :key="widget.key">
                             <button type="button" class="ps-widget" :aria-label="widgetTitle(widget)+' — '+widgetDescription(widget)" x-show="showWidget(widget.key)" x-on:click="open(widget.key)">
@@ -620,7 +630,7 @@
                             </article>
                         </template>
                     </div>
-                    <div class="ps-card ps-power-tile">
+                    <div class="ps-card ps-power-tile" :inert="['installing','restoring_backup'].includes(serverSetup())" :class="{'is-locked': ['installing','restoring_backup'].includes(serverSetup())}">
                         <button type="button" class="ps-btn is-primary" x-on:click="power('start')" :disabled="busy || !server?.permissions['control.start'] || status==='running'" aria-label="Start server"><svg aria-hidden="true"><use href="#ps-play"/></svg><span>Start</span></button>
                         <button type="button" class="ps-btn" x-on:click="power('restart')" :disabled="busy || !server?.permissions['control.restart']" aria-label="Restart server"><svg aria-hidden="true"><use href="#ps-restart"/></svg><span>Restart</span></button>
                         <button type="button" class="ps-btn" x-on:click="power('stop')" :disabled="busy || !server?.permissions['control.stop'] || status==='offline'" aria-label="Stop server"><svg aria-hidden="true"><use href="#ps-stop"/></svg><span>Stop</span></button>

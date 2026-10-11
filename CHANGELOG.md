@@ -1,5 +1,10 @@
 # Changes
 
+## 0.3.0-beta.23
+- Settings page overhaul: header with the Simplify icon, version and quick actions; a two-pane layout with a calmer category menu and a separate "Add-ons" group; switches shown as setting rows (name and explanation left, switch right); quieter section cards; a floating save bar that shows "Unsaved changes".
+- Server page: while Pelican is still installing a new or reinstalled server, a clear "Setting up your server…" card is shown and workspaces and power buttons are locked; it checks every 5 seconds and unlocks with a "Your server is ready" message. A failed installation or a running backup restore is shown the same way.
+- Game creator: other games skip the (Minecraft-only) Server properties step; the steps are Game, Server and Game settings.
+
 ## 0.3.0-beta.22
 - The game creator is its own add-on: "Easy game server creator" under General → Add-ons, with its own settings tab (approved games, how installing new games works). It can be switched on and off separately from the Minecraft creator.
 - "Other game" on the dashboard now opens the game creator (it still opened Pelican's own form); with the add-on off, administrators get Pelican's form as before. Host mode and Admin tools list "Create game server" next to "Create server".

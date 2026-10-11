@@ -806,3 +806,15 @@ button.ps-package:hover { border-color: var(--ps-accent); }
   .ps-host-rail { padding: 8px; }
   .ps-host-rail .ps-health-grid { justify-content: center; padding: 6px 0 0; }
 }
+
+/* Server still being installed by Pelican. */
+.ps-setup-state { display: flex; align-items: center; gap: 16px; margin-bottom: 14px; padding: 18px 20px; border: 1px solid color-mix(in srgb, var(--ps-accent) 35%, var(--ps-line)); border-radius: var(--ps-radius-lg); background: color-mix(in srgb, var(--ps-accent) 8%, var(--ps-surface)); }
+.ps-setup-state > div { display: grid; gap: 4px; min-width: 0; }
+.ps-setup-state strong { font-size: 16px; }
+.ps-setup-state small { color: var(--ps-muted); font-size: 13px; line-height: 1.45; }
+.ps-setup-state > svg { flex: none; width: 26px; height: 26px; fill: none; stroke: var(--ps-danger); stroke-width: 1.8; }
+.ps-setup-state.is-install_failed, .ps-setup-state.is-reinstall_failed { border-color: color-mix(in srgb, var(--ps-danger) 40%, var(--ps-line)); background: color-mix(in srgb, var(--ps-danger) 7%, var(--ps-surface)); }
+.ps-setup-spinner { flex: none; width: 30px; height: 30px; border: 3px solid color-mix(in srgb, var(--ps-accent) 25%, transparent); border-top-color: var(--ps-accent); border-radius: 50%; animation: ps-setup-spin .9s linear infinite; }
+@keyframes ps-setup-spin { to { transform: rotate(360deg); } }
+.ps-settings-column.is-locked, .ps-power-tile.is-locked { opacity: .45; filter: grayscale(.4); pointer-events: none; }
+@media (prefers-reduced-motion: reduce) { .ps-setup-spinner { animation-duration: 3s; } }

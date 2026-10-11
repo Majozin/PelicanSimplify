@@ -107,11 +107,8 @@
 .ps-settings-page.is-standalone :is(.ps-settings-form, .ps-banner-library) { padding: 24px; border: 1px solid var(--ps-line); border-radius: var(--ps-radius-xl); background: var(--ps-surface); }
 .ps-settings-page.is-embedded { padding: 20px; }
 .ps-settings-form .fi-sc-tabs-tablist, .ps-settings-form .fi-tabs { flex-wrap: wrap; gap: 6px; }
-.ps-settings-page.is-standalone .fi-sc-tabs-tablist { margin-bottom: 24px; padding-bottom: 14px; border-bottom: 1px solid var(--ps-line); }
 .ps-settings-form .fi-sc-tabs { min-width: 0; }
 .ps-settings-form .ssc-progress { margin-bottom: 18px; border: 1px solid var(--ps-line); border-radius: var(--ps-radius-lg); }
-.ps-settings-actions { display: flex; justify-content: flex-end; margin-top: 24px; padding-top: 18px; border-top: 1px solid var(--ps-line); }
-.ps-settings-tools { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 32px; }
 .ps-rerun-banner { align-items: center; margin-bottom: 16px; } .ps-rerun-banner > div { flex: 1; min-width: 0; }
 .ps-setup-checks { position: relative; padding: clamp(20px, 4vw, 40px); border: 1px solid var(--ps-line); border-radius: var(--ps-radius-xl); background: var(--ps-surface); }
 .ps-diagnostics-panel { margin-top: 32px; }
@@ -237,3 +234,63 @@
 .ssc-games-empty, .ssc-games-note { margin: 0; color: var(--ps-muted); font-size: 13px; }
 .ssc-games-note { padding: 10px 12px; border-radius: var(--ps-radius); background: color-mix(in srgb, var(--ps-accent) 8%, var(--ps-raised)); color: var(--ps-ink); }
 :root.dark .ssc-game-icon { background: hsl(var(--hue) 35% 22%); color: hsl(var(--hue) 70% 80%); }
+
+/* Settings page ------------------------------------------------------------------------------- */
+.ps-settings-hero { display: flex; flex-wrap: wrap; align-items: center; gap: 14px 16px; margin-bottom: 18px; }
+.ps-settings-logo { display: grid; flex: none; place-items: center; width: 52px; height: 52px; border-radius: 15px; background: color-mix(in srgb, var(--ps-accent) 14%, var(--ps-surface)); color: var(--ps-accent); box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--ps-accent) 25%, transparent); }
+.ps-settings-logo svg { width: 30px; height: 30px; }
+.ps-settings-hero-text { flex: 1; min-width: 200px; }
+.ps-settings-hero-text h1 { margin: 0; font-size: 24px; font-weight: 750; letter-spacing: -.01em; }
+.ps-settings-hero-text p { margin: 3px 0 0; color: var(--ps-muted); font-size: 13px; }
+.ps-settings-hero-actions { display: flex; flex-wrap: wrap; gap: 8px; }
+.ps-settings-page.is-embedded .ps-settings-hero { display: none; }
+
+/* Two panes: category menu on the left, settings on the right. */
+.ps-settings-page:not(:has(.ssc-progress)) .ps-settings-form { padding: 0 !important; overflow: clip; }
+.ps-settings-tabs.fi-vertical { height: auto !important; gap: 0 !important; align-items: stretch !important; }
+.ps-settings-tabs.fi-vertical > .fi-tabs { flex: none; width: 250px; gap: 2px !important; padding: 16px 12px; border: 0 !important; border-right: 1px solid var(--ps-line) !important; border-radius: 0 !important; background: color-mix(in srgb, var(--ps-raised) 55%, var(--ps-surface)) !important; box-shadow: none !important; }
+.ps-settings-tabs .fi-tabs-item { justify-content: flex-start; gap: 10px; min-height: 42px; padding: 5px 8px !important; border-radius: var(--ps-radius) !important; color: var(--ps-ink) !important; font-weight: 600; }
+.ps-settings-tabs .fi-tabs-item > .fi-icon { box-sizing: content-box; width: 17px; height: 17px; padding: 6px; border-radius: 9px; background: var(--ps-surface); color: var(--ps-muted); box-shadow: inset 0 0 0 1px var(--ps-line); }
+.ps-settings-tabs .fi-tabs-item:hover { background: var(--ps-surface) !important; }
+.ps-settings-tabs .fi-tabs-item.fi-active { background: var(--ps-surface) !important; box-shadow: var(--ps-shadow-sm), inset 0 0 0 1px var(--ps-line); }
+.ps-settings-tabs .fi-tabs-item.fi-active > .fi-icon { background: var(--ps-accent); color: #fff; box-shadow: none; }
+.ps-settings-tabs .fi-tabs-item .fi-badge { display: none; }
+/* Add-on tabs carry a badge; the first one opens an "Add-ons" group. */
+.ps-settings-tabs .fi-tabs-item:not(:has(.fi-badge)) + .fi-tabs-item:has(.fi-badge) { margin-top: 30px; position: relative; }
+.ps-settings-tabs .fi-tabs-item:not(:has(.fi-badge)) + .fi-tabs-item:has(.fi-badge)::before { content: "Add-ons"; position: absolute; top: -22px; left: 10px; color: var(--ps-muted); font-size: 11px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; }
+.ps-settings-tabs.fi-vertical > .fi-sc-tabs-tab { flex: 1; min-width: 0; padding: 22px 26px 8px; }
+
+/* Sections: quiet cards with a clear title. */
+.ps-settings-tabs .fi-section { border-radius: var(--ps-radius-lg) !important; box-shadow: none !important; outline: 0 !important; border: 1px solid var(--ps-line) !important; background: var(--ps-surface) !important; }
+.ps-settings-tabs .fi-section + .fi-section, .ps-settings-tabs .fi-sc-component + .fi-sc-component > .fi-section { margin-top: 4px; }
+.ps-settings-tabs .fi-section-header { padding: 16px 20px 12px !important; border-bottom: 1px solid var(--ps-line); }
+.ps-settings-tabs .fi-section-header-heading { font-size: 15px !important; font-weight: 700 !important; }
+.ps-settings-tabs .fi-section-header-description { margin-top: 2px; font-size: 13px !important; }
+.ps-settings-tabs .fi-section-content-ctn { border-top: 0 !important; }
+.ps-settings-tabs .fi-section-content { padding: 6px 20px 8px !important; }
+
+/* Switches as setting rows: name and explanation on the left, switch on the right. */
+.ps-settings-tabs .fi-fo-field:has(> .fi-fo-field-label-col .fi-fo-toggle) { position: relative; display: block; padding: 12px 64px 12px 0; }
+.ps-setting-list .fi-grid-col + .fi-grid-col .fi-fo-field, .ps-setting-list .fi-sc-component + .fi-sc-component .fi-fo-field { border-top: 1px solid var(--ps-line); }
+.ps-settings-tabs .fi-fo-field:has(> .fi-fo-field-label-col .fi-fo-toggle) .fi-fo-field-label { display: block; }
+.ps-settings-tabs .fi-fo-field:has(> .fi-fo-field-label-col .fi-fo-toggle) .fi-fo-toggle { position: absolute; top: 14px; right: 0; }
+.ps-settings-tabs .fi-fo-field:has(> .fi-fo-field-label-col .fi-fo-toggle) .fi-fo-field-label-content { font-size: 14px; font-weight: 650; }
+.ps-settings-tabs .fi-fo-field:has(> .fi-fo-field-label-col .fi-fo-toggle) .fi-fo-field-content-col { margin-top: 3px; color: var(--ps-muted); font-size: 13px; line-height: 1.45; }
+.ps-setting-list .fi-section-content { row-gap: 0 !important; }
+
+/* Save bar follows the page and says when something changed. */
+.ps-settings-actions { position: sticky; bottom: 12px; z-index: 4; display: flex; align-items: center; justify-content: flex-end; gap: 14px; margin: 12px 16px 16px; padding: 10px 10px 10px 18px; border: 1px solid var(--ps-line); border-radius: 999px; background: color-mix(in srgb, var(--ps-surface) 92%, transparent); box-shadow: 0 10px 30px -14px rgb(0 0 0 / .35); backdrop-filter: blur(8px); }
+.ps-settings-actions .fi-btn { border-radius: 999px !important; }
+.ps-settings-dirty, .ps-settings-clean { margin-right: auto; font-size: 13px; font-weight: 600; }
+.ps-settings-clean { color: var(--ps-muted); font-weight: 500; }
+.ps-settings-dirty { display: inline-flex; align-items: center; gap: 8px; color: var(--ps-ink); }
+.ps-settings-dirty i { display: inline-block; flex: none; width: 8px; height: 8px; border-radius: 50%; background: var(--ps-warn); box-shadow: 0 0 0 4px color-mix(in srgb, var(--ps-warn) 22%, transparent); }
+
+@media (max-width: 900px) {
+  .ps-settings-tabs.fi-vertical { flex-direction: column !important; }
+  .ps-settings-tabs.fi-vertical > .fi-tabs { width: auto; flex-direction: row !important; flex-wrap: nowrap !important; overflow-x: auto; border-right: 0 !important; border-bottom: 1px solid var(--ps-line) !important; }
+  .ps-settings-tabs .fi-tabs-item { flex: none; }
+  .ps-settings-tabs .fi-tabs-item:not(:has(.fi-badge)) + .fi-tabs-item:has(.fi-badge) { margin-top: 0; margin-left: 14px; }
+  .ps-settings-tabs .fi-tabs-item:not(:has(.fi-badge)) + .fi-tabs-item:has(.fi-badge)::before { display: none; }
+  .ps-settings-tabs.fi-vertical > .fi-sc-tabs-tab { padding: 16px 14px 4px; }
+}

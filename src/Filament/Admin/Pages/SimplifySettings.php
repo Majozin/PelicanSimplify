@@ -36,6 +36,12 @@ class SimplifySettings extends Page implements HasForms
     public bool $useUploadedBanner = true;
     protected static ?string $navigationLabel = 'PelicanSimplify settings';
     protected static ?string $title = 'PelicanSimplify settings';
+
+    /** The page draws its own header once set up; the first setup keeps Filament's heading. */
+    public function getHeading(): string|\Illuminate\Contracts\Support\Htmlable
+    {
+        return $this->needsSetup() ? static::$title : '';
+    }
     protected static ?string $slug = 'pelican-simplify-settings';
     protected string $view = 'pelican-simplify::admin-settings';
     public static function getNavigationIcon(): \Illuminate\Contracts\Support\Htmlable
@@ -154,7 +160,7 @@ class SimplifySettings extends Page implements HasForms
     private static function featureSection(string $title, string $group, ?string $description = null): Section
     {
         $definitions = array_filter(\Simplify\Panel\Services\FeatureSettings::definitions(), fn ($item) => ($item[3] ?? 'Server features') === $group);
-        $section = Section::make($title)->columns(2)->schema(array_map(fn (array $definition, string $key) => Toggle::make('features.'.$key)->label($definition[0])->helperText($definition[1]), $definitions, array_keys($definitions)));
+        $section = Section::make($title)->extraAttributes(['class' => 'ps-setting-list'])->schema(array_map(fn (array $definition, string $key) => Toggle::make('features.'.$key)->label($definition[0])->helperText($definition[1]), $definitions, array_keys($definitions)));
         return $description ? $section->description($description) : $section;
     }
 

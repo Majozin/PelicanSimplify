@@ -75,7 +75,7 @@ final class Dashboard extends Page
             'properties'=>array_intersect_key($properties,array_flip(['motd','max-players','difficulty','gamemode','pvp','white-list','allow-flight','view-distance','spawn-protection'])),
             'properties_available'=>!ManagedSettings::minecraft($s) || !empty($properties),'pending'=>$pending?['properties'=>user()->can(P::FileReadContent,$s)?($pending['properties']??[]):[],'resources'=>$pending['resources']??[],'pending'=>true,'file_only'=>!empty($pending['file_only']),'file_changes'=>!empty($pending['file_changes']),'restart_at'=>$pending['restart_at'],'restart_requested'=>$pending['restart_requested'],'error'=>$pending['error']??null]:null,
             'pack'=>array_intersect_key($meta,array_flip(['modpack_name','modpack_version','modpack_description','modpack_icon_url','modpack_url','plugins','version','motd','icon_url'])),
-            'reported_version'=>$mc['version']??'','status'=>$s->retrieveStatus()->value,'players'=>$mc['players']??null,'max_players'=>$mc['max_players']??null,'player_names'=>$mc['names']??[],
+            'reported_version'=>$mc['version']??'','setup_state'=>$s->status?->value,'status'=>$s->retrieveStatus()->value,'players'=>$mc['players']??null,'max_players'=>$mc['max_players']??null,'player_names'=>$mc['names']??[],
             'software_icon'=>ServerArtwork::softwareIcon($s,$meta),'server_icon'=>ServerArtwork::serverIcon($s),
             'icon'=>ServerArtwork::icon($s,$meta),'background'=>ServerArtwork::background($s,$artworkMeta),'backup_options'=>AutomaticBackups::settings($s),'root_admin'=>user()->isRootAdmin(),
             'files_url'=>\App\Filament\Server\Resources\Files\FileResource::getUrl('index',panel:'server',tenant:$s),
@@ -232,7 +232,7 @@ final class Dashboard extends Page
             $p=PendingChanges::read($s);
         }
         $data=MinecraftStatus::get($s);
-        return['color'=>ServerAppearance::color($s),'name'=>$s->name,'server_icon'=>ServerArtwork::serverIcon($s),'reported_version'=>$data['version']??'','players'=>$data['players']??null,'max_players'=>$data['max_players']??null,'player_names'=>$data['names']??[],
+        return['setup_state'=>$s->fresh()?->status?->value,'color'=>ServerAppearance::color($s),'name'=>$s->name,'server_icon'=>ServerArtwork::serverIcon($s),'reported_version'=>$data['version']??'','players'=>$data['players']??null,'max_players'=>$data['max_players']??null,'player_names'=>$data['names']??[],
             'pending'=>$p?['pending'=>true,'file_only'=>!empty($p['file_only']),'file_changes'=>!empty($p['file_changes']),'restart_at'=>$p['restart_at'],'restart_requested'=>$p['restart_requested'],'error'=>$p['error']??null]:null];
     }
     #[Renderless]

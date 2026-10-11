@@ -205,10 +205,13 @@
         // A restart that is due is followed closely; otherwise the page refreshes at the normal pace.
         this.pendingTimer = setInterval(() => this.restartDue() && this.refreshServerInfo(), this.intervals.restart);
         this.refreshTimer = setInterval(() => this.modal || this.refreshServerInfo(), this.intervals.server);
+        // While Pelican installs the server, check every 5 seconds so it unlocks right away.
+        this.setupTimer = setInterval(() => this.serverSetup() === 'installing' && this.refreshServerInfo(), 5000);
       },
       stopServerTimers() {
         clearInterval(this.refreshTimer);
         clearInterval(this.pendingTimer);
+        clearInterval(this.setupTimer);
       },
       restartDue() {
         const pending = this.server?.pending;
@@ -1391,13 +1394,19 @@
         const max = Math.max(...a, 1);
         return a.map((v, i) => `${i ? 'L' : 'M'}${((i * 200) / (a.length - 1)).toFixed(1)} ${(34 - (v / max) * 30).toFixed(1)}`).join(' ');
       },
+      /** Pelican's own install state: installing, install_failed, reinstall_failed, restoring_backup or null. */
+      serverSetup() {
+        return this.server?.setup_state || null;
+      },
       async refreshServerInfo() {
         if (globalThis.document?.hidden || this.busy || this.refreshingInfo || this.destroyed) return;
         this.refreshingInfo = true;
         try {
           const info = await wire.refreshInfo();
           if (this.destroyed) return;
+          const wasSettingUp = this.serverSetup() === 'installing';
           Object.assign(this.server, info);
+          if (wasSettingUp && !this.serverSetup()) this.toast('Your server is ready.', 'ok');
           this.renderLogs();
         } catch {
         } finally {
