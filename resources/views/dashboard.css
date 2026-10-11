@@ -1231,3 +1231,6 @@ body:has(.ps:not(.server-active)) .fi-main-ctn { height:auto!important;overflow:
 .ps .ps-card-motd{max-height:4.5em;overflow:auto;overscroll-behavior:contain}
 .ps .ps-server-stage.is-list{margin-top:clamp(4px,calc(4dvh - 28px),24px)}
 @media(min-width:901px){.ps .ps-overview.is-list .ps-server-scroll{justify-content:flex-start}.ps .ps-overview.is-list .ps-server-stage{margin-block:clamp(4px,calc(4dvh - 28px),24px) 0}}
+
+.ps .ps-host-metric>.ps-network-value{white-space:normal;font-size:14px;line-height:1.5}
+@media(max-width:600px){.ps .ps-server-grid.is-list .ps-server-entry.has-power{grid-template-columns:minmax(0,1fr);grid-template-rows:auto 1fr}.ps .ps-server-grid.is-list .ps-overview-power{grid-template-columns:repeat(4,minmax(0,1fr));grid-template-rows:auto;margin:10px 0 0;height:auto;transform:none}.ps .ps-overview-power button{min-height:44px}}
