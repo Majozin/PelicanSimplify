@@ -2,7 +2,7 @@
 namespace Illuminate\Support\Facades {class Storage {public static array $records=[];public static function disk($name){return new self;}public function exists($path){return isset(self::$records[$path]);}public function get($path){return self::$records[$path];}}}
 namespace App\Models {class Server {public static array $servers=[];public function __construct(public string $uuid){}public static function query(){return new self('query');}public function get($columns){return self::$servers;}}}
 namespace {
-require __DIR__.'/../pelican-simplify/src/Services/ServerAppearance.php';
+require __DIR__.'/../src/Services/ServerAppearance.php';
 use Simplify\Panel\Services\ServerAppearance as Colors;
 use App\Models\Server;
 use Illuminate\Support\Facades\Storage;

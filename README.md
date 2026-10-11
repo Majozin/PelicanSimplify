@@ -21,7 +21,7 @@ A fresh interface for Pelican, with simpler server management and guided server 
 
 ## Getting started
 
-Download the [plugin ZIP](https://github.com/jerajerajerajera/PelicanSimplify/raw/refs/heads/main/dist/pelican-simplify-v0.2.0-alpha.2.zip), import it in **Admin → Plugins**, click **Install**, then complete the setup checks. Missing dependencies block installation or setup and show how to fix them. Node.js 22.12+ or 24+, Yarn, a running queue worker and scheduler are required.
+Download the [plugin ZIP](https://github.com/jerajerajerajera/PelicanSimplify/raw/refs/heads/main/dist/pelican-simplify-v0.2.0-alpha.3.zip), import it in **Admin → Plugins**, click **Install**, then complete the setup checks. Missing dependencies block installation or setup and show how to fix them. Node.js 22.12+ or 24+, Yarn, a running queue worker and scheduler are required.
 
 For migration from the standalone creator, see [installation notes](docs/INSTALLATION.md). This alpha still needs testing on a real Pelican/Wings installation. Report problems through [Issues](https://github.com/jerajerajerajera/PelicanSimplify/issues).
 

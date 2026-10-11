@@ -6,7 +6,7 @@ namespace App\Models {
     }
 }
 namespace {
-    require __DIR__.'/../pelican-simplify/src/Services/OverviewUsage.php';
+    require __DIR__.'/../src/Services/OverviewUsage.php';
     $s=new \App\Models\Server;
     $get=fn($status)=>\Simplify\Panel\Services\OverviewUsage::get($s,$status);
     $check=function($condition){if(!$condition)throw new \RuntimeException('Usage assertion failed');};

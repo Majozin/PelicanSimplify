@@ -13,7 +13,7 @@ namespace Simplify\Panel\Services { class FeatureSettings { public static functi
 namespace {
  function user(){return (object)['id'=>$GLOBALS['userId']];}
  function abort_unless($allowed,$status){if(!$allowed)throw new RuntimeException('403');}
- require __DIR__.'/../pelican-simplify/src/Filament/Admin/Pages/CreateMinecraftServer.php';
+ require __DIR__.'/../src/Filament/Admin/Pages/CreateMinecraftServer.php';
  class DraftPage extends \Simplify\Panel\Filament\Admin\Pages\CreateMinecraftServer { public function dispatch(...$args){} public function finish(){ $m=new ReflectionMethod(get_parent_class($this),'finishDraft');$m->invoke($this);} }
  function check($condition,$message){if(!$condition)throw new RuntimeException($message);echo 'PASS '.$message."\n";}
  $GLOBALS['userId']=7;$page=new DraftPage;$page->draftSession=microtime(true);$page->data=['name'=>'Pirate crew','game_variables'=>['PASSWORD'=>'private'],'server_icon'=>new stdClass];

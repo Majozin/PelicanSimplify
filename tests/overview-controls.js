@@ -1,6 +1,6 @@
 const fs=require('fs'),vm=require('vm'),assert=require('assert');
 const context={window:{},innerWidth:1440,URL,location:{origin:'https://panel.example'}};
-vm.createContext(context);vm.runInContext(fs.readFileSync(__dirname+'/../pelican-simplify/resources/views/dashboard.js','utf8'),context);
+vm.createContext(context);vm.runInContext(fs.readFileSync(__dirname+'/../resources/views/dashboard.js','utf8'),context);
 (async()=>{
  const minecraft={uuid:'mc',game:'minecraft',game_label:'Minecraft',linked:true},paper={uuid:'paper',game:'minecraft',game_label:'Minecraft',linked:false},valheim={uuid:'valheim',game:'other',game_label:'Valheim',linked:false};
  let servers=[minecraft,paper,valheim];const d=context.window.pelicanSimplify({listing:async()=>servers,hostHealth:async()=>({})},{server:null,servers,can_create:true});

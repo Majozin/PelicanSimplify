@@ -31,7 +31,7 @@ namespace {
     function app($c){return new $c;}
     function now(){return new class{public function format($f){return date($f);}};}
     function check($c,$m){if(!$c)throw new \RuntimeException($m);echo "PASS $m\n";}
-    require __DIR__.'/../pelican-simplify/src/Services/AutomaticBackups.php';
+    require __DIR__.'/../src/Services/AutomaticBackups.php';
     use Simplify\Panel\Services\AutomaticBackups as A;
     use App\Services\Backups\InitiateBackupService as Start;
     use App\Services\Backups\DeleteBackupService as Delete;

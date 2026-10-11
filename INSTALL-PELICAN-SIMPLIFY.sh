@@ -12,9 +12,11 @@ command -v python3 >/dev/null
 PLUGINS=(pelican-simplify)
 if [[ "$MODE" == all ]]; then PLUGINS+=(server-directory); fi
 for ID in "${PLUGINS[@]}"; do
-    [[ -d "$PACKAGE/$ID" ]] || { echo "This package does not contain $ID." >&2; exit 1; }
+    SOURCE="$PACKAGE/$ID"
+    if [[ "$ID" == pelican-simplify ]]; then SOURCE="$PACKAGE"; fi
+    [[ -f "$SOURCE/plugin.json" ]] || { echo "This package does not contain $ID." >&2; exit 1; }
     [[ ! -L "$PANEL/plugins/$ID" ]] || { echo "Refusing symlink: $ID" >&2; exit 1; }
-    while IFS= read -r -d '' FILE; do php -l "$FILE" >/dev/null; done < <(find "$PACKAGE/$ID" -name '*.php' ! -name '*.blade.php' -print0)
+    while IFS= read -r -d '' FILE; do php -l "$FILE" >/dev/null; done < <(find "$SOURCE" -name '*.php' ! -name '*.blade.php' -print0)
 done
 # Validate as the same user that serves the panel, before replacing anything.
 sudo -u www-data php "$PACKAGE/preflight.php" "$PANEL"
@@ -56,7 +58,14 @@ fi
 for ID in "${PLUGINS[@]}"; do
     TARGET="$PANEL/plugins/$ID"
     if [[ -d "$TARGET" ]]; then cp -a "$TARGET" "$BACKUP/$ID"; fi
-    cp -a "$PACKAGE/$ID" "$STAGE/$ID"
+    if [[ "$ID" == pelican-simplify ]]; then
+        mkdir "$STAGE/$ID"
+        for ENTRY in plugin.json src resources database config lang README.md LICENSE docs; do
+            if [[ -e "$PACKAGE/$ENTRY" ]]; then cp -a "$PACKAGE/$ENTRY" "$STAGE/$ID/"; fi
+        done
+    else
+        cp -a "$PACKAGE/$ID" "$STAGE/$ID"
+    fi
     python3 - "$TARGET" "$STAGE/$ID" <<'PY'
 import json,sys,shutil
 from pathlib import Path

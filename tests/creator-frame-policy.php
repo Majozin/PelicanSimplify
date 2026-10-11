@@ -7,7 +7,7 @@ namespace Illuminate\Http {
     }
 }
 namespace {
-    require __DIR__.'/../pelican-simplify/src/Http/Middleware/CreatorFramePolicy.php';
+    require __DIR__.'/../src/Http/Middleware/CreatorFramePolicy.php';
     $authenticated=true;
     function user(){return $GLOBALS['authenticated']?(object)['id'=>1]:null;}
     class Headers {

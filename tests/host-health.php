@@ -1,5 +1,5 @@
 <?php
-require __DIR__.'/../pelican-simplify/src/Services/HostHealth.php';
+require __DIR__.'/../src/Services/HostHealth.php';
 use Simplify\Panel\Services\HostHealth;
 $sample=['maintenance'=>false,'stats'=>['cpu_percent'=>20,'memory_used'=>4,'memory_total'=>16,'disk_used'=>30,'disk_total'=>100]];
 $check=function($condition){if(!$condition)throw new RuntimeException('Host health assertion failed');};

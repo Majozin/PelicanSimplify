@@ -11,8 +11,8 @@ $authorized=true;$importer=new \App\Services\Eggs\Sharing\EggImporterService;
 function user(){return new class {public function can($p){return $GLOBALS['authorized'] && $p==='import egg';}};}
 function app($c){return $GLOBALS['importer'];}
 function report($e){}
-function plugin_path($id,$path){return __DIR__.'/../pelican-simplify/'.$path;}
-require __DIR__.'/../pelican-simplify/src/Services/EggInstaller.php';
+function plugin_path($id,$path){return __DIR__.'/../'.$path;}
+require __DIR__.'/../src/Services/EggInstaller.php';
 use Simplify\Panel\Services\EggInstaller as I;
 use Simplify\Panel\Services\MinecraftCatalog as C;
 function check($pass,$name){if(!$pass)throw new \Exception($name);echo "PASS $name\n";}

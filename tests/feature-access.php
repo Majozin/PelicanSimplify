@@ -31,8 +31,8 @@ namespace App\Models {
  }
 }
 namespace {
- require __DIR__.'/../pelican-simplify/src/Services/FeatureSettings.php';
- require __DIR__.'/../pelican-simplify/src/Services/Access.php';
+ require __DIR__.'/../src/Services/FeatureSettings.php';
+ require __DIR__.'/../src/Services/Access.php';
  use Simplify\Panel\Services\FeatureSettings as F;
  use Simplify\Panel\Services\Access as A;
  use Illuminate\Support\Facades\Storage;

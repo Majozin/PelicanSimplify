@@ -1,5 +1,10 @@
 # Changes
 
+## 0.2.0-alpha.3
+
+- Moved plugin.json, src, resources and database to the repository root for Pelican Hub submission and native source-archive imports.
+- Updated packaging, migration preflight and regression paths for the standard plugin layout.
+
 ## 0.2.0-alpha.2
 
 - Added blocking dependency checks to the native installer, migration installer and setup/settings save.
@@ -7,7 +12,7 @@
 - Show failed requirements with repair instructions and a Check again action.
 - Shortened the README, added highlighted features, screenshots, full feature list and AI disclosure.
 
-## 0.2.0-alpha.2
+## 0.2.0-alpha.3
 
 - Folded the standalone creator into Simplify; removed duplicate services and game resources.
 - Added a shared feature registry, grouped settings and first-install wizard.

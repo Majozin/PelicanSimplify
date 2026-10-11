@@ -1,6 +1,6 @@
 const fs=require('fs'),vm=require('vm'),assert=require('assert');
 const timers=new Map(),cleared=[],context={window:{},document:{hidden:false},setInterval(fn,ms){timers.set(ms,fn);return ms},clearInterval:id=>cleared.push(id),clearTimeout(){}};
-vm.runInNewContext(fs.readFileSync(__dirname+'/../pelican-simplify/resources/views/dashboard.js','utf8'),context);
+vm.runInNewContext(fs.readFileSync(__dirname+'/../resources/views/dashboard.js','utf8'),context);
 (async()=>{
  let calls=0,resolve;const d=context.window.pelicanSimplify({refreshInfo(){calls++;return new Promise(r=>resolve=r)}},{server:{pending:{restart_at:1},permissions:{},properties:{}}});
  d.initTheme=()=>{};d.applyFavicon=()=>{};d.connect=async()=>{};d.renderLogs=()=>{};await d.init();

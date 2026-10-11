@@ -1,7 +1,7 @@
 const fs=require('fs'),vm=require('vm'),assert=require('assert');
 let timerTick;
 const context={window:{addEventListener(){},removeEventListener(){}},setInterval:fn=>{timerTick=fn;return 1},clearInterval(){},confirm:()=>true,Alpine:{$data:()=>({step:'Resources',getStepIndex:()=>3})}};
-vm.createContext(context);vm.runInContext(fs.readFileSync(__dirname+'/../pelican-simplify/resources/views/filament/admin/draft.js','utf8'),context);
+vm.createContext(context);vm.runInContext(fs.readFileSync(__dirname+'/../resources/views/filament/admin/draft.js','utf8'),context);
 (async()=>{
  let saves=0,discard=0,fail=false,release;
  const values={};const wire={$set:(key,value)=>values[key]=value,draftStep:4,draftRestored:true,saveDraft:async step=>{assert.equal(step,4);saves++;if(fail)throw Error('offline');if(release)await release;},discardDraft:async()=>discard++};

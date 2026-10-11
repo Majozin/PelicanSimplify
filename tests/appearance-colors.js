@@ -1,5 +1,5 @@
 const fs=require('fs'),vm=require('vm'),assert=require('assert');
-const context={window:{}};vm.createContext(context);vm.runInContext(fs.readFileSync(__dirname+'/../pelican-simplify/resources/views/dashboard.js','utf8'),context);
+const context={window:{}};vm.createContext(context);vm.runInContext(fs.readFileSync(__dirname+'/../resources/views/dashboard.js','utf8'),context);
 const state=context.window.pelicanSimplify({}, {appearance:{accent_color:'#446688',individual_colors:true},servers:[{uuid:'a',color:'#aa2233'},{uuid:'b',color:'#44bb66'}]});
 assert.equal(state.accentStyle('overview')['--accent'],'#446688');
 assert.equal(state.accentStyle('a')['--accent'],'#aa2233');

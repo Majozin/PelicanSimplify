@@ -9,7 +9,7 @@ namespace Simplify\Panel\Services {class ManagedSettings {public static function
 namespace {
  function app($c){return new $c;}function route($name,$args){return '/simplify/background/'.$args['id'];}
  function check($v,$message){if(!$v)throw new \RuntimeException($message);echo "PASS $message\n";}
- require __DIR__.'/../pelican-simplify/src/Services/ServerArtwork.php';
+ require __DIR__.'/../src/Services/ServerArtwork.php';
  use Simplify\Panel\Services\ServerArtwork as A;
  use App\Repositories\Daemon\DaemonFileRepository as F;
  $s=new App\Models\Server;$s->egg=(object)['icon'=>'https://panel.test/egg.png'];

@@ -1,6 +1,6 @@
 <?php
 declare(strict_types=1);
-require __DIR__.'/../pelican-simplify/src/Services/DependencyCheck.php';
+require __DIR__.'/../src/Services/DependencyCheck.php';
 use Simplify\Panel\Services\DependencyCheck as D;
 function check(bool $ok, string $message): void { if (!$ok) throw new RuntimeException($message); echo 'PASS '.$message."\n"; }
 check(D::nodeSupported('v22.12.0') && D::nodeSupported('v24.0.0') && !D::nodeSupported('v22.11.0') && !D::nodeSupported('missing'), 'Node boundary and missing executable are enforced');

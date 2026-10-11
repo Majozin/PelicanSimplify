@@ -1,6 +1,6 @@
 const fs=require('fs'),vm=require('vm'),assert=require('assert');
 const context={window:{},setTimeout:()=>0,clearTimeout(){},console};vm.createContext(context);
-vm.runInContext(fs.readFileSync(__dirname+'/../pelican-simplify/resources/views/dashboard.js','utf8'),context);
+vm.runInContext(fs.readFileSync(__dirname+'/../resources/views/dashboard.js','utf8'),context);
 (async()=>{
  let calls=0,saved;
  const wire={installedPackages:async()=>{calls++;return {context:{kind:'plugins',version:'1.21.3'},files:[]}},saveResourceLimits:async s=>{saved=s},refreshInfo:async()=>({})};

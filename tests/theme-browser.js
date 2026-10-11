@@ -1,6 +1,6 @@
 const fs=require('fs'),http=require('http'),assert=require('assert');
 const {chromium}=require('playwright');
-const root=__dirname+'/../pelican-simplify/resources/views/';
+const root=__dirname+'/../resources/views/';
 const css=fs.readFileSync(root+'creator.css','utf8')+'\n'+fs.readFileSync(root+'global.css','utf8');
 const theme=fs.readFileSync(root+'theme.js','utf8');
 const html=`<!doctype html><html><head><link rel="stylesheet" href="/global.css"></head><body><section class="fi-section"><button class="fi-btn">Save</button><input class="fi-input"></section><section class="ps-console">Console</section><iframe id="creator" src="/child"></iframe><iframe id="legacy" src="/child"></iframe><script>window.simplifyThemeConfig={global_theme:true,legacy_theme:true,console_dark:true,css_url:'/global.css'};</script><script src="/theme.js"></script></body></html>`;

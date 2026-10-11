@@ -3,7 +3,7 @@ function doc(){const classes=new Set();const nodes={};return {documentElement:{s
 const document=doc(),values=new Map(),events={};let mediaListener;
 const window={simplifyThemeConfig:{global_theme:true,legacy_theme:true,console_dark:true,accent_color:'#446688',css_url:'/global.css'},dispatchEvent(event){for(const fn of events[event.type]||[])fn(event)},addEventListener(type,fn){(events[type]??=[]).push(fn)}};
 const context={window,document,localStorage:{getItem:key=>values.get(key),setItem:(key,value)=>values.set(key,value)},matchMedia:()=>({matches:false,addEventListener(type,fn){mediaListener=fn}}),CustomEvent:class{constructor(type,{detail}){this.type=type;this.detail=detail}}};
-vm.createContext(context);vm.runInContext(fs.readFileSync(__dirname+'/../pelican-simplify/resources/views/theme.js','utf8'),context);
+vm.createContext(context);vm.runInContext(fs.readFileSync(__dirname+'/../resources/views/theme.js','utf8'),context);
 const t=window.SimplifyTheme;assert.equal(t.preference(),'system');assert(document.documentElement.classList.contains('ps-theme'));
 const creator={dataset:{},contentDocument:doc()},legacy={dataset:{},contentDocument:doc()};document.querySelectorAll=()=>[creator,legacy];
 t.frame(creator,'create');t.frame(legacy,'native');assert.equal(creator.contentDocument.documentElement.style.values['--ps-accent'],'#446688');assert.equal(legacy.contentDocument.documentElement.style.values['--ps-accent'],'#446688');t.set('dark');assert(document.documentElement.classList.contains('dark'));assert(creator.contentDocument.documentElement.classList.contains('dark'));assert(legacy.contentDocument.documentElement.classList.contains('dark'));assert(document.documentElement.classList.contains('ps-console-dark'));

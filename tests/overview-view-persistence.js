@@ -1,6 +1,6 @@
 const fs=require('fs'),vm=require('vm'),assert=require('assert');
 const saved=new Map();const context={window:{},innerWidth:1440,localStorage:{getItem:key=>saved.get(key)||null,setItem:(key,value)=>saved.set(key,value)},URL,location:{origin:'https://panel.example'}};
-vm.createContext(context);vm.runInContext(fs.readFileSync(__dirname+'/../pelican-simplify/resources/views/dashboard.js','utf8'),context);
+vm.createContext(context);vm.runInContext(fs.readFileSync(__dirname+'/../resources/views/dashboard.js','utf8'),context);
 const page=user=>context.window.pelicanSimplify({}, {server:null,servers:[],user});
 const first=page('ExampleUser');first.restoreOverviewView();assert.equal(first.overviewView,'grid');first.setOverviewView('list');
 const reload=page('ExampleUser');reload.restoreOverviewView();assert.equal(reload.overviewView,'list');assert.equal(reload.gameFilter,'all');
