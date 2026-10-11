@@ -1,6 +1,6 @@
 # Voorstel: rework "Create other game server"
 
-Status: **voorstel**, nog niet uitgevoerd. Verwijs hiernaar met *"voer het other-games-voorstel uit"*.
+Status: **voorstel, besluiten genomen**, nog niet uitgevoerd. Verwijs hiernaar met *"voer het other-games-voorstel uit"*.
 Onderdeel van de add-on **Easy server creator** (Settings → Easy server creator).
 
 ## Probleem nu
@@ -14,7 +14,7 @@ Je zoekt een game op naam, kiest hem, vult hooguit een paar duidelijke instellin
 
 ## Flow (4 stappen, zelfde wizard-stijl als Minecraft)
 1. **Game kiezen**
-   - Een zoekveld met een grid van gamekaarten: icoon/banner, naam en een label *Installed* of *Available*.
+   - Een zoekveld met een grid van gamekaarten: icoon, naam en een label *Installed* of *Available*.
    - Filterchips: *Installed*, *Popular*, *All*.
    - Zoeken matcht op gamenaam, aliassen ("CS2", "Counter-Strike 2") en egg-naam.
    - Heeft één game meerdere eggs (vanilla/modded, Linux/Proton)? Dan volgt een kleine keuze "Variant".
@@ -35,7 +35,7 @@ Je zoekt een game op naam, kiest hem, vult hooguit een paar duidelijke instellin
   - categorie
   - download-URL van de egg-JSON
   - de sha256
-  - Steam-appid (voor de banner/het icoon via de Steam CDN, met fallback)
+  - Steam-appid (voor het icoon, met fallback)
   - aanbevolen resources
 - **Verversen:** de index wordt **lokaal gecachet** (`storage/app/simplify/egg-index.json`) en hooguit één keer per dag ververst met de bestaande scheduler (`simplify:maintenance`). Zoeken gebeurt dan zonder netwerkverkeer, wat weinig processing kost.
 - **Offline of geblokkeerd:** zonder netwerk werkt alleen *Installed*; de rest van de wizard blijft gewoon werken.
@@ -86,7 +86,7 @@ Je zoekt een game op naam, kiest hem, vult hooguit een paar duidelijke instellin
 3. Gefilterde game settings, plus vooraf accepteren van de EULA of licentie.
 4. De voortgangskaart (installatie-overhaul) voor alle creaties, Minecraft inbegrepen.
 
-## Open vragen voor jou
-- Mogen gewone gebruikers (met de ability) zelf nieuwe games installeren, of alleen admins?
-- Wil je bannerafbeeldingen van Steam gebruiken, of alleen iconen?
-- Moet de *Popular*-lijst een vaste lijst zijn, of gebaseerd op wat er op jouw panel het meest wordt aangemaakt?
+## Besluiten
+- **Nieuwe games installeren:** standaard mogen alleen admins dat. Je kunt het per rol aanzetten met de ability *"Install new games (eggs)"* onder Users & access (standaard uit).
+- **Beelden:** alleen iconen, geen Steam-banners.
+- **Popular:** gebaseerd op wat er op het eigen panel het meest wordt aangemaakt. Zolang er nog weinig servers zijn, vult een kleine vaste startlijst aan.
