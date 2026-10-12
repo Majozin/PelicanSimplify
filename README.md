@@ -46,6 +46,8 @@ Plugin support is also what makes the next step possible: letting Simplify repla
 
 ### Next up
 
+- **A real phone experience.** Every page built for one hand: a bottom tab bar, full-screen sheets instead of popups, a phone-friendly console and power buttons, and Simplify installable as an app on your home screen.
+- **A better server page.** A clear status bar at the top, a console that gets the space it needs, workspaces that open inside the page instead of popups, and one place for everything that needs your attention.
 - **Simplify as the whole panel.** An option in setup that makes Simplify the only panel. The original stays reachable under `/legacy`, or switches off entirely when no other plugin needs it.
 - **Clearer server installation.** One clear "setting up…" state until a new server is ready, and the Minecraft EULA accepted up front without a restart loop.
 - **Better server creation for every game.** Recommended resources per game and an install progress card.
