@@ -863,3 +863,59 @@ body:has(.ps.is-embedded) :is(.fi-main, .fi-page, .fi-main-ctn) { max-width: non
 .ps-settings-column.is-locked, .ps-power-tile.is-locked { opacity: .45; filter: grayscale(.4); pointer-events: none; }
 @media (prefers-reduced-motion: reduce) { .ps-setup-spinner { animation-duration: 3s; } }
 .ps-visually-hidden { position: absolute !important; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
+
+/* Server page layout: a section menu on the left, one block in the middle (console or the open workspace)
+   and power, players and resources on the right. With a workspace open the console moves to a small
+   read-only view under the resources; the element itself stays, so its output is kept. */
+.ps-server-workspace { grid-template-columns: 220px minmax(0, 1fr) 300px; grid-template-rows: auto auto auto 1fr; grid-template-areas: "nav main power" "nav main players" "nav main res" "nav main mini"; align-items: stretch; gap: 14px; container-type: normal; }
+.ps-server-workspace > .ps-settings-column, .ps-server-workspace > .ps-live-column { display: contents; }
+.ps-server-workspace .ps-widget-grid { grid-area: nav; align-self: start; position: sticky; top: 76px; display: flex; flex-direction: column; gap: 3px; padding: 10px; border: 1px solid var(--ps-line); border-radius: var(--ps-radius-lg); background: var(--ps-surface); }
+.ps-server-workspace .ps-widget { flex-direction: row; align-items: center; justify-content: flex-start; gap: 10px; height: auto; padding: 7px 8px; border: 1px solid transparent; border-radius: 10px; background: none; }
+.ps-server-workspace .ps-widget:is(:hover, :focus-visible) { border-color: transparent; background: var(--ps-raised); background-image: none; }
+.ps-server-workspace .ps-widget[aria-current="page"] { border-color: color-mix(in srgb, var(--ps-tone) 45%, transparent); background: color-mix(in srgb, var(--ps-tone) 12%, var(--ps-raised)); }
+.ps-server-workspace .ps-widget-icon { width: 30px; height: 30px; border-radius: 9px; background: color-mix(in srgb, var(--ps-tone, var(--ps-accent)) 18%, transparent); color: var(--ps-tone, var(--ps-accent)); font: 700 12px var(--ps-mono); }
+.ps-server-workspace .ps-widget-icon svg { width: 17px; height: 17px; }
+.ps-server-workspace .ps-widget strong { font-size: 14px; font-weight: 600; -webkit-line-clamp: 1; }
+.ps-server-workspace .ps-widget small { display: none; }
+.ps-server-workspace .ps-console { grid-area: main; min-height: clamp(520px, 68dvh, 820px); view-transition-name: ps-console; }
+.ps-server-workspace .ps-dock { grid-area: main; display: none; min-width: 0; height: clamp(520px, 68dvh, 820px); view-transition-name: ps-dock; }
+.ps-server-workspace .ps-power-tile { grid-area: power; height: 150px; }
+.ps-server-workspace .ps-players-stat { grid-area: players; min-height: 150px; max-height: 260px; }
+.ps-server-workspace .ps-resource-tile { grid-area: res; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0; padding: 0; }
+.ps-server-workspace .ps-resource-tile .ps-stat { gap: 4px; padding: 14px 16px 22px; }
+.ps-server-workspace .ps-resource-tile .ps-stat + .ps-stat { padding-left: 16px; border-left: 0; }
+.ps-server-workspace .ps-resource-tile .ps-stat:nth-child(even) { border-left: 1px solid var(--ps-line); }
+.ps-server-workspace .ps-resource-tile .ps-stat:nth-child(n+3) { border-top: 1px solid var(--ps-line); }
+.ps-server-workspace .ps-resource-tile .ps-stat > strong { font-size: 19px; }
+.ps-server-workspace.has-dock .ps-dock { display: flex; }
+.ps-server-workspace.has-dock .ps-console { grid-area: mini; min-height: 0; height: 230px; }
+.ps-server-workspace.has-dock :is(.ps-command, .ps-console-clear) { display: none; }
+.ps-server-workspace.has-dock .ps-console-title { height: 40px; }
+.ps-server-workspace.has-dock .ps-console-output { padding: 8px 12px; font-size: 10.5px; line-height: 1.6; }
+/* The workspace shell, docked: it fills the block instead of floating over the page. */
+.ps-dock > .ps-modal-layer { position: static; inset: auto; z-index: auto; display: flex; flex: 1; width: 100%; padding: 0; background: none; }
+.ps-dock > .ps-modal-layer > .ps-modal { width: 100%; height: 100%; min-height: 0; max-height: none; box-shadow: none; border-radius: var(--ps-radius-lg); animation: none; }
+::view-transition-group(ps-console), ::view-transition-group(ps-dock) { animation-duration: .38s; animation-timing-function: cubic-bezier(.2, .8, .2, 1); }
+@media (max-width: 1200px) {
+  .ps-server-workspace { grid-template-columns: 190px minmax(0, 1fr) 260px; }
+}
+@media (max-width: 960px) {
+  .ps-server-workspace { grid-template-columns: minmax(0, 1fr); grid-template-rows: none; grid-template-areas: "power" "nav" "main" "players" "res" "mini"; }
+  .ps-server-workspace .ps-widget-grid { position: static; flex-direction: row; overflow-x: auto; scrollbar-width: none; }
+  .ps-server-workspace .ps-widget { flex: none; }
+  .ps-server-workspace .ps-power-tile { height: auto; grid-template-columns: repeat(4, minmax(0, 1fr)); }
+  .ps-server-workspace .ps-console { min-height: clamp(360px, 60dvh, 560px); } .ps-server-workspace .ps-dock { height: clamp(420px, 70dvh, 640px); }
+}
+.ps-server-workspace.has-dock .ps-console-output { white-space: pre; overflow-x: hidden; }
+/* Live connection: the dot sends out a slow ripple and small bars move, so the console visibly feels live. */
+.ps-console-dot.connected { position: relative; animation: ps-live-dot 2s ease-in-out infinite; }
+.ps-console-dot.connected::after { content: ""; position: absolute; inset: -1px; border-radius: 50%; border: 2px solid #6ed8a8; animation: ps-live-ripple 2s ease-out infinite; }
+.ps-live-bars { display: inline-flex; align-items: flex-end; gap: 2px; height: 11px; }
+.ps-live-bars i { width: 2px; height: 100%; border-radius: 1px; background: #6ed8a8; transform-origin: bottom; animation: ps-live-bar 1.1s ease-in-out infinite; }
+.ps-live-bars i:nth-child(2) { animation-delay: -.35s; } .ps-live-bars i:nth-child(3) { animation-delay: -.7s; } .ps-live-bars i:nth-child(4) { animation-delay: -.2s; }
+.ps-console-state { color: var(--ps-console-muted); }
+.ps-console-dot.connected ~ .ps-console-state { color: #6ed8a8; }
+@keyframes ps-live-ripple { 0% { opacity: .8; transform: scale(1); } 100% { opacity: 0; transform: scale(3.2); } }
+@keyframes ps-live-dot { 0%, 100% { opacity: 1; } 50% { opacity: .65; } }
+@keyframes ps-live-bar { 0%, 100% { transform: scaleY(.3); } 50% { transform: scaleY(1); } }
+@media (prefers-reduced-motion: reduce) { .ps-console-dot.connected, .ps-console-dot.connected::after, .ps-live-bars i { animation: none; } }

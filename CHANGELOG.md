@@ -1,5 +1,11 @@
 # Changes
 
+## 0.3.0-beta.37
+- New server page layout. The banner stays; the tiles became a colour-coded section menu on the left; power, players and resources stay visible on the right.
+- Sections open inside the page instead of as popups. While one is open, the console shrinks into a read-only view under the resources, so its output is kept. Closing a section (✕ or "Console" in the menu) brings the console back to the middle, animated.
+- The console shows it is live: when connected, the dot ripples, small bars move and the status turns green.
+- Phones: the menu becomes a scrollable row under the power buttons.
+
 ## 0.3.0-beta.36
 - List view: the create buttons use the new icon style too, side by side on the left. The label slides out on hover.
 

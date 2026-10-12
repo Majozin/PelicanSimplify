@@ -1235,10 +1235,36 @@
         const every = minutes % 60 === 0 ? (minutes === 60 ? 'Every hour' : 'Every ' + minutes / 60 + ' hours') : 'Every ' + minutes + ' minutes';
         return every + ' · ' + (options.retention || 2) + ' recovery points' + (options.only_when_used !== false ? ' · skipped while the server has not run' : '');
       },
+      /** Server workspaces open inside the page instead of as a popup. */
+      docked() {
+        return !!this.server && !!this.modal && this.widgets.some((widget) => widget.key === this.modal);
+      },
+      /** Moves the workspace shell into the page block while docked, and back to the root otherwise. */
+      syncDock(dock, docked) {
+        const layer = this.$root?.querySelector?.('.ps-modal-layer');
+        if (!layer) return;
+        if (docked && layer.parentElement !== dock) dock.appendChild(layer);
+        if (!docked && layer.parentElement === dock) this.$root.appendChild(layer);
+        this.$nextTick?.(() => { const out = this.$refs?.output; if (out) out.scrollTop = out.scrollHeight; });
+      },
+      /** Animates a layout change (console moving between the block and the corner) where the browser can. */
+      async layoutTransition(change) {
+        const reduced = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+        if (typeof document === 'undefined' || !document.startViewTransition || reduced) return change();
+        const transition = document.startViewTransition(async () => {
+          change();
+          await this.$nextTick();
+        });
+        try { await transition.updateCallbackDone; } catch {}
+      },
+      widgetTone(key) {
+        return { settings: '#e0a050', players: '#6ea8fe', plugins: '#b48cf2', mods: '#b48cf2', files: '#5cc8c0', backups: '#7ad08a', schedules: '#f5b84a', software: '#c084fc', connection: '#60a5fa', performance: '#f2707a', web: '#38bdf8', activity: '#9a9aa6', advanced: '#9a9aa6' }[key] || 'var(--ps-accent)';
+      },
       async open(key) {
         if (this.busy || !this.showWidget(key)) return;
         const request = ++this.modalRequest;
-        this.modal = key;
+        if (this.server && !this.docked() && this.widgets.some((widget) => widget.key === key)) await this.layoutTransition(() => { this.modal = key; });
+        else this.modal = key;
         this.loading = true;
         const current = () => !this.destroyed && this.modalRequest === request && this.modal === key;
         const load = async (fn) => {
@@ -1301,7 +1327,8 @@
           }
         }
         this.modalRequest++;
-        this.modal = null;
+        if (this.docked()) await this.layoutTransition(() => { this.modal = null; });
+        else this.modal = null;
         this.loading = false;
         if (creating) this.refreshOverview();
         if (changedSettings) location.reload();

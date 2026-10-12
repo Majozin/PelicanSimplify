@@ -612,23 +612,29 @@
                 </div>
             </div>
 
-            <div class="ps-server-workspace">
+            <div class="ps-server-workspace" :class="{'has-dock': docked()}">
+                {{-- A workspace opens in this block; the console then shrinks to a read-only view at the bottom right. --}}
+                <div class="ps-dock" x-effect="syncDock($el, docked())"></div>
                 <div class="ps-settings-column" :inert="['installing','restoring_backup'].includes(serverSetup())" :class="{'is-locked': ['installing','restoring_backup'].includes(serverSetup())}">
-                    <div class="ps-widget-grid">
+                    <nav class="ps-widget-grid" aria-label="Server sections">
+                        <button type="button" class="ps-widget is-console" style="--ps-tone: #9a9aa6" :aria-current="docked() ? null : 'page'" x-on:click="docked() && close()" aria-label="Live console">
+                            <span class="ps-widget-icon" aria-hidden="true">›_</span>
+                            <span><strong>Console</strong></span>
+                        </button>
                         <template x-for="widget in widgets" :key="widget.key">
-                            <button type="button" class="ps-widget" :aria-label="widgetTitle(widget)+' — '+widgetDescription(widget)" x-show="showWidget(widget.key)" x-on:click="open(widget.key)">
+                            <button type="button" class="ps-widget" :style="{'--ps-tone': widgetTone(widget.key)}" :aria-current="modal===widget.key ? 'page' : null" :aria-label="widgetTitle(widget)+' — '+widgetDescription(widget)" x-show="showWidget(widget.key)" x-on:click="modal===widget.key ? null : open(widget.key)">
                                 <span class="ps-widget-icon"><svg aria-hidden="true"><use :href="'#ps-'+widget.icon"/></svg></span>
                                 <span><strong x-text="widgetTitle(widget)"></strong><small x-text="widgetDescription(widget)"></small></span>
                             </button>
                         </template>
-                    </div>
+                    </nav>
                 </div>
                 <div class="ps-live-column">
                     <aside class="ps-console" x-show="server">
                         <div class="ps-console-title">
                             <span class="ps-terminal-icon" aria-hidden="true">›_</span>
                             <strong>Live console</strong>
-                            <span class="ps-console-dot" :class="{'connected': connected}"></span>
+                            <span class="ps-console-dot" :class="{'connected': connected}"></span><span class="ps-live-bars" x-show="connected" aria-hidden="true"><i></i><i></i><i></i><i></i></span>
                             <span class="ps-console-state" x-text="connected ? 'Connected to Wings' : 'Connecting to Wings…'"></span>
                             <button type="button" class="ps-console-clear" x-on:click="logs=[]; renderLogs()">Clear</button>
                         </div>
@@ -675,8 +681,8 @@
     </main>
 
     {{-- Workspace popup: one shell with fixed sizes (sm, md, lg); only the body scrolls. ------------------- --}}
-    <div class="ps-modal-layer" :data-open="!!modal" x-show="modal" x-cloak>
-        <section class="ps-modal" :class="modalSize()" role="dialog" aria-modal="true" :aria-label="modalTitle()" x-trap.noscroll="modal">
+    <div class="ps-modal-layer" :data-open="!!modal && !docked()" :data-docked="docked()" x-show="modal" x-cloak>
+        <section class="ps-modal" :class="modalSize()" :role="docked() ? 'region' : 'dialog'" :aria-modal="docked() ? null : 'true'" :aria-label="modalTitle()" x-trap.noscroll="modal && !docked()">
             <header class="ps-modal-head">
                 <h2 x-text="modalTitle()"></h2>
                 <div class="ps-sftp-inline" x-show="modal==='files' && server?.sftp">
