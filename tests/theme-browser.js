@@ -45,7 +45,7 @@ const { start } = require('./browser-harness');
     const frame = await dark.waitForSelector('iframe[title="Scheduled tasks"]');
     const native = await frame.contentFrame();
     await native.waitForFunction(() => document.documentElement.classList.contains('ps-frame') && getComputedStyle(document.querySelector('.fi-btn')).borderTopLeftRadius === '10px');
-    const style = (el) => ({ radius: getComputedStyle(el).borderTopLeftRadius, height: Math.round(el.getBoundingClientRect().height), border: getComputedStyle(el).borderTopColor });
+    const style = (el) => ({ radius: getComputedStyle(el).borderTopLeftRadius, height: el.offsetHeight, border: getComputedStyle(el).borderTopColor });
     const outer = await dark.evaluate((fn) => new Function('return ' + fn)()(document.querySelector('.ps-back-overview')), style.toString());
     const inner = await native.evaluate((fn) => new Function('return ' + fn)()(document.querySelector('.fi-btn:not(.fi-color-danger)')), style.toString());
     assert.deepEqual(inner, outer, 'embedded buttons match dashboard buttons');
@@ -92,7 +92,8 @@ const { start } = require('./browser-harness');
     });
     assert.equal(outerScroll, false, 'the popup itself never scrolls around the file manager');
     // The editor opens beside the list with Simplify's own header; only its code area grows.
-    await filesFrame.click('a[href*="/edit/file3.yml"]');
+    // Playwright mis-computes click points inside a scaled (zoomed) page's iframe; a real click lands correctly.
+    await filesFrame.$eval('a[href*="/edit/file3.yml"]', (a) => a.click());
     const editorFrame = await (await dark.waitForSelector('.ps-file-editor iframe')).contentFrame();
     await editorFrame.waitForFunction(() => document.documentElement.dataset.psEditorActions === 'external');
     const editor = await editorFrame.evaluate(() => ({

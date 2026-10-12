@@ -159,6 +159,7 @@
       async init() {
         if (this.started) return;
         this.started = true;
+        this.applyScale();
         this.widgets = this.widgets.filter((w) => {
           const feature = { performance: 'resources', plugins: 'packages', mods: 'packages', web: 'web' }[w.key] || w.key;
           return feature === 'web' ? this.boot.web : this.boot.features?.[feature] !== false;
@@ -258,6 +259,22 @@
         return { '--ps-accent': `hsl(${hash % 360} 68% 76%)`, '--ps-on-accent': '#111118' };
       },
       /** Panel name gradient: the common accent, else the page accent (blue on an uncoloured overview). */
+      /**
+       * Interface size follows the window: designed for a 1440p screen (scale 1) and scaled down in
+       * proportion on smaller ones (a 1080p screen gets about 0.75). Phones keep their own layout.
+       * Inside the host mode pane nothing extra is applied: the frame is scaled with the page around it.
+       */
+      uiScale: 1,
+      applyScale() {
+        if (typeof window === 'undefined' || !this.$root?.style) return;
+        let scale = 1;
+        // Inside the host mode pane the frame is already scaled with the page around it.
+        if (!this.embedded && window.innerWidth > 900) scale = Math.min(1, Math.max(0.75, Math.min(window.innerWidth / 2300, window.innerHeight / 1200)));
+        scale = Math.round(scale * 100) / 100;
+        this.uiScale = scale;
+        this.$root.style.zoom = scale === 1 ? '' : String(scale);
+        document.documentElement.style.setProperty('--ps-ui-scale', String(scale));
+      },
       /** Shows the status bar while the server card is scrolled out of view. */
       watchServerInfo(el) {
         if (typeof IntersectionObserver !== 'function') return;
@@ -269,7 +286,7 @@
       fitEmbedded(el) {
         const fit = () => {
           const top = el.getBoundingClientRect().top + window.scrollY;
-          el.style.setProperty('--ps-embed-height', Math.max(320, window.innerHeight - top) + 'px');
+          el.style.setProperty('--ps-embed-height', Math.max(320, (window.innerHeight - top) / (this.uiScale || 1)) + 'px');
         };
         fit();
         window.addEventListener('resize', fit);
@@ -796,8 +813,9 @@
         const sync = () => {
           const parent = overview.getBoundingClientRect(), cards = grid.getBoundingClientRect();
           if (cards.width <= 0) return;
-          overview.style.setProperty('--ps-health-width', cards.width + 'px');
-          overview.style.setProperty('--ps-health-left', cards.left - parent.left + 'px');
+          const scale = this.uiScale || 1;
+          overview.style.setProperty('--ps-health-width', cards.width / scale + 'px');
+          overview.style.setProperty('--ps-health-left', (cards.left - parent.left) / scale + 'px');
         };
         this.overviewDockObserver = new ResizeObserver(sync);
         this.overviewDockObserver.observe(overview);
@@ -1538,7 +1556,8 @@
         }
         this.colorDraft = this.server?.color || this.currentAccentHex();
         const box = button.getBoundingClientRect();
-        this.colorMenuStyle = { left: Math.max(12, Math.min(box.left - 200, innerWidth - 260)) + 'px', top: Math.max(12, Math.min(box.bottom + 8, innerHeight - 240)) + 'px' };
+        const scale = this.uiScale || 1;
+        this.colorMenuStyle = { left: Math.max(12, Math.min(box.left - 200, innerWidth - 260)) / scale + 'px', top: Math.max(12, Math.min(box.bottom + 8, innerHeight - 240)) / scale + 'px' };
         this.colorMenu = true;
       },
       async commitServerColor() {

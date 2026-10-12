@@ -5,7 +5,7 @@
 @endassets
 <div class="ps" data-simplify-root x-cloak wire:ignore.self
      x-data="pelicanSimplify($wire, @js($this->initial()))"
-     x-on:resize.window.debounce.150ms="restoreOverviewView()"
+     x-on:resize.window.debounce.150ms="applyScale(); restoreOverviewView()"
      :class="{'dark': themeDark, 'server-active': !!server, 'is-embedded': embedded}"
      :style="accentStyle(server?.uuid || 'overview')">
     @include('pelican-simplify::dashboard-icons')

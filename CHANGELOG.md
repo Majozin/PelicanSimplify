@@ -1,5 +1,8 @@
 # Changes
 
+## 0.4.1-beta.3 (beta channel)
+- Interface scaling: Simplify is designed for a 1440p screen and now scales down in proportion on smaller windows (about 80% on a 1080p screen), so everything fits without scrolling. Phones keep their own layout; the host mode pane scales with the page around it.
+
 ## 0.4.1-beta.2 (beta channel)
 - Overview: the create buttons always sit first on the left of the toolbar, also when the node filter is shown.
 
