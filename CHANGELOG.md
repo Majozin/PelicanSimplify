@@ -1,5 +1,8 @@
 # Changes
 
+## 0.3.0-beta.32
+- Host mode server pane: the server page fills the whole area, the open and close buttons sit on the right, and the embedded page no longer shows a second copyright footer.
+
 ## 0.3.0-beta.31
 - Renamed the add-ons: "Easy game server creator" is now "Easy server creator" (not every egg is a game), and the Minecraft one is "Easy Minecraft server creator". The home tile and admin menu say "Create Other server".
 - Simple mode: the two create buttons are now half-size icons stacked on the right of one tile, without a border. The grid keeps its columns; the label slides out on hover with the existing animation.

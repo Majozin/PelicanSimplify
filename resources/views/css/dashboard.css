@@ -806,11 +806,14 @@ button.ps-package:hover { border-color: var(--ps-accent); }
 .ps-host-frame { flex: 1; min-height: 0; }
 .ps-host-serverpane { grid-column: 2 / -1; grid-row: 1; display: flex; flex-direction: column; min-width: 0; min-height: 0; overflow: hidden; border: 1px solid var(--ps-line); border-radius: var(--ps-radius-lg); background: var(--ps-surface); }
 .ps-host.has-server > .ps-host-rail, .ps-host.has-server > .ps-host-main { display: none; }
-.ps-host-serverpane .ps-host-head { justify-content: space-between; }
+.ps-host-serverpane .ps-host-head { grid-template-columns: minmax(0, 1fr) auto; }
 .ps-host-serverpane-actions { display: flex; gap: 4px; margin-left: auto; }
 .ps-host-server[aria-current="page"] { border-color: var(--ps-accent); background: color-mix(in srgb, var(--ps-accent) 12%, var(--ps-raised)); }
 .ps.is-embedded .ps-top { display: none; }
-.ps.is-embedded .ps-main { padding-top: 12px; }
+.ps.is-embedded .ps-main { padding: 16px 20px; }
+.ps.is-embedded .ps-server-dashboard { max-width: none; }
+body:has(.ps.is-embedded) :is(.fi-footer, [data-ps-footer], [data-ps-footer-wrapper]) { display: none !important; }
+body:has(.ps.is-embedded) :is(.fi-main, .fi-page, .fi-main-ctn) { max-width: none !important; padding-inline: 0 !important; }
 .ps-host-frame iframe { display: block; width: 100%; height: 100%; border: 0; background: var(--ps-surface); }
 @media (prefers-reduced-motion: reduce) { .ps-host, .ps-host-server { transition: none; } }
 @media (max-width: 1100px) {
