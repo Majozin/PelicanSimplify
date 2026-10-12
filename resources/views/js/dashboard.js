@@ -1257,6 +1257,13 @@
         });
         try { await transition.updateCallbackDone; } catch {}
       },
+      /** Colour banner: inline style for a chosen colour, {} for the accent-based one, null for image banners. */
+      bannerColor(s) {
+        const id = String(s?.background_id || '');
+        if (id === 'color') return {};
+        const match = id.match(/^color:(#[0-9a-f]{6})$/i);
+        return match ? { '--ps-banner': match[1] } : null;
+      },
       widgetTone(key) {
         return { settings: '#e0a050', players: '#6ea8fe', plugins: '#b48cf2', mods: '#b48cf2', files: '#5cc8c0', backups: '#7ad08a', schedules: '#f5b84a', software: '#c084fc', connection: '#60a5fa', performance: '#f2707a', web: '#38bdf8', activity: '#9a9aa6', advanced: '#9a9aa6' }[key] || 'var(--ps-accent)';
       },

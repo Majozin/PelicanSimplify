@@ -49,7 +49,7 @@ final class ServerArtwork
     {
         $selection = self::selection($server);
         if ($selection !== null) $meta = ['background_id' => $selection];
-        if (($meta['background_id'] ?? '') === 'none') return null;
+        if (($meta['background_id'] ?? '') === 'none' || self::isColor((string) ($meta['background_id'] ?? ''))) return null;
         if(!empty($meta['screenshot_url']))return $meta['screenshot_url'];
         $id=$meta['background_id']??'auto';
         if (str_starts_with($id,'upload-')) {
@@ -71,6 +71,11 @@ final class ServerArtwork
         }
         return isset(self::BACKGROUNDS[$id])?self::backgroundUrl($id):null;
     }
+    /** A colour banner instead of an image: "color" picks one from the accent, "color:#rrggbb" is chosen. */
+    public static function isColor(string $id): bool
+    {
+        return $id === 'color' || (bool) preg_match('/^color:#[0-9a-f]{6}$/', $id);
+    }
     public static function backgroundUrl(string $id): string
     {
         return route('simplify.background',['id'=>$id]).'?v='.BuildInfo::hash('core.css');
@@ -81,7 +86,7 @@ final class ServerArtwork
         $path = 'simplify/backgrounds/'.$server->uuid.'.json';
         $data = $disk->exists($path) ? json_decode($disk->get($path), true) : [];
         $id = is_array($data) ? ($data['background_id'] ?? null) : null;
-        return is_string($id) && ($id === 'auto' || $id === 'none' || isset(self::BACKGROUNDS[$id]) || ServerBanners::belongsTo($id,$server)) ? $id : null;
+        return is_string($id) && ($id === 'auto' || $id === 'none' || self::isColor($id) || isset(self::BACKGROUNDS[$id]) || ServerBanners::belongsTo($id,$server)) ? $id : null;
     }
     /** Selects a banner without a permission check (creator only; save() is the user-facing path). */
     public static function select(Server $server, string $id): void
@@ -92,7 +97,8 @@ final class ServerArtwork
     public static function save(Server $server, string $id): array
     {
         Access::permission($server, \App\Enums\SubuserPermission::SettingsRename);
-        abort_unless($id === 'auto' || $id === 'none' || isset(self::BACKGROUNDS[$id]) || ServerBanners::belongsTo($id,$server), 422);
+        $id = strtolower($id);
+        abort_unless($id === 'auto' || $id === 'none' || self::isColor($id) || isset(self::BACKGROUNDS[$id]) || ServerBanners::belongsTo($id,$server), 422);
         if (!Storage::disk('local')->put('simplify/backgrounds/'.$server->uuid.'.json', json_encode(['background_id' => $id], JSON_THROW_ON_ERROR))) {
             throw new \RuntimeException('Could not save server background.');
         }

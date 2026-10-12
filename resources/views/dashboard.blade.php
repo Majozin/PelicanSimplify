@@ -367,6 +367,7 @@
                                 <template x-if="!s.isNodeHeader">
                                 <article class="ps-server-card" :class="{'locked': !s.linked}">
                                     <span class="ps-offline-artwork" x-show="s.status==='offline'" aria-label="Server offline"><svg aria-hidden="true"><use href="#ps-offline"/></svg></span>
+                                    <span class="ps-card-background ps-banner-color" :class="{'is-auto': s.background_id==='color'}" x-show="bannerColor(s) && s.status!=='offline'" :style="bannerColor(s)" aria-hidden="true"></span>
                                     <img class="ps-card-background" x-show="s.background && s.status!=='offline'" :src="safeImage(s.background)" alt="" loading="lazy" x-on:error="$el.style.visibility='hidden'">
                                     <button class="ps-server-open" x-on:click="s.linked && (location.href=s.url)" :disabled="!s.linked" :aria-label="s.linked ? 'Open '+s.name : s.name+' — not assigned to you'">
                                         <div class="ps-card-head">
@@ -554,6 +555,7 @@
 
             <article class="ps-server-info" aria-label="Server information" x-init="watchServerInfo($el)">
                 <span class="ps-offline-artwork" x-show="status==='offline'" aria-label="Server offline"><svg aria-hidden="true"><use href="#ps-offline"/></svg></span>
+                <span class="ps-server-banner ps-banner-color" :class="{'is-auto': server?.background_id==='color'}" x-show="bannerColor(server) && status!=='offline'" :style="bannerColor(server)" aria-hidden="true"></span>
                 <img class="ps-server-banner" x-show="server?.background && status!=='offline'" :src="safeImage(server?.background)" alt="" x-on:error="$el.style.visibility='hidden'">
                 <div class="ps-info-badges ps-identity-badges">
                     <span class="ps-badge is-strong ps-list-game"><svg aria-hidden="true"><use :href="server?.minecraft ? '#ps-cube' : '#ps-gamepad'"/></svg><span x-text="server?.minecraft ? 'Minecraft' : (server?.software || 'Other game')"></span></span>
@@ -731,6 +733,13 @@
                             <button type="button" class="ps-background-choice ps-background-auto" :aria-pressed="backgroundDraft==='none'" x-on:click="backgroundDraft='none'" :disabled="busy">
                                 <strong>No background</strong><small>Keep it simple</small>
                             </button>
+                            <button type="button" class="ps-background-choice ps-background-auto ps-background-color" :class="{'is-auto': true}" :aria-pressed="backgroundDraft==='color'" x-on:click="backgroundDraft='color'" :disabled="busy">
+                                <span class="ps-banner-swatch ps-banner-color is-auto"></span><strong>Accent colour</strong><small>A colour that stands out but matches the accent</small>
+                            </button>
+                            <label class="ps-background-choice ps-background-auto ps-background-color" :aria-pressed="backgroundDraft.startsWith('color:') ? 'true' : 'false'">
+                                <span class="ps-banner-swatch ps-banner-color" :style="{'--ps-banner': backgroundDraft.startsWith('color:') ? backgroundDraft.slice(6) : '#7c3aed'}"></span><strong>Your own colour</strong><small>Click to pick a colour</small>
+                                <input type="color" class="ps-visually-hidden" :value="backgroundDraft.startsWith('color:') ? backgroundDraft.slice(6) : '#7c3aed'" x-on:input="backgroundDraft='color:'+$event.target.value.toLowerCase()" :disabled="busy" aria-label="Pick a banner colour">
+                            </label>
                             <template x-for="image in boot.background_choices || []" :key="image.id">
                                 <button type="button" class="ps-background-choice" :aria-pressed="backgroundDraft===image.id" x-on:click="backgroundDraft=image.id" :disabled="busy"><img :src="image.url" :alt="image.name" loading="lazy"><strong x-text="image.name"></strong></button>
                             </template>

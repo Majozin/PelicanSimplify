@@ -1,5 +1,9 @@
 # Changes
 
+## 0.3.0-beta.38
+- Colour banners: besides images, a server banner can be a colour. "Accent colour" picks a neighbouring hue of the server accent that stands out but matches; "Your own colour" lets you choose one. Both fade in from the middle to the right, on the server page and the overview cards.
+- The broken heart on an offline server page fades in from the middle and tilts off the bottom-right edge of the card.
+
 ## 0.3.0-beta.37
 - New server page layout. The banner stays; the tiles became a colour-coded section menu on the left; power, players and resources stay visible on the right.
 - Sections open inside the page instead of as popups. While one is open, the console shrinks into a read-only view under the resources, so its output is kept. Closing a section (✕ or "Console" in the menu) brings the console back to the middle, animated.

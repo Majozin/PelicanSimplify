@@ -496,7 +496,10 @@ button.ps-statusbar-item:hover { color: var(--ps-ink); }
 }
 .ps-server-banner { position: absolute; inset: 0; z-index: -1; width: 100%; height: 100%; object-fit: cover; object-position: right center; opacity: .5; filter: blur(6px); pointer-events: none; transform: scale(1.04); mask-image: linear-gradient(to right, transparent 45%, #000 100%); }
 .ps.dark .ps-server-banner { opacity: .55; }
-.ps-server-info .ps-offline-artwork svg { right: 2%; height: 125%; }
+.ps-server-info .ps-offline-artwork { width: 100%; opacity: .42; filter: blur(1px); mask-image: linear-gradient(to right, transparent 30%, #000 78%); }
+.ps.dark .ps-server-info .ps-offline-artwork { opacity: .45; }
+/* The broken heart slips off the right edge of the server card, tilted as if falling. */
+.ps-server-info .ps-offline-artwork svg { right: 3%; top: 60%; height: 145%; transform: translateY(-50%) rotate(16deg); }
 .ps-info-icons { grid-area: icons; display: flex; flex-direction: column; align-items: center; gap: 10px; }
 .ps-info-icon { display: grid; place-items: center; width: 72px; height: 72px; overflow: hidden; border: 1px solid var(--ps-line); border-radius: var(--ps-radius-lg); background: var(--ps-field); }
 .ps-info-icon img { width: 100%; height: 100%; object-fit: cover; image-rendering: pixelated; }
@@ -919,3 +922,13 @@ body:has(.ps.is-embedded) :is(.fi-main, .fi-page, .fi-main-ctn) { max-width: non
 @keyframes ps-live-dot { 0%, 100% { opacity: 1; } 50% { opacity: .65; } }
 @keyframes ps-live-bar { 0%, 100% { transform: scaleY(.3); } 50% { transform: scaleY(1); } }
 @media (prefers-reduced-motion: reduce) { .ps-console-dot.connected, .ps-console-dot.connected::after, .ps-live-bars i { animation: none; } }
+
+/* Colour banners: the accent turned a little (a neighbouring hue, slightly deeper), or a chosen colour,
+   fading in from the middle to the right like image banners. */
+.ps-banner-color { --ps-banner-c: var(--ps-banner, color-mix(in oklch, var(--ps-accent) 65%, #7c3aed)); display: block; background-image: linear-gradient(110deg, transparent 0%, color-mix(in srgb, var(--ps-banner-c) 45%, transparent) 70%, var(--ps-banner-c) 100%); }
+@supports (color: oklch(from red l c h)) { .ps-banner-color.is-auto { --ps-banner-c: oklch(from var(--ps-accent) calc(l * .8) calc(c + .07) calc(h + 40)); } }
+span.ps-server-banner.ps-banner-color { opacity: .75; filter: none; transform: none; }
+.ps.dark span.ps-server-banner.ps-banner-color { opacity: .6; }
+span.ps-card-background.ps-banner-color { width: 100%; opacity: .5; filter: none; mask-image: linear-gradient(to right, transparent 35%, #000 100%); }
+.ps-banner-swatch { display: block; width: 100%; height: 56px; margin-bottom: 10px; border-radius: 10px; background-color: var(--ps-surface); }
+.ps-background-color { cursor: pointer; }
