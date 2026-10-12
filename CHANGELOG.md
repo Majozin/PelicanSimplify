@@ -1,5 +1,8 @@
 # Changes
 
+## 0.3.0-beta.42
+- Create buttons: the shine now sweeps only inside the icon and no longer runs over the label.
+
 ## 0.3.0-beta.41
 - Phones: resources show as a tidy 2 × 2 grid (no more squeezed network text); the status bar shortens the name before the buttons and drops the player count on narrow phones; the server banner puts its icons in a row and uses the full width for the text.
 - Host mode pane: the console fills the height of the pane instead of a fixed tall block.

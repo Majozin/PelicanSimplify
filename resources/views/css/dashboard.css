@@ -975,3 +975,8 @@ span.ps-card-background.ps-banner-color { width: 100%; opacity: .5; filter: none
 .ps.is-embedded .ps-server-workspace .ps-console { min-height: 0; height: max(340px, calc(100dvh - 300px)); }
 .ps.is-embedded .ps-server-workspace .ps-dock { height: max(340px, calc(100dvh - 300px)); }
 .ps.is-embedded .ps-server-workspace.has-dock .ps-console { height: 200px; }
+/* The create icon's shine sweeps inside the icon only (moving the gradient, not the layer), so it never
+   reaches the label next to it. */
+.ps-create-card .ps-create-plus::after { inset: 0; border-radius: inherit; background: linear-gradient(110deg, transparent 40%, rgb(255 255 255 / .45) 50%, transparent 60%) no-repeat; background-size: 300% 100%; background-position: 150% 0; transform: none; opacity: 0; }
+.ps-create-card:is(:hover, :focus-visible):not(:disabled) .ps-create-plus::after { animation: ps-create-shine 1.8s ease-in-out infinite; }
+@keyframes ps-create-shine { 0%, 12% { opacity: 0; background-position: 150% 0; } 20% { opacity: 1; } 55%, 100% { opacity: 0; background-position: -50% 0; } }
