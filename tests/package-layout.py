@@ -10,7 +10,9 @@ manifest = json.loads((root / 'plugin.json').read_text())
 assert manifest['id'] == 'pelican-simplify'
 assert (root / 'src' / f"{manifest['class']}.php").is_file()
 assert not (root / 'pelican-simplify').exists()
-update = json.loads((root / 'update.json').read_text())[manifest['panel_version']]
+update = json.loads((root / 'update.json').read_text())
+assert set(update) == {'1.0.0-beta38', '1.0.0-rc.1'}, 'update.json lists every supported Pelican release'
+update = update['1.0.0-beta38']
 assert update['version'] == manifest['version'], 'update.json announces the current version'
 assert update['download_url'].endswith(f"dist/pelican-simplify-v{manifest['version']}.zip")
 published = root / 'dist' / f"pelican-simplify-v{manifest['version']}.zip"

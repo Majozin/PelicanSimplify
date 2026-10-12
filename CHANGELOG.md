@@ -1,5 +1,11 @@
 # Changes
 
+## 0.3.0-beta.54 (Pelican 1.0.0-rc.1 compatibility, branch claude/pelican-rc1-compat)
+- Loads on Pelican 1.0.0-rc.1 as well as 1.0.0-beta38: plugin.json declares "^1.0.0-beta38" instead of pinning one exact release (exact pins are refused on any other version).
+- Plugin updates are announced for both releases (update.json lists 1.0.0-beta38 and 1.0.0-rc.1).
+- System checks accept 1.0.0-rc.1 as a supported release.
+- Server addresses respect Pelican rc.1's "hide port" allocation setting (display address), falling back to the plain address on beta38.
+
 ## 0.3.0-beta.53
 - Host mode pane: the server page fills it edge to edge. The pane has no frame or padding of its own; the banner, menu, console and side cards form its edges.
 

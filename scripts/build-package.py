@@ -44,14 +44,19 @@ def build(output: Path, epoch: int | None = None) -> Path:
     return archive
 
 
+SUPPORTED_PANELS = ['1.0.0-beta38', '1.0.0-rc.1']
+
+
 def publish(archive: Path) -> None:
     manifest = json.loads((root / 'plugin.json').read_text())
     checksum = hashlib.sha256(archive.read_bytes()).hexdigest()
-    (root / 'update.json').write_text(json.dumps({manifest['panel_version']: {
+    entry = {
         'version': manifest['version'],
         'download_url': REPOSITORY + archive.relative_to(root).as_posix(),
         'sha256': checksum,
-    }}, indent=2) + '\n')
+    }
+    # One entry per Pelican release this build is validated on (Pelican looks up its own version).
+    (root / 'update.json').write_text(json.dumps({panel: entry for panel in SUPPORTED_PANELS}, indent=2) + '\n')
     with (root / 'SHA256SUMS').open('w') as sums:
         for path in sorted(root.rglob('*')):
             relative = path.relative_to(root)
