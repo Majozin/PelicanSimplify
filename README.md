@@ -4,9 +4,12 @@ A cleaner, simpler interface for the [Pelican](https://github.com/pelican/panel)
 
 **Stable 0.4.0 for Pelican 1.0.0-beta38 · Pelican 1.0.0-rc.1 support on the beta channel · PHP 8.3+**
 
+*Screenshots use example servers.*
+
 <a href="docs/screenshots/server-overview.png"><img src="docs/screenshots/server-overview.png" alt="Server overview" width="280"></a>
 <a href="docs/screenshots/server-dashboard.png"><img src="docs/screenshots/server-dashboard.png" alt="Server dashboard" width="280"></a>
 <a href="docs/screenshots/server-creator.png"><img src="docs/screenshots/server-creator.png" alt="Guided server creation" width="280"></a>
+<a href="docs/screenshots/server-list.png"><img src="docs/screenshots/server-list.png" alt="List view grouped by node" width="280"></a>
 
 ## Highlights
 
