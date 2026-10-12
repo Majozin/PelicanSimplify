@@ -292,6 +292,16 @@ body:has(.ps) [data-ps-copyright-line] > * { display: inline; }
 .ps-server-grid:not(.is-list) .ps-create-card:is(:hover, :focus-visible):not(:disabled) .ps-create-plus { transform: scale(1.06); box-shadow: 0 0 0 2px var(--ps-accent), 0 8px 22px color-mix(in srgb, var(--ps-accent) 30%, transparent); }
 .ps-server-grid:not(.is-list) .ps-create-card h3 { text-align: right; transform: translateX(8px); }
 .ps-server-grid:not(.is-list) .ps-create-card h3 strong { margin-left: auto; }
+/* List view: the same icon buttons side by side on the left; the label slides out to the right on hover. */
+.ps-server-grid.is-list .ps-create-tiles { display: flex; justify-content: flex-start; align-items: center; gap: 12px; height: auto; min-height: 0; padding: 4px 0; }
+.ps-server-grid.is-list .ps-create-card { --ps-create-icon: 52px; --ps-create-small: 52px; gap: 0; width: auto; padding: 4px; border: 0; background: none; box-shadow: none; }
+.ps-server-grid.is-list .ps-create-card:is(:hover, :focus-visible):not(:disabled) { gap: 12px; background: none; }
+.ps-server-grid.is-list .ps-create-card h3 { max-width: 0; opacity: 0; transform: translateX(-8px); }
+.ps-server-grid.is-list .ps-create-card:is(:hover, :focus-visible):not(:disabled) h3 { max-width: 120px; opacity: 1; transform: none; }
+.ps-server-grid .ps-create-card .ps-create-plus { overflow: visible; border: 2px dashed color-mix(in srgb, var(--ps-accent) 55%, transparent); background: color-mix(in srgb, var(--ps-accent) 8%, var(--ps-raised)); }
+.ps-server-grid .ps-create-card .ps-create-add { right: -7px; bottom: -7px; width: 24px; height: 24px; border: 3px solid var(--ps-bg, var(--ps-surface)); background: var(--ps-accent); color: #fff; transition: transform var(--ps-slow); }
+.ps-server-grid .ps-create-card:is(:hover, :focus-visible):not(:disabled) .ps-create-plus { border-style: solid; border-color: var(--ps-accent); }
+.ps-server-grid .ps-create-card:is(:hover, :focus-visible):not(:disabled) .ps-create-add { transform: rotate(90deg) scale(1.1); }
 /* Read as "add": a dashed accent outline and a filled plus badge; hover turns the outline solid. */
 .ps-server-grid:not(.is-list) .ps-create-card .ps-create-plus { overflow: visible; border: 2px dashed color-mix(in srgb, var(--ps-accent) 55%, transparent); background: color-mix(in srgb, var(--ps-accent) 8%, var(--ps-raised)); box-shadow: none; }
 .ps-server-grid:not(.is-list) .ps-create-card .ps-create-plus > svg { width: 56%; height: 56%; }
@@ -302,12 +312,6 @@ body:has(.ps) [data-ps-copyright-line] > * { display: inline; }
 .ps-server-grid:not(.is-list) .ps-create-card .ps-create-plus::after { inset: 0; border-radius: inherit; overflow: hidden; }
 
 /* List view: one row per server; controls dock at the right edge. */
-.ps-server-grid.is-list .ps-create-tiles { grid-template-columns: repeat(2, minmax(0, 1fr)); grid-template-rows: none; height: 84px; min-height: 84px; }
-.ps-server-grid.is-list .ps-create-card { --ps-create-small: 48px; gap: 16px; padding: 6px 16px; }
-.ps-server-grid.is-list .ps-create-card .ps-create-plus { width: var(--ps-create-small); height: var(--ps-create-small); }
-.ps-server-grid.is-list .ps-create-card h3 { max-width: 120px; opacity: 1; transform: none; font-size: 14px; line-height: 1.2; }
-.ps-server-grid.is-list .ps-create-add { width: 18px; height: 18px; right: 2px; bottom: 2px; }
-.ps-server-grid.is-list .ps-create-add svg { width: 11px; height: 11px; }
 .ps-server-grid.is-list .ps-server-open { display: grid; grid-template-columns: 80px minmax(0, 1fr) minmax(100px, 240px) 140px; align-items: center; gap: 10px; height: 76px; padding: 10px 16px; }
 .ps-server-grid.is-list.has-motd .ps-server-open { height: 116px; }
 .ps-server-grid.is-list .ps-card-head { align-self: start; min-height: 48px; margin: 0; }
@@ -730,7 +734,7 @@ button.ps-package:hover { border-color: var(--ps-accent); }
   .ps-server-grid { grid-template-columns: minmax(0, 1fr); }
   .ps-create-tiles { min-height: 220px; }
   .ps-create-card { --ps-create-icon: 64px; --ps-create-small: 52px; padding: 12px; }
-  .ps-server-grid.is-list .ps-create-card { --ps-create-small: 36px; gap: 8px; padding: 6px; }
+  .ps-server-grid.is-list .ps-create-card { --ps-create-icon: 44px; --ps-create-small: 44px; }
   .ps-server-grid.is-list .ps-create-card h3 { font-size: 12px; }
   .ps-health-panel { width: 100%; margin: 0; }
   .ps-host-health { gap: 12px; padding: 12px; }

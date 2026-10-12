@@ -1,5 +1,8 @@
 # Changes
 
+## 0.3.0-beta.36
+- List view: the create buttons use the new icon style too, side by side on the left. The label slides out on hover.
+
 ## 0.3.0-beta.35
 - Server page: a status bar slides in at the top once you scroll past the server card. It keeps the name, status, address (click to copy), players and the start, restart, stop and kill buttons in reach.
 
