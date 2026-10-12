@@ -155,48 +155,44 @@
                             <strong class="ps-dropdown-title">Customize overview</strong>
                             <p class="ps-dropdown-hint">Only for you, on this device.</p>
                             <template x-if="!server">
-                                <div>
-                                    <div class="ps-dropdown-section" x-show="!overviewCompact">
-                                        <span class="ps-label">Layout</span>
-                                        <div class="ps-segmented" role="group" aria-label="Overview layout">
+                                <div class="ps-customize">
+                                    <div class="ps-customize-row" x-show="!overviewCompact">
+                                        <div><strong>Layout</strong><small>Cards in a grid, or one row per server</small></div>
+                                        <div class="ps-segmented" role="group" aria-label="Layout">
                                             <template x-for="view in [{key:'grid',label:'Grid',icon:'grid'},{key:'list',label:'List',icon:'list'}]" :key="view.key">
-                                                <button type="button" :aria-pressed="overviewView===view.key" x-on:click="setOverviewView(view.key)">
-                                                    <svg aria-hidden="true"><use :href="'#ps-'+view.icon"/></svg><span x-text="view.label"></span>
-                                                </button>
+                                                <button type="button" :aria-pressed="overviewView===view.key" x-on:click="setOverviewView(view.key)"><svg aria-hidden="true"><use :href="'#ps-'+view.icon"/></svg><span x-text="view.label"></span></button>
                                             </template>
                                         </div>
                                     </div>
-                                    <div class="ps-dropdown-section">
-                                        <span class="ps-label">Large icon</span>
-                                        <div class="ps-segmented" role="group" aria-label="Large overview icon">
-                                            <button type="button" :aria-pressed="overviewPreferences.largeIcon==='server'" x-on:click="setOverviewPreference('largeIcon','server')">Server icon</button>
-                                            <button type="button" :aria-pressed="overviewPreferences.largeIcon==='egg'" x-on:click="setOverviewPreference('largeIcon','egg')">Egg icon</button>
+                                    <div class="ps-customize-row">
+                                        <div><strong>Card icon</strong><small>The big picture at the top of each card</small></div>
+                                        <div class="ps-segmented" role="group" aria-label="Card icon">
+                                            <button type="button" :aria-pressed="overviewPreferences.largeIcon==='server'" x-on:click="setOverviewPreference('largeIcon','server')">Server</button>
+                                            <button type="button" :aria-pressed="overviewPreferences.largeIcon==='egg'" x-on:click="setOverviewPreference('largeIcon','egg')">Game</button>
                                         </div>
                                     </div>
-                                    <div class="ps-dropdown-section" x-show="nodeOptions().length > 1 || overviewPreferences.groupByNode==='always'">
-                                        <span class="ps-label">Group by node</span>
-                                        <div class="ps-segmented" role="group" aria-label="Group servers by node">
-                                            <template x-for="mode in [{key:'auto',label:'Automatic'},{key:'always',label:'Always'},{key:'off',label:'Off'}]" :key="mode.key">
+                                    <div class="ps-customize-row">
+                                        <div><strong>Card title</strong><small>Show the alias you gave it, or the real server name</small></div>
+                                        <div class="ps-segmented" role="group" aria-label="Card title">
+                                            <button type="button" :aria-pressed="overviewPreferences.largeName==='alias'" x-on:click="setOverviewPreference('largeName','alias')">Alias</button>
+                                            <button type="button" :aria-pressed="overviewPreferences.largeName==='name'" x-on:click="setOverviewPreference('largeName','name')">Name</button>
+                                        </div>
+                                    </div>
+                                    <div class="ps-customize-row" x-show="nodeOptions().length > 1 || overviewPreferences.groupByNode==='always'">
+                                        <div><strong>Group by node</strong><small>Automatic groups as soon as you have more than one node</small></div>
+                                        <div class="ps-segmented" role="group" aria-label="Group by node">
+                                            <template x-for="mode in [{key:'auto',label:'Auto'},{key:'always',label:'Always'},{key:'off',label:'Off'}]" :key="mode.key">
                                                 <button type="button" :aria-pressed="overviewPreferences.groupByNode===mode.key" x-on:click="setOverviewPreference('groupByNode', mode.key)" x-text="mode.label"></button>
                                             </template>
                                         </div>
                                     </div>
-                                    <div class="ps-dropdown-section">
-                                        <span class="ps-label">Large name</span>
-                                        <div class="ps-segmented" role="group" aria-label="Large server name">
-                                            <button type="button" :aria-pressed="overviewPreferences.largeName==='alias'" x-on:click="setOverviewPreference('largeName','alias')">Alias</button>
-                                            <button type="button" :aria-pressed="overviewPreferences.largeName==='name'" x-on:click="setOverviewPreference('largeName','name')">Server name</button>
-                                        </div>
-                                    </div>
-                                    <div class="ps-dropdown-section">
-                                        <span class="ps-label">Show on cards</span>
-                                        <template x-for="option in [{key:'showMotd',label:'Minecraft MOTD'},{key:'showCpu',label:'CPU tile'},{key:'showRam',label:'RAM tile'},{key:'showQuickActions',label:'Quick actions'},{key:'minecraftAlwaysGreen',label:'Always keep Minecraft creation green'}]" :key="option.key">
-                                            <button type="button" class="ps-toggle" role="switch" :aria-checked="overviewPreferences[option.key]" x-on:click="setOverviewPreference(option.key, !overviewPreferences[option.key])">
-                                                <span x-text="option.label"></span>
-                                                <span class="ps-switch" :class="{'is-on': overviewPreferences[option.key]}" aria-hidden="true"></span>
-                                            </button>
-                                        </template>
-                                    </div>
+                                    <span class="ps-customize-head">Show on each card</span>
+                                    <template x-for="option in [{key:'showMotd',label:'Message of the day',hint:'The Minecraft MOTD under the server name'},{key:'showCpu',label:'CPU usage',hint:'A small live CPU graph'},{key:'showRam',label:'Memory usage',hint:'A small live RAM graph'},{key:'showQuickActions',label:'Quick actions on hover',hint:'Start, stop and restart buttons when you point at a card'}]" :key="option.key">
+                                        <button type="button" class="ps-customize-switch" role="switch" :aria-checked="overviewPreferences[option.key]" x-on:click="setOverviewPreference(option.key, !overviewPreferences[option.key])">
+                                            <span><strong x-text="option.label"></strong><small x-text="option.hint"></small></span>
+                                            <span class="ps-switch" :class="{'is-on': overviewPreferences[option.key]}" aria-hidden="true"></span>
+                                        </button>
+                                    </template>
                                 </div>
                             </template>
                         </div>
@@ -216,11 +212,11 @@
                                 <button type="button" class="ps-btn is-icon" x-on:click="setTheme(theme==='light' ? 'dark' : theme==='dark' ? 'system' : 'light')" :data-tip="'Theme: '+(theme==='light' ? 'Light' : theme==='dark' ? 'Dark' : 'System')+' (click to change)'" :aria-label="'Theme: '+theme+'. Change theme'">
                                     <svg aria-hidden="true"><use :href="theme==='light' ? '#ps-sun' : theme==='dark' ? '#ps-moon' : '#ps-monitor'"/></svg>
                                 </button>
-                                <button type="button" class="ps-btn is-icon" x-show="adminPages().length && !server" x-on:click="setHostMode(!hostMode); accountMenu=false" :data-tip="hostMode ? 'Switch to simple mode' : 'Switch to host mode'" :aria-label="hostMode ? 'Switch to simple mode' : 'Switch to host mode'">
-                                    <svg aria-hidden="true"><use :href="hostMode ? '#ps-grid' : '#ps-host'"/></svg>
-                                </button>
                                 <button type="button" class="ps-btn is-icon" x-on:click="openAccount()" data-tip="Profile settings" aria-label="Profile settings" aria-haspopup="dialog">
                                     <svg aria-hidden="true"><use href="#ps-account"/></svg>
+                                </button>
+                                <button type="button" class="ps-btn is-icon" x-show="adminPages().length && !server" x-on:click="setHostMode(!hostMode); accountMenu=false" :data-tip="hostMode ? 'Switch to simple mode' : 'Switch to host mode'" :aria-label="hostMode ? 'Switch to simple mode' : 'Switch to host mode'">
+                                    <svg aria-hidden="true"><use :href="hostMode ? '#ps-grid' : '#ps-host'"/></svg>
                                 </button>
                                 <form method="post" action="{{ route('filament.app.auth.logout') }}">@csrf
                                     <button type="submit" class="ps-btn is-icon" data-tip="Sign out" aria-label="Sign out"><svg aria-hidden="true"><use href="#ps-logout"/></svg></button>

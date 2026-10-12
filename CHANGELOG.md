@@ -1,5 +1,9 @@
 # Changes
 
+## 0.3.0-beta.47
+- Customize overview, redone: every option has a clear name and a one-line explanation, with its control on the right (Layout, Card icon, Card title, Group by node), then "Show on each card" switches: Message of the day, CPU usage, Memory usage and Quick actions on hover.
+- Account menu: theme, profile, the host/simple mode switch (its icon shows the mode you switch to) and sign out, in that order.
+
 ## 0.3.0-beta.46
 - "Customize overview" (was "Customize appearance") only appears on the simple-mode overview, in a calmer new style: rounded segmented controls and the card details as two columns of switches.
 - Theme and the simple/host mode switch moved to the account menu, so they stay available on every page.

@@ -993,16 +993,19 @@ span.ps-card-background.ps-banner-color { width: 100%; opacity: .5; filter: none
 /* A clear gap between the (fading) server list and the health tile, so no card peeks past its corners. */
 .ps-overview > .ps-health-panel { margin-top: 10px; }
 .ps-server-scroll { mask-image: linear-gradient(to bottom, #000 calc(100% - 36px), transparent calc(100% - 4px)); }
-/* Customize overview: a calmer panel in the new style — labels above rounded segmented controls, and the
-   card details as a two-column set of switches. */
-.ps-overview-appearance-menu { width: 360px; padding: 16px; border-radius: 18px; }
+/* Customize overview: each option has a name, a one-line explanation and its control on the right. */
+.ps-overview-appearance-menu { width: 400px; padding: 16px; border-radius: 18px; }
 .ps-overview-appearance-menu .ps-dropdown-title { font-size: 15px; }
-.ps-dropdown-hint { margin: 0; color: var(--ps-muted); font-size: 12px; }
-.ps-overview-appearance-menu .ps-dropdown-section { display: grid; gap: 8px; margin-top: 14px; padding-top: 14px; }
-.ps-overview-appearance-menu .ps-label { font-size: 11px; letter-spacing: .06em; text-transform: uppercase; color: var(--ps-muted); }
-.ps-overview-appearance-menu .ps-segmented { display: grid; grid-auto-columns: minmax(0, 1fr); grid-auto-flow: column; padding: 3px; border-radius: 12px; }
-.ps-overview-appearance-menu .ps-segmented > button { justify-content: center; border-radius: 9px; }
-.ps-overview-appearance-menu .ps-dropdown-section:last-child { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-.ps-overview-appearance-menu .ps-dropdown-section:last-child > .ps-label { grid-column: 1 / -1; }
-.ps-overview-appearance-menu .ps-toggle { padding: 8px 10px; border: 1px solid var(--ps-line); border-radius: 11px; background: var(--ps-raised); font-size: 12px; }
-@media (max-width: 480px) { .ps-overview-appearance-menu { width: min(360px, calc(100vw - 24px)); } }
+.ps-dropdown-hint { margin: 0 0 6px; color: var(--ps-muted); font-size: 12px; }
+.ps-customize { display: grid; gap: 2px; }
+.ps-customize-row, .ps-customize-switch { display: flex; align-items: center; justify-content: space-between; gap: 14px; width: 100%; padding: 10px 0; border: 0; border-top: 1px solid var(--ps-line); background: none; color: var(--ps-ink); text-align: left; }
+.ps-customize-row > div:first-child, .ps-customize-switch > span:first-child { display: grid; gap: 2px; min-width: 0; }
+.ps-customize strong { font-size: 13px; font-weight: 650; }
+.ps-customize small { color: var(--ps-muted); font-size: 11.5px; line-height: 1.35; }
+.ps-customize .ps-segmented { flex: none; padding: 3px; border-radius: 10px; }
+.ps-customize .ps-segmented > button { min-height: 28px; padding: 4px 10px; border-radius: 8px; font-size: 12px; }
+.ps-customize-head { margin: 10px 0 0; padding-top: 12px; border-top: 1px solid var(--ps-line); color: var(--ps-muted); font-size: 11px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; }
+.ps-customize-head + .ps-customize-switch { border-top: 0; }
+.ps-customize-switch { cursor: pointer; }
+.ps-customize-switch .ps-switch { flex: none; }
+@media (max-width: 480px) { .ps-overview-appearance-menu { width: min(400px, calc(100vw - 24px)); } .ps-customize-row { flex-wrap: wrap; } }
