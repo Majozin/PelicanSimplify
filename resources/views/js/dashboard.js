@@ -265,6 +265,16 @@
           this.statusBarVisible = !entry.isIntersecting && entry.boundingClientRect.bottom < 0;
         }).observe(el);
       },
+      /** In the host mode pane the workspace gets exactly the height left in the frame, so nothing scrolls. */
+      fitEmbedded(el) {
+        const fit = () => {
+          const top = el.getBoundingClientRect().top + window.scrollY;
+          el.style.setProperty('--ps-embed-height', Math.max(320, window.innerHeight - top - 12) + 'px');
+        };
+        fit();
+        window.addEventListener('resize', fit);
+        if (typeof ResizeObserver === 'function') new ResizeObserver(fit).observe(this.$root.querySelector('.ps-server-info') || el);
+      },
       openHostServer(s) {
         this.hostServer = s;
         this.hostServersOpen = false;

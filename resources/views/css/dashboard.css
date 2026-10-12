@@ -803,7 +803,7 @@ button.ps-package:hover { border-color: var(--ps-accent); }
 .ps-host-serverpane-actions { display: flex; gap: 4px; margin-left: auto; }
 .ps-host-server[aria-current="page"] { border-color: var(--ps-accent); background: color-mix(in srgb, var(--ps-accent) 12%, var(--ps-raised)); }
 .ps.is-embedded .ps-top { display: none; }
-.ps.is-embedded .ps-main { padding: 50px 20px 16px; }
+.ps.is-embedded .ps-main { padding: 12px; }
 .ps.is-embedded .ps-server-dashboard { max-width: none; }
 body:has(.ps.is-embedded) :is(.fi-footer, [data-ps-footer], [data-ps-footer-wrapper]) { display: none !important; }
 body:has(.ps.is-embedded) :is(.fi-main, .fi-page, .fi-main-ctn) { max-width: none !important; padding-inline: 0 !important; }
@@ -972,11 +972,21 @@ span.ps-card-background.ps-banner-color { width: 100%; opacity: .5; filter: none
 }
 @media (max-width: 420px) { .ps-statusbar-item { display: none; } }
 /* In the host mode pane the console (or open section) fills the frame height instead of a fixed tall block. */
-.ps.is-embedded .ps-server-workspace .ps-console { min-height: 0; height: max(340px, calc(100dvh - 300px)); }
-.ps.is-embedded .ps-server-workspace .ps-dock { height: max(340px, calc(100dvh - 300px)); }
-.ps.is-embedded .ps-server-workspace.has-dock .ps-console { height: 200px; }
+.ps.is-embedded .ps-server-workspace { height: var(--ps-embed-height, auto); grid-template-rows: auto auto auto minmax(0, 1fr); }
+.ps.is-embedded .ps-server-workspace :is(.ps-console, .ps-dock) { min-height: 0; height: auto; }
+.ps.is-embedded .ps-server-workspace .ps-widget-grid { max-height: 100%; overflow-y: auto; }
+.ps.is-embedded .ps-server-workspace.has-dock .ps-console { height: auto; min-height: 0; }
+/* The banner sits flush at the top of the pane; its badges make room for the floating pane buttons. */
+.ps.is-embedded .ps-server-info { margin-top: 0; }
+.ps.is-embedded .ps-info-badges { margin-right: 74px; }
+.ps.is-embedded .ps-server-dashboard > .ps-server-info:first-of-type { margin-top: 0; }
 /* The create icon's shine sweeps inside the icon only (moving the gradient, not the layer), so it never
    reaches the label next to it. */
 .ps-create-card .ps-create-plus::after { inset: 0; border-radius: inherit; background: linear-gradient(110deg, transparent 40%, rgb(255 255 255 / .45) 50%, transparent 60%) no-repeat; background-size: 300% 100%; background-position: 150% 0; transform: none; opacity: 0; }
 .ps-create-card:is(:hover, :focus-visible):not(:disabled) .ps-create-plus::after { animation: ps-create-shine 1.8s ease-in-out infinite; }
 @keyframes ps-create-shine { 0%, 12% { opacity: 0; background-position: 150% 0; } 20% { opacity: 1; } 55%, 100% { opacity: 0; background-position: -50% 0; } }
+.ps.is-embedded .ps-server-workspace.has-dock { grid-template-rows: auto auto auto minmax(0, 1fr); }
+/* In the pane, with a section open, the small console takes the players card's place (players stay in the status line of the section menu's Console). */
+.ps.is-embedded .ps-server-workspace.has-dock .ps-players-stat { display: none; }
+/* The server list fades out softly above the health tile instead of being cut off by a hard edge. */
+.ps-server-scroll { mask-image: linear-gradient(to bottom, #000 calc(100% - 28px), transparent); }

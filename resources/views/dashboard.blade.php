@@ -612,7 +612,7 @@
                 </div>
             </div>
 
-            <div class="ps-server-workspace" :class="{'has-dock': docked()}">
+            <div class="ps-server-workspace" :class="{'has-dock': docked()}" x-init="embedded && fitEmbedded($el)">
                 {{-- A workspace opens in this block; the console then shrinks to a read-only view at the bottom right. --}}
                 <div class="ps-dock" x-effect="syncDock($el, docked())"></div>
                 <div class="ps-settings-column" :inert="['installing','restoring_backup'].includes(serverSetup())" :class="{'is-locked': ['installing','restoring_backup'].includes(serverSetup())}">
@@ -685,6 +685,7 @@
         <section class="ps-modal" :class="modalSize()" :role="docked() ? 'region' : 'dialog'" :aria-modal="modal && !docked() ? 'true' : null" :aria-label="modalTitle()" x-trap.noscroll="modal && !docked()">
             <header class="ps-modal-head">
                 <h2 x-text="modalTitle()"></h2>
+                <button type="button" class="ps-btn is-sm is-icon is-subtle" x-show="modal==='files' && server?.files_url" x-on:click="window.open(server.files_url, 'ps-files-'+server.uuid, 'popup,width=1280,height=860')" data-tip="Open in a separate window" aria-label="Open file manager in a separate window"><svg aria-hidden="true"><use href="#ps-external"/></svg></button>
                 <div class="ps-sftp-inline" x-show="modal==='files' && server?.sftp">
                     <button type="button" class="ps-btn is-sm ps-sftp-toggle" x-on:click="sftpOpen=!sftpOpen" :aria-expanded="sftpOpen" aria-controls="ps-sftp-details" x-text="sftpOpen ? 'Hide SFTP details' : 'Show SFTP details'"></button>
                     <span id="ps-sftp-details" class="ps-sftp-details" x-show="sftpOpen" x-cloak>
