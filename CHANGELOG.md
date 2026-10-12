@@ -1,11 +1,14 @@
 # Changes
 
+## 0.4.1-beta.6 (beta channel)
+- The conflict list starts empty: Essentials (Essentials Core) no longer exists, and a name match could hit an unrelated future plugin.
+
 ## 0.4.1-beta.5 (beta channel)
 - Server pages from other plugins appear on the server page, in the menu under "External", and open in the middle block like Simplify's own sections (styled to match; the console moves to the side). Tested with the Tickets plugin.
 
 ## 0.4.1-beta.4 (beta channel)
 - Other plugins: admin pages added by other Pelican plugins are recognised (by the plugin's namespace) and listed under "External" in Admin tools and in host mode, with the plugin's name. Tested with Tickets and Legal Pages from the official plugin repository.
-- Known conflicts: conflicts.json (bundled, and refreshed hourly from GitHub so it can grow without a release) lists plugins that clash with Simplify, starting with Essentials. While one is enabled, Simplify switches its own dashboard off so everyone gets Pelican's own panel, and Simplify settings and the plugin page explain why. Settings are kept; removing the plugin turns Simplify back on.
+- Known conflicts: conflicts.json (bundled, and refreshed hourly from GitHub so it can grow without a release) lists plugins that clash with Simplify. While one is enabled, Simplify switches its own dashboard off so everyone gets Pelican's own panel, and Simplify settings and the plugin page explain why. Settings are kept; removing the plugin turns Simplify back on.
 
 ## 0.4.1-beta.3 (beta channel)
 - Interface scaling: Simplify is designed for a 1440p screen and now scales down in proportion on smaller windows (about 80% on a 1080p screen), so everything fits without scrolling. Phones keep their own layout; the host mode pane scales with the page around it.
