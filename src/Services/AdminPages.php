@@ -4,7 +4,8 @@ namespace Simplify\Panel\Services;
 
 /**
  * Pelican's admin pages that Simplify does not replace, grouped for the dashboard's admin menu. Read from the
- * admin panel itself, so plugin pages appear too and each item honours that page's own access check.
+ * admin panel itself, so plugin pages appear too (under External, see ExternalPlugins) and each item honours
+ * that page's own access check.
  */
 final class AdminPages
 {
@@ -15,7 +16,7 @@ final class AdminPages
         'UserResource' => ['People & access', 'players'], 'RoleResource' => ['People & access', 'lock'], 'ApiKeyResource' => ['People & access', 'key'],
         'PluginResource' => ['Panel', 'plugins'], 'Settings' => ['Panel', 'gear'], 'WebhookResource' => ['Panel', 'link'], 'Health' => ['Panel', 'heart'], 'ListLogs' => ['Panel', 'activity'],
     ];
-    private const GROUPS = ['Game servers', 'Infrastructure', 'People & access', 'Panel', 'Other'];
+    private const GROUPS = ['Game servers', 'Infrastructure', 'People & access', 'Panel', 'External', 'Other'];
     /** Pages Simplify replaces or that need parameters. */
     private const SKIP = ['Dashboard', 'ViewLogs', 'SimplifySettings', 'CreateMinecraftServer', 'ManagePlugins', 'ManagePeople'];
 
@@ -49,10 +50,12 @@ final class AdminPages
             } catch (\Throwable) {
                 continue;
             }
-            [$group, $icon] = self::KNOWN[$name] ?? ['Other', 'legacy'];
+            // Pages from other plugins (their class is in that plugin's namespace) go under External.
+            $plugin = isset(self::KNOWN[$name]) ? null : ExternalPlugins::owner($class);
+            [$group, $icon] = self::KNOWN[$name] ?? ($plugin ? ['External', 'plugins'] : ['Other', 'legacy']);
             if ($name === 'ServerResource' && $class::canCreate()) $label = 'Create server (legacy)';
             if ($people && $name === 'UserResource') $label = 'People';
-            $groups[$group][] = ['key' => strtolower($name), 'label' => $label, 'url' => $url, 'icon' => $icon];
+            $groups[$group][] = ['key' => strtolower($name), 'label' => $label, 'url' => $url, 'icon' => $icon, 'plugin' => $plugin['name'] ?? null];
         }
         $menu = [];
         foreach ($groups as $label => $items) {

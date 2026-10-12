@@ -437,7 +437,7 @@
           { key: 'plugins', label: 'Plugins', icon: 'plugins', color: '#f472b6', pages: ['pluginresource'] },
           { key: 'panel', label: 'Panel', icon: 'gear', color: '#94a3b8', pages: ['settings', 'listlogs'] },
           { key: 'legacy', label: 'Legacy', icon: 'legacy', color: '#a8a29e', pages: ['serverresource', 'legacyplugins', 'legacyusers', 'legacyroles'] },
-          { key: 'extensions', label: 'Extensions', icon: 'grid', color: '#2dd4bf', pages: [] },
+          { key: 'extensions', label: 'External', icon: 'plugins', color: '#2dd4bf', pages: [] },
           { key: 'health', label: 'Health', icon: 'heart', color: '#f87171', pages: ['health'] },
         ];
         const items = [...this.adminPages().flatMap((group) => group.items), ...(this.boot.host_extras || [])];

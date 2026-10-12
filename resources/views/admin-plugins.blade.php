@@ -5,6 +5,7 @@
     @php($plugins = $this->plugins())
     <div class="ps-admin-page ps-plugins">
         <header class="ps-plugins-head">
+            @include('pelican-simplify::partials-conflict-notice')
             <div class="ps-alert is-info ps-plugin-channel" role="note">
                 <x-tabler-versions class="ps-ico" aria-hidden="true" />
                 <div>

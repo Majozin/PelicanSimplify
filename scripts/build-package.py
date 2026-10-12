@@ -30,7 +30,7 @@ def build(output: Path, epoch: int | None = None) -> Path:
     # Laravel's compiled views and timestamp-based PHP caches look up to date.
     moment = datetime.fromtimestamp(epoch, timezone.utc) if epoch is not None else datetime.now(timezone.utc)
     release_time = moment.timetuple()[:6]
-    files = [root / name for name in ['plugin.json', 'README.md', 'LICENSE']]
+    files = [root / name for name in ['plugin.json', 'README.md', 'LICENSE', 'conflicts.json']]
     for name in ['src', 'resources', 'database', 'lang']:
         if (root / name).is_dir():
             files.extend(p for p in (root / name).rglob('*') if p.is_file())

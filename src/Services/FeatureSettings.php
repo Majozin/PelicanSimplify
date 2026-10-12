@@ -60,7 +60,12 @@ final class FeatureSettings
         $data=array_intersect_key(is_array($saved)?$saved:[],self::defaults());
         return $this->loaded=array_replace(self::defaults(),array_map(fn($v):bool=>$v===true,$data));
     }
-    public static function enabled(string $feature): bool { return self::all()[$feature]??false; }
+    public static function enabled(string $feature): bool
+    {
+        // A plugin that clashes with Simplify is enabled: hand the panel back to Pelican's own pages.
+        if ($feature === 'dashboard' && ExternalPlugins::conflicts() !== []) return false;
+        return self::all()[$feature]??false;
+    }
     public static function save(array $input,bool $complete=false): void
     {
         abort_unless(user()?->isRootAdmin(),403);

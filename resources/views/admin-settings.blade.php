@@ -22,6 +22,7 @@
                 @endif
             </header>
         @endif
+        @include('pelican-simplify::partials-conflict-notice')
         @php($update = $this->needsSetup() ? null : $this->updateStatus())
         @if($update && $update['available'])
             <div class="ps-alert is-info ps-update-card" role="status">

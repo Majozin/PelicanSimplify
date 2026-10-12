@@ -1,0 +1,6 @@
+{
+  "about": "Plugins that change the same parts of Pelican as Simplify. While one of them is enabled, Simplify switches its own dashboard off and shows why. Matched on plugin id or plugin name (case-insensitive).",
+  "plugins": [
+    { "name": "Essentials", "reason": "Essentials replaces large parts of the panel that Simplify also replaces, so the two cannot run together." }
+  ]
+}
