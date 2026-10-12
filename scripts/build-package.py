@@ -12,6 +12,7 @@ from pathlib import Path
 from datetime import datetime, timezone
 import hashlib
 import json
+import re
 import os
 import shutil
 import sys
@@ -61,6 +62,10 @@ def publish(archive: Path) -> None:
         (root / name).write_text(json.dumps({panel: entry for panel in SUPPORTED_PANELS}, indent=2) + '\n')
     if stable:
         shutil.copyfile(archive, archive.parent / 'pelican-simplify-latest.zip')
+        # The README install link points at this release's zip on GitHub Releases (counted downloads).
+        readme = root / 'README.md'
+        release = f"https://github.com/jerajerajerajera/PelicanSimplify/releases/download/v{manifest['version']}/pelican-simplify-v{manifest['version']}.zip"
+        readme.write_text(re.sub(r'https://github\.com/jerajerajerajera/PelicanSimplify/releases/download/v[^/]+/pelican-simplify-v[^)\s]+\.zip', release, readme.read_text()))
     keep = {archive.name}
     for name in ['update.json', 'update-beta.json']:
         if (root / name).is_file():
