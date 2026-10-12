@@ -1,5 +1,11 @@
 # Changes
 
+## 0.3.0-beta.39
+- Overview: the create buttons moved out of the grid into the toolbar, on the same row as the game filters, in both grid and list view. Every tile in the grid is now a server, all the same size.
+- Cards in simple and host mode match the new server page: rounder corners, a softer accent border that brightens on hover, and rounder icons.
+- Server page: scrolling with the mouse over an open section (such as Game settings) scrolls the page again once the section itself has nothing left to scroll.
+- Host mode server pane: no floating status bar inside the pane (its header already shows the server), and the section menu sticks to the top of the pane.
+
 ## 0.3.0-beta.38
 - Colour banners: besides images, a server banner can be a colour. "Accent colour" picks a neighbouring hue of the server accent that stands out but matches; "Your own colour" lets you choose one. Both fade in from the middle to the right, on the server page and the overview cards.
 - The broken heart on an offline server page fades in from the middle and tilts off the bottom-right edge of the card.

@@ -329,6 +329,21 @@
             <div class="ps-server-scroll" tabindex="0" role="region" aria-label="Servers">
                 <div class="ps-server-stage" :class="{'is-list': overviewView==='list'}">
                     <div class="ps-overview-toolbar">
+                        <div class="ps-create-tiles" x-show="boot.can_create">
+                            <button type="button" x-show="canCreateGame('minecraft')" x-on:click="openCreate('minecraft')" class="ps-create-card is-minecraft" :style="creationAccent('minecraft')" aria-label="Create Minecraft server" aria-haspopup="dialog">
+                                <span class="ps-create-plus"><svg aria-hidden="true"><use href="#ps-creeper"/></svg><span class="ps-create-add"><svg aria-hidden="true"><use href="#ps-plus"/></svg></span></span>
+                                <h3><span>Create</span><strong>Minecraft</strong><span>server</span></h3>
+                            </button>
+                            <button type="button" x-show="!canCreateGame('native')" :disabled="!canCreateGame('other')" x-on:click="openCreate('other')" class="ps-create-card is-other" :style="creationAccent('other')" :aria-label="boot.game_create_url ? 'Create other server' : 'Create other server with Pelican\'s form'" aria-haspopup="dialog">
+                                <span class="ps-create-plus"><svg aria-hidden="true"><use href="#ps-gamepad"/></svg><span class="ps-create-add"><svg aria-hidden="true"><use href="#ps-plus"/></svg></span></span>
+                                <h3><span>Create</span><strong>Other</strong><span>server</span></h3>
+                            </button>
+                            {{-- Easy creator off: one tile for Pelican's native creation (administrators). --}}
+                            <button type="button" x-show="canCreateGame('native')" x-on:click="openCreate('native')" class="ps-create-card is-native" :style="creationAccent('native')" aria-label="Create server with Pelican's creator" aria-haspopup="dialog">
+                                <span class="ps-create-plus"><svg aria-hidden="true"><use href="#ps-host"/></svg><span class="ps-create-add"><svg aria-hidden="true"><use href="#ps-plus"/></svg></span></span>
+                                <h3><span>Create</span><strong>New</strong><span>server</span></h3>
+                            </button>
+                        </div>
                         <div class="ps-game-filters" role="group" aria-label="Filter servers by game">
                             <button type="button" class="ps-chip" :aria-pressed="gameFilter==='all'" x-on:click="setGameFilter('all')">All</button>
                             <template x-for="game in gameOptions()" :key="game.key">
@@ -344,21 +359,6 @@
                         </div>
                     </div>
                     <div class="ps-server-grid" :class="{'is-list': overviewView==='list', 'has-motd': overviewPreferences.showMotd, 'no-metrics': !overviewMetrics().length, 'no-quick-actions': !overviewPreferences.showQuickActions}">
-                        <div class="ps-create-tiles" x-show="boot.can_create">
-                            <button type="button" x-show="canCreateGame('minecraft')" x-on:click="openCreate('minecraft')" class="ps-server-card ps-create-card is-minecraft" :style="creationAccent('minecraft')" aria-label="Create Minecraft server" aria-haspopup="dialog">
-                                <span class="ps-create-plus"><svg aria-hidden="true"><use href="#ps-creeper"/></svg><span class="ps-create-add"><svg aria-hidden="true"><use href="#ps-plus"/></svg></span></span>
-                                <h3><span>Create</span><strong>Minecraft</strong><span>server</span></h3>
-                            </button>
-                            <button type="button" x-show="!canCreateGame('native')" :disabled="!canCreateGame('other')" x-on:click="openCreate('other')" class="ps-server-card ps-create-card is-other" :style="creationAccent('other')" :aria-label="boot.game_create_url ? 'Create other server' : 'Create other server with Pelican\'s form'" aria-haspopup="dialog">
-                                <span class="ps-create-plus"><svg aria-hidden="true"><use href="#ps-gamepad"/></svg><span class="ps-create-add"><svg aria-hidden="true"><use href="#ps-plus"/></svg></span></span>
-                                <h3><span>Create</span><strong>Other</strong><span>server</span></h3>
-                            </button>
-                            {{-- Easy creator off: one tile for Pelican's native creation (administrators). --}}
-                            <button type="button" x-show="canCreateGame('native')" x-on:click="openCreate('native')" class="ps-server-card ps-create-card is-native" :style="creationAccent('native')" aria-label="Create server with Pelican's creator" aria-haspopup="dialog">
-                                <span class="ps-create-plus"><svg aria-hidden="true"><use href="#ps-host"/></svg><span class="ps-create-add"><svg aria-hidden="true"><use href="#ps-plus"/></svg></span></span>
-                                <h3><span>Create</span><strong>New</strong><span>server</span></h3>
-                            </button>
-                        </div>
                         <template x-for="s in overviewItems()" :key="s.uuid">
                             <div class="ps-server-entry" :class="{'is-node-heading': !!s.isNodeHeader, 'has-card-motd': overviewPreferences.showMotd && s.game==='minecraft' && !!s.motd, 'has-power': overviewPreferences.showQuickActions && s.linked && Object.values(s.permissions || {}).some(Boolean), 'confirming-power': powerConfirmation?.uuid===s.uuid}" :style="accentStyle(s.uuid)">
                                 <template x-if="s.isNodeHeader">

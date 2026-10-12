@@ -795,7 +795,7 @@
         sync();
       },
       overviewColumns() {
-        return Math.min(4, Math.max(1, this.visibleServers().length + (this.boot.can_create ? 1 : 0)));
+        return Math.min(4, Math.max(1, this.visibleServers().length));
       },
       cpuLabel(s) {
         const n = s.usage?.cpu_percent;

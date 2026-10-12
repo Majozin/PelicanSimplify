@@ -241,8 +241,7 @@ body:has(.ps) [data-ps-copyright-line] > * { display: inline; }
 }
 
 /* Creation tiles: a large logo that makes room for its label on hover. */
-.ps-create-tiles { display: grid; grid-template-rows: repeat(2, minmax(0, 1fr)); gap: 10px; min-width: 0; min-height: 260px; }
-.ps-server-grid.no-metrics .ps-create-tiles { min-height: 200px; }
+.ps-create-tiles { display: flex; align-items: center; gap: 12px; order: 1; min-width: 0; }
 .ps-create-card {
   --ps-create-icon: 80px;
   --ps-create-small: 64px;
@@ -283,33 +282,6 @@ body:has(.ps) [data-ps-copyright-line] > * { display: inline; }
   .ps-create-card h3 { max-width: 120px; opacity: 1; transform: none; }
 }
 @media (prefers-reduced-motion: reduce) { .ps-create-plus > svg, .ps-create-plus::after { animation: none !important; } }
-
-/* Grid view: two half-size icon buttons stacked on the right of one tile; the label slides out to the left on hover. */
-.ps-server-grid:not(.is-list) .ps-create-tiles { grid-template-rows: none; justify-items: end; align-content: start; gap: 10px; }
-.ps-server-grid:not(.is-list) .ps-create-card { --ps-create-icon: 72px; --ps-create-small: 72px; flex-direction: row-reverse; width: auto; max-width: 100%; height: auto; padding: 4px; border: 0; background: none; box-shadow: none; }
-.ps-server-grid:not(.is-list) .ps-create-card:is(:hover, :focus-visible):not(:disabled) { background: none; }
-.ps-server-grid:not(.is-list) .ps-create-card .ps-create-plus { box-shadow: 0 0 0 1px color-mix(in srgb, var(--ps-accent) 22%, transparent); transition: width var(--ps-slow), height var(--ps-slow), transform var(--ps-slow), box-shadow var(--ps-slow); }
-.ps-server-grid:not(.is-list) .ps-create-card:is(:hover, :focus-visible):not(:disabled) .ps-create-plus { transform: scale(1.06); box-shadow: 0 0 0 2px var(--ps-accent), 0 8px 22px color-mix(in srgb, var(--ps-accent) 30%, transparent); }
-.ps-server-grid:not(.is-list) .ps-create-card h3 { text-align: right; transform: translateX(8px); }
-.ps-server-grid:not(.is-list) .ps-create-card h3 strong { margin-left: auto; }
-/* List view: the same icon buttons side by side on the left; the label slides out to the right on hover. */
-.ps-server-grid.is-list .ps-create-tiles { display: flex; justify-content: flex-start; align-items: center; gap: 12px; height: auto; min-height: 0; padding: 4px 0; }
-.ps-server-grid.is-list .ps-create-card { --ps-create-icon: 52px; --ps-create-small: 52px; gap: 0; width: auto; padding: 4px; border: 0; background: none; box-shadow: none; }
-.ps-server-grid.is-list .ps-create-card:is(:hover, :focus-visible):not(:disabled) { gap: 12px; background: none; }
-.ps-server-grid.is-list .ps-create-card h3 { max-width: 0; opacity: 0; transform: translateX(-8px); }
-.ps-server-grid.is-list .ps-create-card:is(:hover, :focus-visible):not(:disabled) h3 { max-width: 120px; opacity: 1; transform: none; }
-.ps-server-grid .ps-create-card .ps-create-plus { overflow: visible; border: 2px dashed color-mix(in srgb, var(--ps-accent) 55%, transparent); background: color-mix(in srgb, var(--ps-accent) 8%, var(--ps-raised)); }
-.ps-server-grid .ps-create-card .ps-create-add { right: -7px; bottom: -7px; width: 24px; height: 24px; border: 3px solid var(--ps-bg, var(--ps-surface)); background: var(--ps-accent); color: #fff; transition: transform var(--ps-slow); }
-.ps-server-grid .ps-create-card:is(:hover, :focus-visible):not(:disabled) .ps-create-plus { border-style: solid; border-color: var(--ps-accent); }
-.ps-server-grid .ps-create-card:is(:hover, :focus-visible):not(:disabled) .ps-create-add { transform: rotate(90deg) scale(1.1); }
-/* Read as "add": a dashed accent outline and a filled plus badge; hover turns the outline solid. */
-.ps-server-grid:not(.is-list) .ps-create-card .ps-create-plus { overflow: visible; border: 2px dashed color-mix(in srgb, var(--ps-accent) 55%, transparent); background: color-mix(in srgb, var(--ps-accent) 8%, var(--ps-raised)); box-shadow: none; }
-.ps-server-grid:not(.is-list) .ps-create-card .ps-create-plus > svg { width: 56%; height: 56%; }
-.ps-server-grid:not(.is-list) .ps-create-card .ps-create-add { right: -7px; bottom: -7px; width: 26px; height: 26px; border: 3px solid var(--ps-bg, var(--ps-surface)); background: var(--ps-accent); color: #fff; box-shadow: 0 2px 8px color-mix(in srgb, var(--ps-accent) 40%, transparent); transition: transform var(--ps-slow); }
-.ps-server-grid:not(.is-list) .ps-create-card .ps-create-add svg { width: 14px; height: 14px; stroke-width: 3; }
-.ps-server-grid:not(.is-list) .ps-create-card:is(:hover, :focus-visible):not(:disabled) .ps-create-plus { border-style: solid; border-color: var(--ps-accent); }
-.ps-server-grid:not(.is-list) .ps-create-card:is(:hover, :focus-visible):not(:disabled) .ps-create-add { transform: rotate(90deg) scale(1.1); }
-.ps-server-grid:not(.is-list) .ps-create-card .ps-create-plus::after { inset: 0; border-radius: inherit; overflow: hidden; }
 
 /* List view: one row per server; controls dock at the right edge. */
 .ps-server-grid.is-list .ps-server-open { display: grid; grid-template-columns: 80px minmax(0, 1fr) minmax(100px, 240px) 140px; align-items: center; gap: 10px; height: 76px; padding: 10px 16px; }
@@ -735,10 +707,6 @@ button.ps-package:hover { border-color: var(--ps-accent); }
   .ps-server-stage, .ps-server-stage.is-list { max-width: 100%; margin: 0; }
   .ps-overview-toolbar { margin-bottom: 10px; }
   .ps-server-grid { grid-template-columns: minmax(0, 1fr); }
-  .ps-create-tiles { min-height: 220px; }
-  .ps-create-card { --ps-create-icon: 64px; --ps-create-small: 52px; padding: 12px; }
-  .ps-server-grid.is-list .ps-create-card { --ps-create-icon: 44px; --ps-create-small: 44px; }
-  .ps-server-grid.is-list .ps-create-card h3 { font-size: 12px; }
   .ps-health-panel { width: 100%; margin: 0; }
   .ps-host-health { gap: 12px; padding: 12px; }
   .ps-host-emblem { width: 58px; height: 58px; }
@@ -932,3 +900,35 @@ span.ps-server-banner.ps-banner-color { opacity: .75; filter: none; transform: n
 span.ps-card-background.ps-banner-color { width: 100%; opacity: .5; filter: none; mask-image: linear-gradient(to right, transparent 35%, #000 100%); }
 .ps-banner-swatch { display: block; width: 100%; height: 56px; margin-bottom: 10px; border-radius: 10px; background-color: var(--ps-surface); }
 .ps-background-color { cursor: pointer; }
+
+/* Create buttons: icon-only, in the toolbar next to the game filters; the label slides out on hover. */
+.ps-create-card { --ps-create-icon: 48px; --ps-create-small: 48px; gap: 0; width: auto; padding: 4px; border: 0; border-radius: var(--ps-radius); background: none; box-shadow: none; }
+.ps-create-card:is(:hover, :focus-visible):not(:disabled) { gap: 10px; background: none; }
+.ps-create-card .ps-create-plus { overflow: visible; border: 2px dashed color-mix(in srgb, var(--ps-accent) 55%, transparent); background: color-mix(in srgb, var(--ps-accent) 8%, var(--ps-raised)); }
+.ps-create-card .ps-create-plus > svg { width: 58%; height: 58%; }
+.ps-create-card .ps-create-plus::after { inset: 0; border-radius: inherit; overflow: hidden; }
+.ps-create-card .ps-create-add { right: -6px; bottom: -6px; width: 22px; height: 22px; border: 3px solid var(--ps-bg, var(--ps-surface)); background: var(--ps-accent); color: #fff; transition: transform var(--ps-slow); }
+.ps-create-card .ps-create-add svg { width: 12px; height: 12px; stroke-width: 3; }
+.ps-create-card:is(:hover, :focus-visible):not(:disabled) .ps-create-plus { border-style: solid; border-color: var(--ps-accent); }
+.ps-create-card:is(:hover, :focus-visible):not(:disabled) .ps-create-add { transform: rotate(90deg) scale(1.1); }
+.ps-create-card h3 { font-size: 13px; line-height: 1.2; }
+@media (hover: none) { .ps-create-card h3 { max-width: 0; opacity: 0; } }
+
+/* Cards in the style of the server page: rounder corners, a softer accent border that brightens on hover,
+   and icons in rounded tinted squares. */
+.ps-server-card { border-color: color-mix(in srgb, var(--ps-accent) 38%, var(--ps-line)); border-radius: 20px; }
+.ps-server-card:not(.locked):hover { border-color: var(--ps-accent); }
+.ps-card-icon, .ps-card-egg-icon { border-radius: 14px; }
+.ps-server-grid.is-list .ps-server-card { border-radius: 16px; }
+.ps-host-servers, .ps-host-serverpane { border-radius: 20px; }
+.ps-host-rail { border-radius: 20px 0 0 20px; }
+.ps-host-main { border-radius: 0 20px 20px 0; }
+.ps-host-server { border: 1px solid color-mix(in srgb, var(--ps-accent) 30%, var(--ps-line)); border-left-width: 1px; border-radius: 14px; background: color-mix(in srgb, var(--ps-accent) 5%, var(--ps-raised)); }
+.ps-host-server:hover { transform: none; border-color: var(--ps-accent); }
+.ps-host-server[aria-current="page"] { border-color: var(--ps-accent); background: color-mix(in srgb, var(--ps-accent) 14%, var(--ps-raised)); }
+/* Inside the host mode pane the pane header already names the server: no floating status bar there,
+   and the section menu sticks to the top of the frame. */
+.ps.is-embedded .ps-statusbar { display: none; }
+.ps.is-embedded .ps-server-workspace .ps-widget-grid { top: 12px; }
+/* Docked sections are part of the page: scrolling past their content scrolls the page on. */
+.ps-dock :is(.ps-modal-layer, .ps-modal-body, .ps-tab-panels) { overscroll-behavior: auto; }
