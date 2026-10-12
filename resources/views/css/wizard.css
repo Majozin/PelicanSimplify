@@ -339,3 +339,15 @@ html.ps-frame .ps-settings-tabs.fi-vertical > .fi-tabs { top: 0; max-height: 100
 .ps-role footer .ps-help { display: inline-flex; align-items: center; gap: 5px; }
 @media (max-width: 760px) { .ps-person { grid-template-columns: 40px minmax(0, 1fr); } .ps-person-meta, .ps-person-actions { grid-column: 2; } }
 .ssc-draft-indicator { cursor: default; }
+
+/* Panel name & logo editor */
+.ps-brand-editor { display: grid; gap: 12px; }
+.ps-brand-preview { display: grid; gap: 6px; }
+.ps-brand-stage { display: flex; align-items: center; gap: 10px; min-height: 72px; padding: 16px 20px; border-radius: 12px; border: 1px solid rgb(127 127 127 / .2); background: rgb(127 127 127 / .06); overflow: hidden; }
+.ps-brand-stage img { max-width: 280px; object-fit: contain; }
+.ps-brand-name { font-size: 22px; line-height: 1.2; background-clip: text; -webkit-background-clip: text; color: transparent; white-space: nowrap; }
+.ps-brand-suffix { font-size: 22px; font-weight: 700; opacity: .5; white-space: nowrap; }
+.ps-brand-upload { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; }
+.ps-brand-upload > img { height: 32px; max-width: 160px; object-fit: contain; border-radius: 6px; background: rgb(127 127 127 / .08); padding: 2px; }
+.ps-brand-upload .ps-btn { cursor: pointer; }
+.ps-visually-hidden { position: absolute !important; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }

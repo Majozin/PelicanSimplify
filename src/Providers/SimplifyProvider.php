@@ -25,6 +25,7 @@ final class SimplifyProvider extends ServiceProvider
         \Illuminate\Support\Facades\Route::get('/simplify/background/{id}',\Simplify\Panel\Http\Controllers\BackgroundController::class)->name('simplify.background');
         \Illuminate\Support\Facades\Route::get('/simplify/banner/{id}',\Simplify\Panel\Http\Controllers\BannerController::class)->middleware(['web','auth'])->name('simplify.banner');
         \Illuminate\Support\Facades\Route::get('/simplify/server-icon/{uuid}',\Simplify\Panel\Http\Controllers\ServerIconController::class)->middleware(['web','auth'])->name('simplify.server-icon');
+        \Illuminate\Support\Facades\Route::get('/simplify/logo',\Simplify\Panel\Http\Controllers\LogoController::class)->middleware(['web','auth'])->name('simplify.logo');
         \Illuminate\Support\Facades\Route::get('/simplify/favicon.svg',\Simplify\Panel\Http\Controllers\FaviconController::class)->name('simplify.favicon');
         // Keep account creation and server linking administrator-only, including
         // direct requests to native pages/APIs outside this dashboard.

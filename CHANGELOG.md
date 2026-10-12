@@ -1,5 +1,11 @@
 # Changes
 
+## 0.3.0-beta.29
+- Panel name & logo (Settings → Appearance): style the name in the top-left corner with a font (Inter, system, rounded, serif, monospace, Monocraft, condensed, Impact), weight, letter spacing, capitals, one color or a fade between two colors, your own text and an optional "× Pelican". A live preview shows the result.
+- Upload your own logo (PNG, JPEG or WebP up to 1 MB, checked as a real image and served with nosniff), with a height setting and the option to keep the text next to it.
+- The default name now fades from the text color into the accent color from the middle to the right.
+- Health panel: node names are written out in full instead of breaking mid-word.
+
 ## 0.3.0-beta.28
 - Steam moved to the profile page (new "Steam" tab). It shows the Steam account linked with Pelican's own "Sign in with Steam" (OAuth), and your Web API key for game server login tokens. A key must belong to the linked Steam account.
 - Automatic tokens: with a connected key, a new server for a game that needs a token gets one by itself when the field is left empty (one token per server, named after it). Can be turned off on the Steam tab.

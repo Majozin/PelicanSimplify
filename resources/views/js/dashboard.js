@@ -255,6 +255,9 @@
         return { '--ps-accent': `hsl(${hash % 360} 68% 76%)`, '--ps-on-accent': '#111118' };
       },
       /** Panel name gradient: the common accent, else the page accent (blue on an uncoloured overview). */
+      brand() {
+        return this.boot.appearance?.brand || {};
+      },
       brandStyle() {
         const common = this.boot.appearance?.accent_color;
         if (/^#[0-9a-f]{6}$/i.test(common || '')) return { '--ps-brand': common };

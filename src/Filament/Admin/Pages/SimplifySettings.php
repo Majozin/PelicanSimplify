@@ -31,6 +31,7 @@ class SimplifySettings extends Page implements HasForms
     use InteractsWithForms;
     use \Livewire\WithFileUploads;
     public $bannerUpload = null;
+    public $logoUpload = null;
     public ?string $bannerServer = null;
     public bool $useUploadedBanner = true;
     protected static ?string $navigationLabel = 'PelicanSimplify settings';
@@ -66,6 +67,29 @@ class SimplifySettings extends Page implements HasForms
         if($this->useUploadedBanner)\Simplify\Panel\Services\ServerArtwork::save($server,$banner['id']);
         $this->bannerUpload=null;
         Notification::make()->success()->title('Banner uploaded')->send();
+    }
+    public function uploadLogo(): void
+    {
+        abort_unless(static::canAccess(),403);
+        $this->validate(['logoUpload'=>'required|file|max:'.\Simplify\Panel\Services\BrandSettings::LOGO_MAX_KB]);
+        $name=\Simplify\Panel\Services\BrandSettings::storeLogo($this->logoUpload);
+        AppearanceSettings::setLogo($name);
+        $this->logoUpload=null;
+        data_set($this->data,'appearance.brand.mode','logo');
+        Notification::make()->success()->title('Logo uploaded')->body('It shows in the top-left corner right away.')->send();
+    }
+    public function removeLogo(): void
+    {
+        abort_unless(static::canAccess(),403);
+        AppearanceSettings::setLogo(null);
+        data_set($this->data,'appearance.brand.mode','text');
+        Notification::make()->success()->title('Logo removed')->send();
+    }
+    public function brandInfo(): array
+    {
+        abort_unless(static::canAccess(),403);
+        $brand=\Simplify\Panel\Services\BrandSettings::forDisplay(AppearanceSettings::all()['brand']);
+        return ['logo_url'=>$brand['logo_url'],'fonts'=>array_map(fn($font)=>$font[1],\Simplify\Panel\Services\BrandSettings::FONTS),'panel_name'=>(string)config('app.name','Pelican')];
     }
     public function bannerLibrary(): array
     {
@@ -205,6 +229,23 @@ class SimplifySettings extends Page implements HasForms
                 Section::make('Colours')->columns(2)->schema([
                     ColorPicker::make('appearance.accent_color')->view('pelican-simplify::filament.admin.accent-picker')->label('Panel accent color')->hex()->required()->rules(['regex:/^#[0-9a-fA-F]{6}$/'])->helperText('Used throughout the shared interface and by every server when separate colors are off.')->columnSpanFull(),
                     Toggle::make('appearance.individual_colors')->label('Use separate server colors')->helperText('On assigns a color to every server without one. Off makes all servers use the panel accent; saved colors are retained.')->columnSpanFull(),
+                ]),
+                Section::make('Panel name & logo')->description('How your panel name looks in the top-left corner. The default is your name with the accent color fading in toward the right.')->columns(2)->schema([
+                    \Filament\Schemas\Components\View::make('pelican-simplify::filament.admin.brand-editor')->columnSpanFull(),
+                    Select::make('appearance.brand.mode')->label('Show')->options(['text'=>'Styled text','logo'=>'Uploaded logo'])->selectablePlaceholder(false)->required()->live()
+                        ->helperText(fn()=>AppearanceSettings::all()['brand']['logo']?null:'Upload a logo above to use one.')
+                        ->disableOptionWhen(fn(string $value)=>$value==='logo'&&!AppearanceSettings::all()['brand']['logo']),
+                    TextInput::make('appearance.brand.text')->label('Text')->maxLength(40)->placeholder(fn()=>(string)config('app.name','Pelican'))->helperText('Empty uses the panel name.'),
+                    Select::make('appearance.brand.font')->label('Font')->options(array_map(fn($font)=>$font[0],\Simplify\Panel\Services\BrandSettings::FONTS))->selectablePlaceholder(false)->required(),
+                    Select::make('appearance.brand.weight')->label('Weight')->options([400=>'Regular',500=>'Medium',600=>'Semibold',700=>'Bold',800=>'Extra bold',900=>'Black'])->selectablePlaceholder(false)->required(),
+                    Select::make('appearance.brand.color_style')->label('Color')->options(['gradient'=>'Fade between two colors','solid'=>'One color'])->selectablePlaceholder(false)->required()->live(),
+                    TextInput::make('appearance.brand.spacing')->label('Letter spacing')->integer()->minValue(-5)->maxValue(30)->suffix('/100 em')->required(),
+                    ColorPicker::make('appearance.brand.color1')->label(fn(Get $get)=>$get('appearance.brand.color_style')==='solid'?'Text color':'Start color')->hex()->rules(['nullable','regex:/^#[0-9a-fA-F]{6}$/'])->helperText('Empty follows the light/dark theme.'),
+                    ColorPicker::make('appearance.brand.color2')->label('End color')->hex()->rules(['nullable','regex:/^#[0-9a-fA-F]{6}$/'])->helperText('Empty uses the panel accent.')->visible(fn(Get $get)=>$get('appearance.brand.color_style')!=='solid'),
+                    Toggle::make('appearance.brand.uppercase')->label('Capital letters'),
+                    Toggle::make('appearance.brand.suffix')->label('Show "× Pelican" after the name'),
+                    TextInput::make('appearance.brand.logo_height')->label('Logo height')->integer()->minValue(16)->maxValue(64)->suffix('px')->required(),
+                    Toggle::make('appearance.brand.logo_text')->label('Show the text next to the logo'),
                 ]),
             ],
             'Users & access' => [

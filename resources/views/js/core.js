@@ -482,6 +482,20 @@
   document.addEventListener('DOMContentLoaded', scheduleEnhance);
   document.addEventListener('livewire:navigated', scheduleEnhance);
   window.Simplify.saveBar = saveBar;
+  // Inline style for the panel name in the top-left corner; the font stack comes from the server's whitelist.
+  window.Simplify.brandTextStyle = (brand, stack, accent) => {
+    const hex = (value) => /^#[0-9a-f]{6}$/i.test(value || '') ? value : null;
+    const ink = hex(brand?.color1) || 'var(--ps-ink, currentColor)';
+    const style = {
+      'font-family': stack || 'inherit',
+      'font-weight': String(Number(brand?.weight) || 700),
+      ...(Number(brand?.spacing) ? { 'letter-spacing': Number(brand.spacing) / 100 + 'em' } : {}),
+      'text-transform': brand?.uppercase ? 'uppercase' : 'none',
+    };
+    if (brand?.color_style === 'solid') return { ...style, background: 'none', color: ink, '-webkit-text-fill-color': ink };
+    const end = hex(brand?.color2) || hex(accent) || 'var(--ps-brand, var(--ps-accent, #2563eb))';
+    return { ...style, 'background-image': `linear-gradient(110deg, ${ink} 40%, ${end} 100%)` };
+  };
 
   apply();
   forwardNotifications();
