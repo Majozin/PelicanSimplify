@@ -1,5 +1,8 @@
 # Changes
 
+## 0.3.0-beta.34
+- Simple mode create buttons read clearly as "add": a dashed accent outline, a filled plus badge, and on hover a solid outline with the plus turning.
+
 ## 0.3.0-beta.33
 - Simple mode: the two create buttons now sit together at the top of their tile, one above the other.
 

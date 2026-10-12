@@ -292,6 +292,14 @@ body:has(.ps) [data-ps-copyright-line] > * { display: inline; }
 .ps-server-grid:not(.is-list) .ps-create-card:is(:hover, :focus-visible):not(:disabled) .ps-create-plus { transform: scale(1.06); box-shadow: 0 0 0 2px var(--ps-accent), 0 8px 22px color-mix(in srgb, var(--ps-accent) 30%, transparent); }
 .ps-server-grid:not(.is-list) .ps-create-card h3 { text-align: right; transform: translateX(8px); }
 .ps-server-grid:not(.is-list) .ps-create-card h3 strong { margin-left: auto; }
+/* Read as "add": a dashed accent outline and a filled plus badge; hover turns the outline solid. */
+.ps-server-grid:not(.is-list) .ps-create-card .ps-create-plus { overflow: visible; border: 2px dashed color-mix(in srgb, var(--ps-accent) 55%, transparent); background: color-mix(in srgb, var(--ps-accent) 8%, var(--ps-raised)); box-shadow: none; }
+.ps-server-grid:not(.is-list) .ps-create-card .ps-create-plus > svg { width: 56%; height: 56%; }
+.ps-server-grid:not(.is-list) .ps-create-card .ps-create-add { right: -7px; bottom: -7px; width: 26px; height: 26px; border: 3px solid var(--ps-bg, var(--ps-surface)); background: var(--ps-accent); color: #fff; box-shadow: 0 2px 8px color-mix(in srgb, var(--ps-accent) 40%, transparent); transition: transform var(--ps-slow); }
+.ps-server-grid:not(.is-list) .ps-create-card .ps-create-add svg { width: 14px; height: 14px; stroke-width: 3; }
+.ps-server-grid:not(.is-list) .ps-create-card:is(:hover, :focus-visible):not(:disabled) .ps-create-plus { border-style: solid; border-color: var(--ps-accent); }
+.ps-server-grid:not(.is-list) .ps-create-card:is(:hover, :focus-visible):not(:disabled) .ps-create-add { transform: rotate(90deg) scale(1.1); }
+.ps-server-grid:not(.is-list) .ps-create-card .ps-create-plus::after { inset: 0; border-radius: inherit; overflow: hidden; }
 
 /* List view: one row per server; controls dock at the right edge. */
 .ps-server-grid.is-list .ps-create-tiles { grid-template-columns: repeat(2, minmax(0, 1fr)); grid-template-rows: none; height: 84px; min-height: 84px; }
