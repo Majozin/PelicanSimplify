@@ -1,5 +1,8 @@
 # Changes
 
+## 0.3.0-beta.33
+- Simple mode: the two create buttons now sit together at the top of their tile, one above the other.
+
 ## 0.3.0-beta.32
 - Host mode server pane: the server page fills the whole area, the open and close buttons sit on the right, and the embedded page no longer shows a second copyright footer.
 

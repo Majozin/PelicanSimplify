@@ -285,7 +285,7 @@ body:has(.ps) [data-ps-copyright-line] > * { display: inline; }
 @media (prefers-reduced-motion: reduce) { .ps-create-plus > svg, .ps-create-plus::after { animation: none !important; } }
 
 /* Grid view: two half-size icon buttons stacked on the right of one tile; the label slides out to the left on hover. */
-.ps-server-grid:not(.is-list) .ps-create-tiles { justify-items: end; align-content: center; gap: 12px; }
+.ps-server-grid:not(.is-list) .ps-create-tiles { grid-template-rows: none; justify-items: end; align-content: start; gap: 10px; }
 .ps-server-grid:not(.is-list) .ps-create-card { --ps-create-icon: 72px; --ps-create-small: 72px; flex-direction: row-reverse; width: auto; max-width: 100%; height: auto; padding: 4px; border: 0; background: none; box-shadow: none; }
 .ps-server-grid:not(.is-list) .ps-create-card:is(:hover, :focus-visible):not(:disabled) { background: none; }
 .ps-server-grid:not(.is-list) .ps-create-card .ps-create-plus { box-shadow: 0 0 0 1px color-mix(in srgb, var(--ps-accent) 22%, transparent); transition: width var(--ps-slow), height var(--ps-slow), transform var(--ps-slow), box-shadow var(--ps-slow); }
