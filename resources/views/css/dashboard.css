@@ -952,3 +952,26 @@ span.ps-card-background.ps-banner-color { width: 100%; opacity: .5; filter: none
 .ps-create-card .ps-create-add svg { width: 16px; height: 16px; stroke-width: 3.2; }
 .ps-create-card h3 strong { background: none; color: var(--ps-ink); -webkit-text-fill-color: currentColor; }
 .ps-create-card h3 { font-size: 14px; }
+/* Phones: resources as a clean 2 × 2 grid (label, value, limit stacked), a status bar whose name shrinks
+   before the buttons, and a banner whose text uses the full width under the icons. */
+@media (max-width: 700px) {
+  .ps-server-workspace .ps-resource-tile { grid-template-columns: repeat(2, minmax(0, 1fr)); padding: 0; }
+  .ps-server-workspace .ps-resource-tile .ps-stat { display: flex; flex-direction: column; align-items: stretch; justify-content: flex-start; gap: 4px; min-height: 0; padding: 12px 14px 20px; text-align: left; }
+  .ps-server-workspace .ps-resource-tile .ps-stat + .ps-stat { padding-left: 14px; border-top: 0; }
+  .ps-server-workspace .ps-resource-tile .ps-stat:nth-child(even) { border-left: 1px solid var(--ps-line); }
+  .ps-server-workspace .ps-resource-tile .ps-stat:nth-child(n+3) { border-top: 1px solid var(--ps-line); }
+  .ps-server-workspace .ps-resource-tile .ps-stat > strong { font-size: 17px; overflow-wrap: normal; }
+  .ps-server-workspace .ps-resource-tile .ps-stat > small { overflow-wrap: break-word; word-break: normal; }
+  .ps-statusbar { gap: 8px; padding: 6px 6px 6px 12px; }
+  .ps-statusbar-name { flex: 1 1 auto; }
+  .ps-statusbar .ps-status { flex: none; }
+  .ps-statusbar-power { flex: none; gap: 4px; }
+  .ps-statusbar-power .ps-btn { width: 32px; height: 32px; padding: 0; }
+  .ps-server-info { grid-template-columns: auto minmax(0, 1fr); grid-template-areas: "icons badges" "content content"; }
+  .ps-info-icons { flex-direction: row; }
+}
+@media (max-width: 420px) { .ps-statusbar-item { display: none; } }
+/* In the host mode pane the console (or open section) fills the frame height instead of a fixed tall block. */
+.ps.is-embedded .ps-server-workspace .ps-console { min-height: 0; height: max(340px, calc(100dvh - 300px)); }
+.ps.is-embedded .ps-server-workspace .ps-dock { height: max(340px, calc(100dvh - 300px)); }
+.ps.is-embedded .ps-server-workspace.has-dock .ps-console { height: 200px; }

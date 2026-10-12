@@ -1,5 +1,9 @@
 # Changes
 
+## 0.3.0-beta.41
+- Phones: resources show as a tidy 2 × 2 grid (no more squeezed network text); the status bar shortens the name before the buttons and drops the player count on narrow phones; the server banner puts its icons in a row and uses the full width for the text.
+- Host mode pane: the console fills the height of the pane instead of a fixed tall block.
+
 ## 0.3.0-beta.40
 - Host mode server pane: the header bar is gone, so the server page fills the whole pane. Open-full-page and close float at the top right. The open server in the list shows a small arrow pointing at the pane; clicking it closes the server.
 - Create buttons: slightly bigger in both views, with a larger plus. The shine stays on the icon only; the label is plain text.
