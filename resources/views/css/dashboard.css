@@ -803,7 +803,7 @@ button.ps-package:hover { border-color: var(--ps-accent); }
 .ps-host-serverpane-actions { display: flex; gap: 4px; margin-left: auto; }
 .ps-host-server[aria-current="page"] { border-color: var(--ps-accent); background: color-mix(in srgb, var(--ps-accent) 12%, var(--ps-raised)); }
 .ps.is-embedded .ps-top { display: none; }
-.ps.is-embedded .ps-main { padding: 12px; }
+.ps.is-embedded .ps-main { padding: 0; }
 .ps.is-embedded .ps-server-dashboard { max-width: none; }
 body:has(.ps.is-embedded) :is(.fi-footer, [data-ps-footer], [data-ps-footer-wrapper]) { display: none !important; }
 body:has(.ps.is-embedded) :is(.fi-main, .fi-page, .fi-main-ctn) { max-width: none !important; padding-inline: 0 !important; }
@@ -1013,3 +1013,9 @@ span.ps-card-background.ps-banner-color { width: 100%; opacity: .5; filter: none
    sits on the wrapper because the menu itself scrolls (and would clip it). */
 :is(.ps-notify, .ps-overview-appearance):has(> .ps-dropdown.is-end:not([style*="display: none"]))::after { content: ""; position: absolute; top: calc(100% + 2px); right: 19px; z-index: calc(var(--ps-z-dropdown) + 1); width: 12px; height: 12px; border-top: 1px solid var(--ps-line); border-left: 1px solid var(--ps-line); background: var(--ps-surface); transform: rotate(45deg); pointer-events: none; }
 .ps-theme-option[aria-pressed="true"] { border-color: var(--ps-accent); color: var(--ps-accent); }
+/* The server page fills the pane edge to edge: the pane has no frame of its own, the page's cards form its edges. */
+.ps-host-serverpane { border: 0; background: none; border-radius: 0; }
+.ps-host-serverpane .ps-host-frame iframe { background: transparent; }
+.ps.is-embedded .ps-server-info { margin-bottom: 14px; }
+.ps.is-embedded .ps-info-badges { margin-right: 84px; }
+.ps-host-pane-actions { top: 12px; right: 14px; }

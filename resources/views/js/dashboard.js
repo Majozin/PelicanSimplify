@@ -269,7 +269,7 @@
       fitEmbedded(el) {
         const fit = () => {
           const top = el.getBoundingClientRect().top + window.scrollY;
-          el.style.setProperty('--ps-embed-height', Math.max(320, window.innerHeight - top - 12) + 'px');
+          el.style.setProperty('--ps-embed-height', Math.max(320, window.innerHeight - top) + 'px');
         };
         fit();
         window.addEventListener('resize', fit);

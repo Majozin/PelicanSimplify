@@ -1,5 +1,8 @@
 # Changes
 
+## 0.3.0-beta.53
+- Host mode pane: the server page fills it edge to edge. The pane has no frame or padding of its own; the banner, menu, console and side cards form its edges.
+
 ## 0.3.0-beta.52
 - Account menu: the theme button unfolds into Light, Dark and System; picking one switches the theme and folds it back.
 
