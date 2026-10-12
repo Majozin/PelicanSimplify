@@ -207,13 +207,13 @@
                             </span>
                             <span class="ps-account-username" x-text="boot.user"></span>
                         </button>
-                        <div id="ps-account-actions" class="ps-account-menu" :inert="!accountMenu" :aria-hidden="!accountMenu">
+                        <div id="ps-account-actions" class="ps-account-menu" :style="{'--ps-account-count': adminPages().length && !server ? 4 : 3}" :inert="!accountMenu" :aria-hidden="!accountMenu">
                             <div class="ps-account-actions-inner">
-                                <button type="button" class="ps-btn is-icon" x-on:click="setTheme(theme==='light' ? 'dark' : theme==='dark' ? 'system' : 'light')" :data-tip="'Theme: '+(theme==='light' ? 'Light' : theme==='dark' ? 'Dark' : 'System')+' (click to change)'" :aria-label="'Theme: '+theme+'. Change theme'">
-                                    <svg aria-hidden="true"><use :href="theme==='light' ? '#ps-sun' : theme==='dark' ? '#ps-moon' : '#ps-monitor'"/></svg>
-                                </button>
                                 <button type="button" class="ps-btn is-icon" x-on:click="openAccount()" data-tip="Profile settings" aria-label="Profile settings" aria-haspopup="dialog">
                                     <svg aria-hidden="true"><use href="#ps-account"/></svg>
+                                </button>
+                                <button type="button" class="ps-btn is-icon" x-on:click="setTheme(theme==='light' ? 'dark' : theme==='dark' ? 'system' : 'light')" :data-tip="'Theme: '+(theme==='light' ? 'Light' : theme==='dark' ? 'Dark' : 'System')+' (click to change)'" :aria-label="'Theme: '+theme+'. Change theme'">
+                                    <svg aria-hidden="true"><use :href="theme==='light' ? '#ps-sun' : theme==='dark' ? '#ps-moon' : '#ps-monitor'"/></svg>
                                 </button>
                                 <button type="button" class="ps-btn is-icon" x-show="adminPages().length && !server" x-on:click="setHostMode(!hostMode); accountMenu=false" :data-tip="hostMode ? 'Switch to simple mode' : 'Switch to host mode'" :aria-label="hostMode ? 'Switch to simple mode' : 'Switch to host mode'">
                                     <svg aria-hidden="true"><use :href="hostMode ? '#ps-grid' : '#ps-host'"/></svg>

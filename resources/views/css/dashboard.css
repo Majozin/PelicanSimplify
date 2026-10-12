@@ -88,8 +88,8 @@ body:has(.ps) [data-ps-copyright-line] > * { display: inline; }
 .ps-account-username { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 12px; }
 /* Profile and sign-out slide out beside the avatar instead of opening a menu. */
 .ps-account-menu { order: -1; width: 0; height: var(--ps-h); overflow: hidden; opacity: 0; transform: translateX(8px); transition: width var(--ps-slow) ease, margin var(--ps-slow) ease, opacity var(--ps-fast), transform var(--ps-slow); }
-.ps-account.account-open .ps-account-menu { width: calc(var(--ps-h) * 2 + 8px); margin-right: 8px; opacity: 1; transform: none; }
-.ps-account-actions-inner { display: flex; align-items: center; gap: 8px; width: calc(var(--ps-h) * 2 + 8px); }
+.ps-account.account-open .ps-account-menu { width: calc(var(--ps-h) * var(--ps-account-count, 4) + 8px * (var(--ps-account-count, 4) - 1)); margin-right: 8px; opacity: 1; transform: none; }
+.ps-account-actions-inner { display: flex; align-items: center; gap: 8px; width: max-content; }
 .ps-account-actions-inner form { margin: 0; }
 
 /* Overview ----------------------------------------------------------------------------------- */

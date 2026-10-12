@@ -1,5 +1,8 @@
 # Changes
 
+## 0.3.0-beta.51
+- Account menu: it now opens wide enough for all buttons: profile, theme, host/simple mode and sign out (three for non-admins and on server pages).
+
 ## 0.3.0-beta.50
 - Header menus (admin tools, notifications, customize overview) now point at the button that opened them, with the same small arrow as incoming notifications.
 
