@@ -1,5 +1,10 @@
 # Changes
 
+## 0.3.0-beta.40
+- Host mode server pane: the header bar is gone, so the server page fills the whole pane. Open-full-page and close float at the top right. The open server in the list shows a small arrow pointing at the pane; clicking it closes the server.
+- Create buttons: slightly bigger in both views, with a larger plus. The shine stays on the icon only; the label is plain text.
+- Fixed: a confirmation (for example Kill) could open invisibly right after closing a section.
+
 ## 0.3.0-beta.39
 - Overview: the create buttons moved out of the grid into the toolbar, on the same row as the game filters, in both grid and list view. Every tile in the grid is now a server, all the same size.
 - Cards in simple and host mode match the new server page: rounder corners, a softer accent border that brightens on hover, and rounder icons.

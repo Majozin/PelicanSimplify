@@ -803,7 +803,7 @@ button.ps-package:hover { border-color: var(--ps-accent); }
 .ps-host-serverpane-actions { display: flex; gap: 4px; margin-left: auto; }
 .ps-host-server[aria-current="page"] { border-color: var(--ps-accent); background: color-mix(in srgb, var(--ps-accent) 12%, var(--ps-raised)); }
 .ps.is-embedded .ps-top { display: none; }
-.ps.is-embedded .ps-main { padding: 16px 20px; }
+.ps.is-embedded .ps-main { padding: 50px 20px 16px; }
 .ps.is-embedded .ps-server-dashboard { max-width: none; }
 body:has(.ps.is-embedded) :is(.fi-footer, [data-ps-footer], [data-ps-footer-wrapper]) { display: none !important; }
 body:has(.ps.is-embedded) :is(.fi-main, .fi-page, .fi-main-ctn) { max-width: none !important; padding-inline: 0 !important; }
@@ -932,3 +932,23 @@ span.ps-card-background.ps-banner-color { width: 100%; opacity: .5; filter: none
 .ps.is-embedded .ps-server-workspace .ps-widget-grid { top: 12px; }
 /* Docked sections are part of the page: scrolling past their content scrolls the page on. */
 .ps-dock :is(.ps-modal-layer, .ps-modal-body, .ps-tab-panels) { overscroll-behavior: auto; }
+/* Host mode server pane: the page fills the whole pane; open/close float at the top right. */
+.ps-host-serverpane { position: relative; }
+.ps-host-pane-actions { position: absolute; top: 9px; right: 12px; z-index: 2; display: flex; gap: 6px; }
+.ps-host-pane-actions .ps-btn { background: color-mix(in srgb, var(--ps-surface) 80%, transparent); backdrop-filter: blur(10px); box-shadow: 0 4px 14px rgb(0 0 0 / .2); }
+.ps-host-serverpane .ps-host-frame { border-radius: inherit; overflow: hidden; }
+/* The open server points at the pane; clicking the arrow closes it. */
+.ps-host-server { position: relative; }
+.ps-host-server-arrow { position: absolute; top: 50%; right: -1px; display: grid; place-items: center; width: 26px; height: 26px; border-radius: 9px 0 0 9px; background: var(--ps-accent); color: var(--ps-on-accent, #111); cursor: pointer; transform: translateY(-50%); animation: ps-arrow-nudge 1.6s ease-in-out infinite; }
+.ps-host-server-arrow svg { width: 15px; height: 15px; stroke-width: 2.6; }
+.ps-host-server-arrow:hover { animation: none; filter: brightness(1.1); }
+.ps-host-server[aria-current="page"] .ps-host-server-top, .ps-host-server[aria-current="page"] .ps-host-server-meta { padding-right: 26px; }
+@keyframes ps-arrow-nudge { 0%, 100% { transform: translate(0, -50%); } 50% { transform: translate(3px, -50%); } }
+@media (prefers-reduced-motion: reduce) { .ps-host-server-arrow { animation: none; } }
+
+/* Create buttons: a little bigger, a larger plus, and the shine only on the icon, never on the label. */
+.ps-create-card { --ps-create-icon: 56px; --ps-create-small: 56px; }
+.ps-create-card .ps-create-add { right: -7px; bottom: -7px; width: 28px; height: 28px; }
+.ps-create-card .ps-create-add svg { width: 16px; height: 16px; stroke-width: 3.2; }
+.ps-create-card h3 strong { background: none; color: var(--ps-ink); -webkit-text-fill-color: currentColor; }
+.ps-create-card h3 { font-size: 14px; }
