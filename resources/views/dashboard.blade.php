@@ -233,6 +233,9 @@
                                 <button type="button" class="ps-btn is-icon" x-on:click="openAccount()" data-tip="Profile settings" aria-label="Profile settings" aria-haspopup="dialog">
                                     <svg aria-hidden="true"><use href="#ps-account"/></svg>
                                 </button>
+                                <button type="button" class="ps-btn is-icon" x-on:click="openSteam()" data-tip="Steam account" aria-label="Steam account" aria-haspopup="dialog">
+                                    <svg aria-hidden="true"><use href="#ps-steam"/></svg>
+                                </button>
                                 <form method="post" action="{{ route('filament.app.auth.logout') }}">@csrf
                                     <button type="submit" class="ps-btn is-icon" data-tip="Sign out" aria-label="Sign out"><svg aria-hidden="true"><use href="#ps-logout"/></svg></button>
                                 </form>
@@ -678,6 +681,24 @@
                     <iframe data-ps-frame="account" :data-ps-accent="currentAccentHex()" :src="frameUrl(boot.profile_url)" title="Profile" x-on:load="styleFrame($el, 'account')"></iframe>
                 </template>
 
+                {{-- Steam account --}}
+                <template x-if="modal==='steam'">
+                    <div class="ps-steam-account">
+                        <p class="ps-help">Connect your Steam account to create Game Server Login Tokens (needed by CS2, Unturned, Insurgency: Sandstorm and others) with one click in the game creator.</p>
+                        <div class="ps-panel ps-steam-status" x-show="steam.connected">
+                            <svg aria-hidden="true"><use href="#ps-steam"/></svg>
+                            <div><strong>Connected</strong><small x-text="'Steam Web API key ending in ' + (steam.hint || '····')"></small></div>
+                        </div>
+                        <template x-if="!steam.connected">
+                            <div>
+                                <label class="ps-field">Steam Web API key<input type="password" x-model="steamKey" autocomplete="off" spellcheck="false" maxlength="32" placeholder="32 characters" x-on:keydown.enter="saveSteamKey()"></label>
+                                <p class="ps-help">Get your key at <a href="https://steamcommunity.com/dev/apikey" target="_blank" rel="noopener noreferrer">steamcommunity.com/dev/apikey</a> (any domain name works). It is stored encrypted, only used for your own tokens and never shown again. Steam requires a phone-verified account to create tokens.</p>
+                                <p class="ps-help ps-error" x-show="steamError" x-text="steamError"></p>
+                            </div>
+                        </template>
+                    </div>
+                </template>
+
                 {{-- Alias --}}
                 <template x-if="modal==='alias'">
                     <div>
@@ -1004,9 +1025,11 @@
             </div>
 
             {{-- Footer actions belong to the open workspace. --}}
-            <footer class="ps-modal-foot" x-show="['alias','background','settings','performance','software','restart'].includes(modal) && !loading && (modal!=='settings' || server?.minecraft) && (modal!=='performance' || server?.can_resources)">
+            <footer class="ps-modal-foot" x-show="['steam','alias','background','settings','performance','software','restart'].includes(modal) && !loading && (modal!=='settings' || server?.minecraft) && (modal!=='performance' || server?.can_resources)">
                 <span class="is-start" x-show="modal==='settings'" x-text="server?.pending ? 'Changes are waiting for a restart.' : 'Saved changes apply after a stop or restart.'"></span>
                 <button type="button" class="ps-btn" x-on:click="close()" :disabled="busy">Cancel</button>
+                <button type="button" class="ps-btn is-danger" x-show="modal==='steam' && steam.connected" x-on:click="removeSteamKey()" :disabled="busy">Disconnect</button>
+                <button type="button" class="ps-btn is-primary" x-show="modal==='steam' && !steam.connected" x-on:click="saveSteamKey()" :disabled="busy || !steamKey.trim()">Connect</button>
                 <button type="button" class="ps-btn is-primary" x-show="modal==='alias'" x-on:click="saveAlias()" :disabled="busy">Save alias</button>
                 <button type="button" class="ps-btn is-primary" x-show="modal==='background'" x-on:click="saveBackground()" :disabled="busy"><svg aria-hidden="true"><use href="#ps-check"/></svg><span x-text="busy ? 'Saving…' : 'Save background'"></span></button>
                 <button type="button" class="ps-btn is-primary" x-show="modal==='settings'" x-on:click="saveSettings()" :disabled="busy || !server?.properties_available || !server?.permissions['file.update']">Save changes</button>

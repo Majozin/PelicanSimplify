@@ -170,6 +170,20 @@ final class Dashboard extends Page
         abort_if($limit>0 && strlen($content)>$limit,413,'This file is too large to edit.');
         return hash('sha256',$content);
     }
+    /* Steam account: the signed-in person's own key, never another user's. */
+    #[Renderless]
+    public function steamAccount(): array { return \Simplify\Panel\Services\SteamAccount::status(user()); }
+    #[Renderless]
+    public function saveSteamKey(string $key): array
+    {
+        try {
+            return \Simplify\Panel\Services\SteamAccount::save(user(), $key);
+        } catch (\Illuminate\Validation\ValidationException $exception) {
+            return ['error' => collect($exception->errors())->flatten()->first()];
+        }
+    }
+    #[Renderless]
+    public function removeSteamKey(): array { \Simplify\Panel\Services\SteamAccount::remove(user()); return \Simplify\Panel\Services\SteamAccount::status(user()); }
     #[Renderless]
     public function saveAlias(string $alias): array
     {

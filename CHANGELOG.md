@@ -1,5 +1,9 @@
 # Changes
 
+## 0.3.0-beta.27
+- Steam account (account menu → Steam): connect your own Steam Web API key once. It is checked with Steam, stored encrypted, only used for your own requests and never shown again (only its last four characters).
+- Game creator: fields that take a Game Server Login Token (GSLT; e.g. Unturned, Insurgency: Sandstorm, Euro/American Truck Simulator, The Forest, CS-style STEAM_ACC) get a "Create with Steam" button that creates a token for the game on your account and fills it in. Without a connected key the field explains how to connect.
+
 ## 0.3.0-beta.26
 - New add-on "Let Simplify manage people & roles" (General → Add-ons, off by default). One People & roles page replaces Pelican's Users and Roles lists in Admin tools, host mode and Pelican's own links:
   - People: search, invite (by email; they choose their own password), edit username/email/roles, send a password reset link, delete people who own no servers. Shows owned servers and whether two-factor sign-in is on.

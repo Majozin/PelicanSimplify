@@ -34,6 +34,9 @@
       notifyMenu: false,
       noticeHistory: [],
       panelNotices: [],
+      steam: { connected: false, hint: null },
+      steamKey: '',
+      steamError: '',
       incomingNotice: null,
       incomingShown: false,
       incomingQueue: [],
@@ -985,6 +988,33 @@
         if (!this.boot.profile_url || this.busy || this.modal) return;
         this.openPopup('account');
       },
+      async openSteam() {
+        this.accountMenu = false;
+        this.steamKey = '';
+        this.steamError = '';
+        this.openPopup('steam');
+        try {
+          this.steam = await wire.steamAccount();
+        } catch {}
+      },
+      async saveSteamKey() {
+        if (!this.steamKey.trim()) return;
+        this.steamError = '';
+        const result = await this.run(() => wire.saveSteamKey(this.steamKey));
+        if (result === SKIPPED || !result) return;
+        if (result.error) {
+          this.steamError = result.error;
+          return;
+        }
+        this.steam = result;
+        this.steamKey = '';
+        this.toast('Steam account connected', 'ok');
+      },
+      async removeSteamKey() {
+        if (!(await this.ask({ title: 'Disconnect Steam?', message: 'Simplify forgets your key. Tokens you already created keep working; manage them on steamcommunity.com.', confirmLabel: 'Disconnect', tone: 'danger' }))) return;
+        const result = await this.run(() => wire.removeSteamKey(), 'Steam account disconnected');
+        if (result !== SKIPPED && result) this.steam = result;
+      },
       openAlias() {
         if (this.busy || this.modal || !this.server?.permissions?.['settings.rename']) return;
         this.aliasDraft = this.server.alias || '';
@@ -1183,6 +1213,7 @@
         }[widget.key] || widget.description;
       },
       modalTitle() {
+        if (this.modal === 'steam') return 'Steam account';
         if (this.modal === 'alias') return 'Change server alias';
         if (this.modal === 'background') return 'Server background';
         if (this.modal === 'panel-settings') return this.settingsSection === 'banners' ? 'Server banners' : 'Simplify settings';
@@ -1194,7 +1225,7 @@
       },
       /** Every popup has a fixed size: small for short forms, large for embedded or list workspaces. */
       modalSize() {
-        if (['alias', 'restart'].includes(this.modal)) return 'is-sm';
+        if (['alias', 'restart', 'steam'].includes(this.modal)) return 'is-sm';
         if (['create', 'panel-settings', 'admin-page', 'account', 'files', 'schedules', 'activity', 'backups', 'software', 'settings', 'plugins', 'mods'].includes(this.modal)) return 'is-lg';
         return 'is-md';
       },

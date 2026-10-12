@@ -491,3 +491,9 @@ html:has(.ps-modal-layer[data-open="true"]), html.ps-ui-locked { overflow: hidde
 .ps-savebar.is-saved .ps-savebar-discard { display: none; }
 @keyframes ps-savebar-draw { to { stroke-dashoffset: 0; } }
 @media (prefers-reduced-motion: reduce) { .ps-savebar { transition: opacity .2s ease, visibility 0s linear .2s; transform: none; } .ps-savebar-check { animation: none !important; stroke-dashoffset: 0; } }
+.ps-error { color: var(--ps-danger); font-weight: 600; }
+.ps-steam-status { display: flex; align-items: center; gap: 12px; }
+.ps-steam-status > svg { flex: none; width: 26px; height: 26px; fill: none; stroke: currentColor; stroke-width: 1.6; }
+.ps-steam-status > div { display: grid; gap: 2px; }
+.ps-steam-status small { color: var(--ps-muted); }
+.ps-steam-account { display: grid; gap: 12px; }

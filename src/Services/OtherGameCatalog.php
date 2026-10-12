@@ -52,6 +52,24 @@ final class OtherGameCatalog
     /** Install and engine variables most people never change; they go under "Advanced". */
     private const ADVANCED = '/^(SRCDS_|STEAM_|AUTO_?UPDATE|INSTALL_|WINDOWS_INSTALL|VALIDATE|BRANCH|BETA|.*_PORT$|.*_BRANCH$|LD_LIBRARY|WINE|CONSOLE_FILTER)/i';
 
+    /** "Create with Steam" next to a Game Server Login Token field, using the person's connected Steam key. */
+    private static function steamTokenAction(\Filament\Forms\Components\TextInput $field, string $path, string $gameName): void
+    {
+        $field->password()->revealable()->suffixAction(
+            \Filament\Actions\Action::make('steam_token_'.md5($path))->icon('tabler-brand-steam')->tooltip('Create a token with your Steam account')
+                ->visible(fn () => SteamAccount::connected(user()))
+                ->action(function (\Filament\Schemas\Components\Utilities\Set $set, $livewire) use ($path, $gameName): void {
+                    try {
+                        $memo = trim((string) ($livewire->data['name'] ?? '')) ?: $gameName;
+                        $set($path, SteamAccount::createTokenForGame(user(), $gameName, $memo));
+                        \Filament\Notifications\Notification::make()->title('Steam token created')->body('It is listed on steamcommunity.com/dev/managegameservers as "'.mb_substr($memo, 0, 32).'".')->success()->send();
+                    } catch (\Illuminate\Validation\ValidationException $exception) {
+                        \Filament\Notifications\Notification::make()->title('No token created')->body(collect($exception->errors())->flatten()->first())->danger()->send();
+                    }
+                })
+        )->hint(fn () => SteamAccount::connected(user()) ? null : 'Connect Steam in your account menu to create this with one click.');
+    }
+
     /** Starting values for the game settings form (toggles as true/false). */
     public static function defaults(Egg $egg): array
     {
@@ -94,6 +112,7 @@ final class OtherGameCatalog
                 $field = \Filament\Forms\Components\TextInput::make($path)->default($default)->rules($rules ?: ['nullable']);
                 if (array_intersect($rules, ['numeric', 'integer'])) $field->numeric();
                 if (preg_match('/PASS(WORD)?|SECRET|TOKEN/i', (string) $variable->env_variable)) $field->password()->revealable();
+                if (in_array(strtoupper((string) $variable->env_variable), SteamAccount::TOKEN_VARIABLES, true)) self::steamTokenAction($field, $path, (string) $egg->name);
             }
             $field->label(trim(preg_replace('/^\[[^\]]*\]\s*/', '', (string) $variable->name)))->helperText($variable->description ?: null);
             if (in_array('required', $rules, true) && !$boolean) $field->required();
