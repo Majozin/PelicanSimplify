@@ -1019,3 +1019,5 @@ span.ps-card-background.ps-banner-color { width: 100%; opacity: .5; filter: none
 .ps.is-embedded .ps-server-info { margin-bottom: 14px; }
 .ps.is-embedded .ps-info-badges { margin-right: 84px; }
 .ps-host-pane-actions { top: 12px; right: 14px; }
+.ps-widget-group { margin: 10px 8px 2px; color: var(--ps-muted); font-size: 11px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; }
+@media (max-width: 960px) { .ps-widget-group { display: none; } }

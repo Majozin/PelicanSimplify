@@ -1237,17 +1237,18 @@
         if (this.modal === 'create') return { other: 'Create other server', native: 'Create server' }[this.createGame] || 'Create Minecraft server';
         if (this.modal === 'account') return 'Profile';
         if (this.modal === 'admin-page') return this.adminPage?.label || 'Admin';
+        if (this.modal === 'external') return (this.externalPage?.label || 'External') + (this.externalPage?.plugin && this.externalPage.plugin !== this.externalPage.label ? ' · ' + this.externalPage.plugin : '');
         const widget = this.widgets.find((w) => w.key === this.modal);
         return (widget ? this.widgetTitle(widget) : null) || (this.modal === 'restart' ? 'Schedule restart' : 'Workspace');
       },
       /** Every popup has a fixed size: small for short forms, large for embedded or list workspaces. */
       modalSize() {
         if (['alias', 'restart'].includes(this.modal)) return 'is-sm';
-        if (['create', 'panel-settings', 'admin-page', 'account', 'files', 'schedules', 'activity', 'backups', 'software', 'settings', 'plugins', 'mods'].includes(this.modal)) return 'is-lg';
+        if (['create', 'panel-settings', 'admin-page', 'account', 'files', 'schedules', 'activity', 'backups', 'software', 'settings', 'plugins', 'mods', 'external'].includes(this.modal)) return 'is-lg';
         return 'is-md';
       },
       modalFlush() {
-        return ['create', 'panel-settings', 'admin-page', 'account', 'files', 'schedules', 'activity'].includes(this.modal) || (this.modal === 'software' && !this.server?.minecraft);
+        return ['create', 'panel-settings', 'admin-page', 'account', 'files', 'schedules', 'activity', 'external'].includes(this.modal) || (this.modal === 'software' && !this.server?.minecraft);
       },
       settingsTabs() {
         return [
@@ -1265,7 +1266,7 @@
       },
       /** Server workspaces open inside the page instead of as a popup. */
       docked() {
-        return !!this.server && !!this.modal && this.widgets.some((widget) => widget.key === this.modal);
+        return !!this.server && !!this.modal && (this.modal === 'external' || this.widgets.some((widget) => widget.key === this.modal));
       },
       /** Moves the workspace shell into the page block while docked, and back to the root otherwise. */
       syncDock(dock, docked) {
@@ -1291,6 +1292,16 @@
         if (id === 'color') return {};
         const match = id.match(/^color:(#[0-9a-f]{6})$/i);
         return match ? { '--ps-banner': match[1] } : null;
+      },
+      externalPage: null,
+      /** Opens a page from another plugin in the server page's middle block. */
+      async openExternal(page) {
+        if (this.busy || !page?.url) return;
+        if (this.modal === 'external' && this.externalPage?.key === page.key) return;
+        const change = () => { this.externalPage = page; this.modal = 'external'; };
+        if (this.docked()) change();
+        else await this.layoutTransition(change);
+        this.loading = true;
       },
       widgetTone(key) {
         return { settings: '#e0a050', players: '#6ea8fe', plugins: '#b48cf2', mods: '#b48cf2', files: '#5cc8c0', backups: '#7ad08a', schedules: '#f5b84a', software: '#c084fc', connection: '#60a5fa', performance: '#f2707a', web: '#38bdf8', activity: '#9a9aa6', advanced: '#9a9aa6' }[key] || 'var(--ps-accent)';

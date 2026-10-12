@@ -72,4 +72,34 @@ final class ExternalPlugins
         }
         return $found;
     }
+
+    /**
+     * Pages other plugins add to the server panel, as links for one server: [{key, label, url, plugin}].
+     * Each page still runs its own access check when it opens.
+     */
+    public static function serverPages(object $server): array
+    {
+        if (self::plugins() === []) return [];
+        try {
+            $panel = \Filament\Facades\Filament::getPanel('server');
+        } catch (\Throwable) {
+            return [];
+        }
+        $pages = [];
+        foreach ([...$panel->getResources(), ...$panel->getPages()] as $class) {
+            $plugin = self::owner($class);
+            if (!$plugin) continue;
+            try {
+                $isResource = is_subclass_of($class, \Filament\Resources\Resource::class);
+                if (!$isResource && method_exists($class, 'shouldRegisterNavigation') && !$class::shouldRegisterNavigation()) continue;
+                $url = $isResource ? $class::getUrl('index', panel: 'server', tenant: $server) : $class::getUrl(panel: 'server', tenant: $server);
+                $label = (string) $class::getNavigationLabel();
+            } catch (\Throwable) {
+                continue;
+            }
+            $pages[] = ['key' => 'ext-'.strtolower(class_basename($class)), 'label' => $label, 'url' => $url, 'plugin' => $plugin['name']];
+        }
+        usort($pages, fn (array $a, array $b): int => strnatcasecmp($a['label'], $b['label']));
+        return $pages;
+    }
 }

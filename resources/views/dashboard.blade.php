@@ -618,6 +618,16 @@
                                 <span><strong x-text="widgetTitle(widget)"></strong><small x-text="widgetDescription(widget)"></small></span>
                             </button>
                         </template>
+                        {{-- Pages other plugins add to the server panel. --}}
+                        <template x-if="server?.external_pages?.length">
+                            <span class="ps-widget-group">External</span>
+                        </template>
+                        <template x-for="page in server?.external_pages || []" :key="page.key">
+                            <button type="button" class="ps-widget" style="--ps-tone: #2dd4bf" :aria-current="modal==='external' && externalPage?.key===page.key ? 'page' : null" x-on:click="openExternal(page)" :aria-label="page.label+' — from '+page.plugin" :data-tip="'From the '+page.plugin+' plugin'">
+                                <span class="ps-widget-icon"><svg aria-hidden="true"><use href="#ps-plugins"/></svg></span>
+                                <span><strong x-text="page.label"></strong></span>
+                            </button>
+                        </template>
                     </nav>
                 </div>
                 <div class="ps-live-column">
@@ -696,6 +706,9 @@
                 </template>
                 <template x-if="modal==='panel-settings'">
                     <iframe data-ps-frame="settings" :data-ps-accent="currentAccentHex()" :src="panelSettingsUrl()" title="Simplify settings" x-on:load="panelSettingsLoaded($el)"></iframe>
+                </template>
+                <template x-if="modal==='external' && externalPage">
+                    <iframe data-ps-frame="native" :data-ps-accent="currentAccentHex()" :src="frameUrl(externalPage.url)" :title="externalPage.label" x-on:load="styleFrame($el, 'native'); loading=false"></iframe>
                 </template>
                 <template x-if="modal==='admin-page' && adminPage">
                     <iframe data-ps-frame="native" :data-ps-accent="currentAccentHex()" :src="frameUrl(adminPage.url)" :title="adminPage.label" x-on:load="styleFrame($el, 'native')"></iframe>
