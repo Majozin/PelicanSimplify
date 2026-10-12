@@ -1,5 +1,8 @@
 # Changes
 
+## 0.3.0-beta.43
+- Overview: the Host health tile is always at least three tiles wide again; with fewer servers the cards keep their normal size instead of stretching.
+
 ## 0.3.0-beta.42
 - Create buttons: the shine now sweeps only inside the icon and no longer runs over the label.
 

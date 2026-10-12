@@ -96,7 +96,7 @@ body:has(.ps) [data-ps-copyright-line] > * { display: inline; }
 .ps-overview { display: flex; flex: 1 1 0; flex-direction: column; min-height: 0; overflow: hidden; }
 .ps-server-scroll { display: flex; flex: 1 1 0; flex-direction: column; min-height: 0; overflow: hidden auto; padding: 12px 4px; overscroll-behavior: contain; scrollbar-width: thin; scrollbar-color: var(--ps-line) transparent; }
 .ps-server-scroll:focus-visible { outline: 2px solid var(--ps-line); outline-offset: 2px; border-radius: var(--ps-radius); }
-.ps-server-stage { --ps-grid-width: calc(var(--grid-columns, 4) * 260px + (var(--grid-columns, 4) - 1) * 16px); flex: none; width: 100%; max-width: var(--ps-grid-width); margin: auto; }
+.ps-server-stage { --ps-grid-width: calc(max(var(--grid-columns, 4), 3) * 260px + (max(var(--grid-columns, 4), 3) - 1) * 16px); flex: none; width: 100%; max-width: var(--ps-grid-width); margin: auto; }
 .ps-server-stage.is-list { max-width: 1088px; margin: clamp(4px, calc(4dvh - 28px), 24px) auto 0; }
 .ps-overview-toolbar { display: flex; flex-wrap: wrap-reverse; align-items: center; justify-content: space-between; gap: 8px 16px; margin: 0 0 12px; }
 .ps-overview-toolbar > .ps-game-filters { margin-left: auto; order: 2; }
@@ -109,7 +109,7 @@ body:has(.ps) [data-ps-copyright-line] > * { display: inline; }
 .ps-node-heading { display: flex; align-items: center; gap: 8px; width: 100%; margin: 10px 0 0; padding-bottom: 6px; border-bottom: 1px solid var(--ps-line); color: var(--ps-ink); font-size: 14px; font-weight: 700; }
 .ps-node-heading svg { width: 16px; height: 16px; color: var(--ps-muted); }
 .ps-node-heading small { margin-left: auto; color: var(--ps-muted); font-size: 12px; font-weight: 500; }
-.ps-server-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 230px), 1fr)); gap: 16px; width: 100%; }
+.ps-server-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 230px), 1fr)); gap: 16px; width: 100%; }
 .ps-server-grid.is-list { grid-template-columns: minmax(0, 1fr); gap: 12px; }
 
 /* Server cards. */
