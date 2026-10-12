@@ -199,7 +199,7 @@
                     </div>
 
                     {{-- Account: avatar with inline profile and sign-out actions. --}}
-                    <div class="ps-account" :class="{'account-open': accountMenu}" x-on:click.outside="accountMenu=false" x-on:keydown.escape.stop="accountMenu=false">
+                    <div class="ps-account" x-data="{ themeOpen: false }" x-effect="accountMenu || (themeOpen = false)" :class="{'account-open': accountMenu}" x-on:click.outside="accountMenu=false" x-on:keydown.escape.stop="accountMenu=false">
                         <button type="button" x-on:click="accountMenu=!accountMenu; appearanceMenu=false; notifyMenu=false" class="ps-btn ps-account-button" aria-label="Profile options" aria-controls="ps-account-actions" :aria-expanded="accountMenu">
                             <span class="ps-account-avatar" x-data="{failed:false}">
                                 <img x-show="boot.avatar && !failed" :src="boot.avatar" alt="" x-on:error="failed=true">
@@ -207,14 +207,20 @@
                             </span>
                             <span class="ps-account-username" x-text="boot.user"></span>
                         </button>
-                        <div id="ps-account-actions" class="ps-account-menu" :style="{'--ps-account-count': adminPages().length && !server ? 4 : 3}" :inert="!accountMenu" :aria-hidden="!accountMenu">
+                        <div id="ps-account-actions" class="ps-account-menu" :style="{'--ps-account-count': (adminPages().length && !server ? 4 : 3) + (themeOpen ? 2 : 0)}" :inert="!accountMenu" :aria-hidden="!accountMenu">
                             <div class="ps-account-actions-inner">
                                 <button type="button" class="ps-btn is-icon" x-on:click="openAccount()" data-tip="Profile settings" aria-label="Profile settings" aria-haspopup="dialog">
                                     <svg aria-hidden="true"><use href="#ps-account"/></svg>
                                 </button>
-                                <button type="button" class="ps-btn is-icon" x-on:click="setTheme(theme==='light' ? 'dark' : theme==='dark' ? 'system' : 'light')" :data-tip="'Theme: '+(theme==='light' ? 'Light' : theme==='dark' ? 'Dark' : 'System')+' (click to change)'" :aria-label="'Theme: '+theme+'. Change theme'">
+                                {{-- Theme: the current choice; clicking it unfolds Light, Dark and System. --}}
+                                <button type="button" class="ps-btn is-icon" x-show="!themeOpen" x-on:click="themeOpen=true" :data-tip="'Theme: '+(theme==='light' ? 'Light' : theme==='dark' ? 'Dark' : 'System')" aria-label="Choose theme" :aria-expanded="themeOpen">
                                     <svg aria-hidden="true"><use :href="theme==='light' ? '#ps-sun' : theme==='dark' ? '#ps-moon' : '#ps-monitor'"/></svg>
                                 </button>
+                                <template x-for="t in ['light','dark','system']" :key="t">
+                                    <button type="button" class="ps-btn is-icon ps-theme-option" x-show="themeOpen" :aria-pressed="theme===t" x-on:click="setTheme(t); themeOpen=false" :data-tip="t==='light' ? 'Light' : t==='dark' ? 'Dark' : 'System'" :aria-label="t+' theme'">
+                                        <svg aria-hidden="true"><use :href="t==='light' ? '#ps-sun' : t==='dark' ? '#ps-moon' : '#ps-monitor'"/></svg>
+                                    </button>
+                                </template>
                                 <button type="button" class="ps-btn is-icon" x-show="adminPages().length && !server" x-on:click="setHostMode(!hostMode); accountMenu=false" :data-tip="hostMode ? 'Switch to simple mode' : 'Switch to host mode'" :aria-label="hostMode ? 'Switch to simple mode' : 'Switch to host mode'">
                                     <svg aria-hidden="true"><use :href="hostMode ? '#ps-grid' : '#ps-host'"/></svg>
                                 </button>

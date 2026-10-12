@@ -1,5 +1,8 @@
 # Changes
 
+## 0.3.0-beta.52
+- Account menu: the theme button unfolds into Light, Dark and System; picking one switches the theme and folds it back.
+
 ## 0.3.0-beta.51
 - Account menu: it now opens wide enough for all buttons: profile, theme, host/simple mode and sign out (three for non-admins and on server pages).
 
