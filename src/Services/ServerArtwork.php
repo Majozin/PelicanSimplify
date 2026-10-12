@@ -26,13 +26,15 @@ final class ServerArtwork
         $file=self::iconFile($server);
         if($file)return base64_decode($file['png'],true)?:null;
         $favicon=MinecraftStatus::favicon($server);
-        return $favicon?(base64_decode(substr($favicon,22),true)?:null):null;
+        if($favicon)return base64_decode(substr($favicon,22),true)?:null;
+        return SteamArt::iconBytes($server);
     }
     /** Cacheable URL of the server icon; the browser downloads it once per change instead of every refresh. */
     public static function serverIcon(Server $server,array $status=[]): ?string
     {
         $hash=self::iconFile($server)['hash']??null;
         if(!$hash && ($favicon=MinecraftStatus::favicon($server)))$hash=substr(hash('sha256',$favicon),0,12);
+        if(!$hash && ($game=SteamArt::iconBytes($server)))$hash=substr(hash('sha256',$game),0,12);
         return $hash?route('simplify.server-icon',['uuid'=>$server->uuid]).'?v='.$hash:null;
     }
     public static function softwareIcon(Server $server,array $meta=[]): ?string
@@ -80,6 +82,12 @@ final class ServerArtwork
         $data = $disk->exists($path) ? json_decode($disk->get($path), true) : [];
         $id = is_array($data) ? ($data['background_id'] ?? null) : null;
         return is_string($id) && ($id === 'auto' || $id === 'none' || isset(self::BACKGROUNDS[$id]) || ServerBanners::belongsTo($id,$server)) ? $id : null;
+    }
+    /** Selects a banner without a permission check (creator only; save() is the user-facing path). */
+    public static function select(Server $server, string $id): void
+    {
+        if (!ServerBanners::belongsTo($id, $server)) return;
+        Storage::disk('local')->put('simplify/backgrounds/'.$server->uuid.'.json', json_encode(['background_id' => $id], JSON_THROW_ON_ERROR));
     }
     public static function save(Server $server, string $id): array
     {

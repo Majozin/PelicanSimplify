@@ -1,5 +1,8 @@
 # Changes
 
+## 0.3.0-beta.25
+- Game creator: "Use the Steam banner and icon". When the chosen game is found in the Steam store (public store search by name, no API key, cached for a week), the creator shows a preview; after the server is created its Steam banner and a square icon are copied once to this panel, set as the server banner and used as the server icon. Can be switched off under Settings → Easy game server creator → Artwork.
+
 ## 0.3.0-beta.24
 - One save bar everywhere: on Simplify settings and on Pelican's own edit pages (users, nodes, settings…) a floating bar appears once something changed; after a successful save the button turns into a check and the bar slides away. Failed validation keeps it open.
 - Creators: the draft bar uses the same style, with a "Discard" button that asks for confirmation.

@@ -13,6 +13,7 @@ namespace {
  function check($v,$message){if(!$v)throw new \RuntimeException($message);echo "PASS $message\n";}
  require __DIR__.'/../src/Services/Remember.php';
  require __DIR__.'/../src/Services/ServerBanners.php';
+ require __DIR__.'/../src/Services/SteamArt.php';
  require __DIR__.'/../src/Services/ServerArtwork.php';
  use Simplify\Panel\Services\ServerArtwork as A;
  use App\Repositories\Daemon\DaemonFileRepository as F;
@@ -43,4 +44,9 @@ namespace {
  check(Illuminate\Support\Facades\Storage::$files===$before,'invalid or unauthorized choices leave saved artwork untouched');
  $s->minecraft=false;check(A::background($s,[])==='/simplify/background/gaming?v=h','other games receive generic gaming artwork');
  \Simplify\Panel\Services\Access::$allowed=true;A::save($s,'harbor');check(A::background($s,[])==='/simplify/background/harbor?v=h','other game placeholder can be replaced');A::save($s,'none');check(A::background($s,[])===null,'other game can disable artwork');
+ // Other games: a copied Steam icon is served as the server icon.
+ $g=new App\Models\Server;$g->minecraft=false;$g->uuid='server-g';$g->egg=(object)['icon'=>null];
+ check(A::iconBytes($g)===null,'no game icon before Steam art is copied');
+ Illuminate\Support\Facades\Storage::$files['simplify/game-icons/server-g.png']='png-bytes';
+ check(A::iconBytes($g)==='png-bytes' && str_starts_with((string)A::serverIcon($g),'/simplify/server-icon/server-g?v='),'copied Steam icon is used as the server icon');
 }

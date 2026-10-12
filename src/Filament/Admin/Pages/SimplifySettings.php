@@ -250,6 +250,7 @@ class SimplifySettings extends Page implements HasForms
                     Select::make('other_egg_ids')->label('Approved games')->multiple()->searchable()->options(fn () => Egg::query()->orderBy('name')->pluck('name', 'id')->all())
                         ->helperText('A game installed from the egg index through the creator is added here automatically.'),
                 ]),
+                Section::make('Artwork')->extraAttributes(['class' => 'ps-setting-list'])->schema([self::featureToggle('steam_art')]),
                 Section::make('Installing new games')->description('Administrators can always install a game that is not on the panel yet: its egg is downloaded from the official Pelican egg repositories, checked and imported when they continue in the creator. To let other people do this, give their role the "Install new games" ability under Users & access. Root admins get a notification for every game installed this way.'),
             ],
             'Plugin manager' => [

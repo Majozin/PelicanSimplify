@@ -359,6 +359,14 @@ class CreateMinecraftServer extends Page implements HasForms
         }
     }
 
+    /** Steam art for the chosen game, if the add-on option is on and the store has a match. */
+    public function steamArt(): ?array
+    {
+        if (!\Simplify\Panel\Services\SteamArt::enabled()) return null;
+        $egg = OtherGameCatalog::selected($this->data['game_egg_id'] ?? null);
+        return $egg ? $this->memo('steam-art-'.$egg->id, fn () => \Simplify\Panel\Services\SteamArt::find((string) $egg->name)) : null;
+    }
+
     /** Leaving the Game step: an index game is downloaded and installed, then used like any installed egg. */
     public function installSelectedGame(): void
     {
@@ -370,6 +378,8 @@ class CreateMinecraftServer extends Page implements HasForms
         $this->data['game_egg_id'] = $egg->id;
         $this->data['egg_id'] = $egg->id;
         if ($changed || empty($this->data['game_variables'])) $this->data['game_variables'] = OtherGameCatalog::defaults($egg);
+        // On by default for every newly chosen game; a choice made for the same game is kept.
+        if ($changed || !isset($this->data['steam_art'])) $this->data['steam_art'] = true;
     }
 
     public function form(Schema $schema): Schema
@@ -413,6 +423,7 @@ class CreateMinecraftServer extends Page implements HasForms
                                 $set('egg_id', $id);
                                 $egg = $id ? OtherGameCatalog::selected($id) : null;
                                 $set('game_variables', $egg ? OtherGameCatalog::defaults($egg) : []);
+                                $set('steam_art', true);
                             }),
                         Hidden::make('game_egg_id'),
                     ])]),
@@ -467,6 +478,13 @@ class CreateMinecraftServer extends Page implements HasForms
                                 ),
                             View::make('pelican-simplify::filament.admin.server-colors'),
                             Hidden::make('server_color')->nullable()->rule('regex:/^#[0-9a-fA-F]{6}$/'),
+                            // Steam banner and icon for other games, when the store has a match (looked up once, cached).
+                            \Filament\Forms\Components\Toggle::make('steam_art')->label('Use the Steam banner and icon')->default(true)
+                                ->helperText(fn () => ($art = $this->steamArt()) ? 'Found on Steam: '.$art['name'].'. Copied once to this panel; you can change it later in the server settings.' : null)
+                                ->visible(fn () => $this->creationGame === 'other' && $this->steamArt() !== null),
+                            View::make('pelican-simplify::filament.admin.steam-art-preview')
+                                ->viewData(fn () => ['art' => $this->steamArt()])
+                                ->visible(fn (Get $get) => $this->creationGame === 'other' && $get('steam_art') && $this->steamArt() !== null),
                             TextInput::make('server_alias')->label('Server alias (optional)')
                                 ->maxLength(100)->placeholder('Optional internal reference')
                                 ->helperText('Internal reference only. The dashboard uses Server name.'),
@@ -720,6 +738,10 @@ class CreateMinecraftServer extends Page implements HasForms
                 \Simplify\Panel\Services\Extensions::webAdapter()?->saveCreated($server,$state);
             } catch(Throwable $exception) {
                 report($exception);Notification::make()->title('Server created; metadata could not be saved')->body('Do not submit the server again.')->warning()->send();
+            }
+            if (($state['game'] ?? '') === 'other' && !empty($state['steam_art']) && ($art = $this->steamArt())) {
+                // Downloaded after the response, so creating the server is not slowed down by Steam.
+                app()->terminating(fn () => \Simplify\Panel\Services\SteamArt::apply($server, $art));
             }
             $warnings = [];
             if ($prepared) {

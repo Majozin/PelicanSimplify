@@ -52,6 +52,15 @@ final class ServerBanners
         if(!$disk->put(self::ROOT.$id.'.json',json_encode($data,JSON_THROW_ON_ERROR))){$disk->delete(self::ROOT.$id.'.'.$extension);throw new \RuntimeException('Could not save banner details.');}
         return $data;
     }
+    /** Stores image bytes as a banner of this server (used by the creator; callers check permission). */
+    public static function store(Server $server, string $bytes, string $name): array
+    {
+        $extension=self::validateBytes($bytes);$id='upload-'.bin2hex(random_bytes(16));
+        $data=['id'=>$id,'name'=>mb_substr($name,0,100) ?: 'Banner','server_uuid'=>$server->uuid,'extension'=>$extension];$disk=Storage::disk('local');
+        if(!$disk->put(self::ROOT.$id.'.'.$extension,$bytes))throw new \RuntimeException('Could not save banner image.');
+        if(!$disk->put(self::ROOT.$id.'.json',json_encode($data,JSON_THROW_ON_ERROR))){$disk->delete(self::ROOT.$id.'.'.$extension);throw new \RuntimeException('Could not save banner details.');}
+        return $data;
+    }
     public static function delete(string $id, ?Server $server=null): void
     {
         if($server)Access::permission($server,SubuserPermission::SettingsRename);else abort_unless(user()?->isRootAdmin(),403);
