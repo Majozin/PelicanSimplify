@@ -241,7 +241,7 @@ body:has(.ps) [data-ps-copyright-line] > * { display: inline; }
 }
 
 /* Creation tiles: a large logo that makes room for its label on hover. */
-.ps-create-tiles { display: flex; align-items: center; gap: 12px; order: 1; min-width: 0; }
+.ps-create-tiles { display: flex; align-items: center; gap: 12px; order: -1; min-width: 0; margin-right: 8px; }
 .ps-create-card {
   --ps-create-icon: 80px;
   --ps-create-small: 64px;

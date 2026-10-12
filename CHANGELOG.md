@@ -1,5 +1,8 @@
 # Changes
 
+## 0.4.1-beta.2 (beta channel)
+- Overview: the create buttons always sit first on the left of the toolbar, also when the node filter is shown.
+
 ## 0.4.1-beta.1 (beta channel) — Pelican 1.0.0-rc.1 support
 - Loads on Pelican 1.0.0-rc.1 as well as 1.0.0-beta38: plugin.json declares "^1.0.0-beta38" instead of pinning one exact release (Pelican refuses an exact pin on any other version).
 - The beta channel announces this build for both Pelican releases.
