@@ -60,6 +60,8 @@
         <symbol id="ps-info" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 11v6m0-10h.01"/></symbol>
         <symbol id="ps-alert" viewBox="0 0 24 24"><path d="M12 3 2 21h20Zm0 7v5m0 3h.01"/></symbol>
         <symbol id="ps-close" viewBox="0 0 24 24"><path d="m6 6 12 12M18 6 6 18"/></symbol>
+        <symbol id="ps-external" viewBox="0 0 24 24"><path d="M14 4h6v6M20 4l-9 9M18 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5"/></symbol>
+        <symbol id="ps-server" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="7" rx="2"/><rect x="3" y="13" width="18" height="7" rx="2"/><path d="M7 7.5h.01M7 16.5h.01"/></symbol>
         <symbol id="ps-download" viewBox="0 0 24 24"><path d="M12 3v13m-5-5 5 5 5-5M3 15v6h18v-6"/></symbol>
         <symbol id="ps-search" viewBox="0 0 24 24"><circle cx="10" cy="10" r="7"/><path d="m21 21-6-6"/></symbol>
     </defs>

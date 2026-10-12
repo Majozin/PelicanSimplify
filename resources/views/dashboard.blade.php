@@ -6,7 +6,7 @@
 <div class="ps" data-simplify-root x-cloak wire:ignore.self
      x-data="pelicanSimplify($wire, @js($this->initial()))"
      x-on:resize.window.debounce.150ms="restoreOverviewView()"
-     :class="{'dark': themeDark, 'server-active': !!server}"
+     :class="{'dark': themeDark, 'server-active': !!server, 'is-embedded': embedded}"
      :style="accentStyle(server?.uuid || 'overview')">
     @include('pelican-simplify::dashboard-icons')
 
@@ -244,7 +244,7 @@
         </header>
 
         {{-- Host mode (admins, large hosts): server buttons per node, a colour-coded admin rail and the page. --}}
-        <section class="ps-host" x-show="!server && hostMode" x-cloak :style="accentStyle('overview')">
+        <section class="ps-host" :class="{'has-server': !!hostServer}" x-show="!server && hostMode" x-cloak :style="accentStyle('overview')">
                 <aside class="ps-host-servers" :class="{'is-open': hostServersOpen}" aria-label="Servers">
                     <button type="button" class="ps-btn is-sm ps-host-servers-toggle" x-on:click="hostServersOpen=!hostServersOpen" :aria-expanded="hostServersOpen"><svg aria-hidden="true"><use href="#ps-list"/></svg><span x-text="'Servers ('+(boot.servers||[]).length+')'"></span></button>
                     <div class="ps-host-server-list">
@@ -252,7 +252,7 @@
                             <div class="ps-host-node">
                                 <span class="ps-label"><svg aria-hidden="true"><use href="#ps-host"/></svg><span x-text="node.name"></span><small x-text="node.servers.length+(node.servers.length===1?' server':' servers')"></small></span>
                                 <template x-for="s in node.servers" :key="s.uuid">
-                                    <a class="ps-host-server" :href="s.linked ? s.url : null" :style="accentStyle(s.uuid)" :aria-disabled="!s.linked">
+                                    <a class="ps-host-server" :href="s.linked ? s.url : null" :style="accentStyle(s.uuid)" :aria-disabled="!s.linked" :aria-current="hostServer?.uuid===s.uuid ? 'page' : null" x-on:click="if (s.linked && !$event.ctrlKey && !$event.metaKey && !$event.shiftKey) { $event.preventDefault(); openHostServer(s); }">
                                         <span class="ps-host-server-top">
                                             <strong x-text="cardNames(s).large"></strong>
                                             <span class="ps-badge ps-status" :class="s.status"><i></i><span x-text="s.status"></span></span>
@@ -291,6 +291,21 @@
                         </template>
                     </div>
                 </nav>
+                {{-- A server picked on the left opens here, over the admin pages; the cross or another server closes it. --}}
+                <div class="ps-host-serverpane" x-show="hostServer" x-cloak :style="accentStyle(hostServer?.uuid || 'overview')">
+                    <header class="ps-host-head">
+                        <div class="ps-host-title"><span class="ps-host-rail-icon"><svg aria-hidden="true"><use href="#ps-server"/></svg></span><h2 x-text="hostServer?.name"></h2></div>
+                        <div class="ps-host-serverpane-actions">
+                            <a class="ps-btn is-sm is-icon is-subtle" :href="hostServer?.url" data-tip="Open full page" aria-label="Open full page"><svg aria-hidden="true"><use href="#ps-external"/></svg></a>
+                            <button type="button" class="ps-btn is-sm is-icon is-subtle" x-on:click="closeHostServer()" data-tip="Close" aria-label="Close server"><svg aria-hidden="true"><use href="#ps-close"/></svg></button>
+                        </div>
+                    </header>
+                    <div class="ps-host-frame">
+                        <template x-for="s in hostServer ? [hostServer] : []" :key="s.uuid">
+                            <iframe :src="frameUrl(s.url)" :title="s.name"></iframe>
+                        </template>
+                    </div>
+                </div>
                 <div class="ps-host-main">
                     <header class="ps-host-head" x-show="hostSection">
                         <div class="ps-host-title"><span class="ps-host-rail-icon"><svg aria-hidden="true"><use :href="'#ps-'+(hostSection?.icon||'host')"/></svg></span>

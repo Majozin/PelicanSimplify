@@ -42,6 +42,8 @@
       hostPage: null,
       hostSection: null,
       hostServersOpen: false,
+      hostServer: null,
+      embedded: /[?&]simplify_embed=/.test(globalThis.location?.search || ''),
       adminPage: null,
       overviewCompact: false,
       overviewPreferences: { ...OVERVIEW_DEFAULTS },
@@ -255,6 +257,13 @@
         return { '--ps-accent': `hsl(${hash % 360} 68% 76%)`, '--ps-on-accent': '#111118' };
       },
       /** Panel name gradient: the common accent, else the page accent (blue on an uncoloured overview). */
+      openHostServer(s) {
+        this.hostServer = s;
+        this.hostServersOpen = false;
+      },
+      closeHostServer() {
+        this.hostServer = null;
+      },
       brand() {
         return this.boot.appearance?.brand || {};
       },

@@ -1,5 +1,8 @@
 # Changes
 
+## 0.3.0-beta.30
+- Host mode: clicking a server on the left opens its page in the right-hand area, in place of the admin pages. The cross closes it, picking another server swaps it, and Ctrl/Cmd-click or the "Open full page" button still opens the full page.
+
 ## 0.3.0-beta.29
 - Panel name & logo (Settings → Appearance): style the name in the top-left corner with a font (Inter, system, rounded, serif, monospace, Monocraft, condensed, Impact), weight, letter spacing, capitals, one color or a fade between two colors, your own text and an optional "× Pelican". A live preview shows the result.
 - Upload your own logo (PNG, JPEG or WebP up to 1 MB, checked as a real image and served with nosniff), with a height setting and the option to keep the text next to it.
