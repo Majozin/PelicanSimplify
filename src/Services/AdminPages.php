@@ -52,6 +52,7 @@ final class AdminPages
             }
             // Pages from other plugins (their class is in that plugin's namespace) go under External.
             $plugin = isset(self::KNOWN[$name]) ? null : ExternalPlugins::owner($class);
+            if ($plugin && ExternalPlugins::isHidden('admin', $class)) continue;
             [$group, $icon] = self::KNOWN[$name] ?? ($plugin ? ['External', 'plugins'] : ['Other', 'legacy']);
             if ($name === 'ServerResource' && $class::canCreate()) $label = 'Create server (legacy)';
             if ($people && $name === 'UserResource') $label = 'People';

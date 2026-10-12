@@ -1,5 +1,8 @@
 # Changes
 
+## 0.4.1-beta.7 (beta channel)
+- Simplify settings → General → "Pages from other plugins": a checkbox per page that other plugins add to the admin panel or to servers. Unticked pages are hidden from Simplify's External sections; they stay available in Pelican's own panel.
+
 ## 0.4.1-beta.6 (beta channel)
 - The conflict list starts empty: Essentials (Essentials Core) no longer exists, and a name match could hit an unrelated future plugin.
 

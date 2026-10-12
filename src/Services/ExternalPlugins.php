@@ -88,7 +88,7 @@ final class ExternalPlugins
         $pages = [];
         foreach ([...$panel->getResources(), ...$panel->getPages()] as $class) {
             $plugin = self::owner($class);
-            if (!$plugin) continue;
+            if (!$plugin || self::isHidden('server', $class)) continue;
             try {
                 $isResource = is_subclass_of($class, \Filament\Resources\Resource::class);
                 if (!$isResource && method_exists($class, 'shouldRegisterNavigation') && !$class::shouldRegisterNavigation()) continue;
@@ -101,5 +101,65 @@ final class ExternalPlugins
         }
         usort($pages, fn (array $a, array $b): int => strnatcasecmp($a['label'], $b['label']));
         return $pages;
+    }
+
+    private const HIDDEN_FILE = 'simplify/external-pages.json';
+
+    /** Every page other plugins add to the admin and server panels: key => "Label — Plugin (Admin/Server)". */
+    public static function catalog(): array
+    {
+        $list = [];
+        foreach (['admin' => 'Admin', 'server' => 'Server'] as $panelId => $where) {
+            try {
+                $panel = \Filament\Facades\Filament::getPanel($panelId);
+            } catch (\Throwable) {
+                continue;
+            }
+            foreach ([...$panel->getResources(), ...$panel->getPages()] as $class) {
+                $plugin = self::owner($class);
+                if (!$plugin) continue;
+                try {
+                    if (!is_subclass_of($class, \Filament\Resources\Resource::class) && method_exists($class, 'shouldRegisterNavigation') && !$class::shouldRegisterNavigation()) continue;
+                    $label = (string) $class::getNavigationLabel();
+                } catch (\Throwable) {
+                    continue;
+                }
+                $list[self::key($panelId, $class)] = $label.' — '.$plugin['name'].' ('.$where.')';
+            }
+        }
+        asort($list, SORT_NATURAL | SORT_FLAG_CASE);
+        return $list;
+    }
+
+    public static function key(string $panel, string $class): string
+    {
+        return $panel.':'.strtolower(class_basename($class));
+    }
+
+    /** Keys of plugin pages an administrator chose to hide in Simplify. */
+    public static function hidden(): array
+    {
+        try {
+            $disk = \Illuminate\Support\Facades\Storage::disk('local');
+            $data = $disk->exists(self::HIDDEN_FILE) ? json_decode((string) $disk->get(self::HIDDEN_FILE), true) : [];
+        } catch (\Throwable) {
+            $data = [];
+        }
+        return array_values(array_filter((array) ($data['hidden'] ?? []), 'is_string'));
+    }
+
+    public static function isHidden(string $panel, string $class): bool
+    {
+        return in_array(self::key($panel, $class), self::hidden(), true);
+    }
+
+    /** Stores which pages are shown; pages not in the catalog (yet) keep their current state. */
+    public static function saveShown(array $shown): void
+    {
+        abort_unless(user()?->isRootAdmin(), 403);
+        $catalog = array_keys(self::catalog());
+        $shown = array_intersect(array_map('strval', $shown), $catalog);
+        $hidden = array_values(array_unique([...array_diff(self::hidden(), $catalog), ...array_diff($catalog, $shown)]));
+        \Illuminate\Support\Facades\Storage::disk('local')->put(self::HIDDEN_FILE, json_encode(['hidden' => $hidden], JSON_THROW_ON_ERROR));
     }
 }

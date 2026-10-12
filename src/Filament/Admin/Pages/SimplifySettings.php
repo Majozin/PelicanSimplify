@@ -163,7 +163,7 @@ class SimplifySettings extends Page implements HasForms
     {
         abort_unless(static::canAccess(), 403);
         $this->embedded = request()->boolean('simplify_embed');
-        $this->form->fill([...CreatorAccess::configuration(),'creation_defaults'=>\Simplify\Panel\Services\CreationDefaults::all(),'appearance'=>AppearanceSettings::all(),'features'=>\Simplify\Panel\Services\FeatureSettings::all(),'performance'=>\Simplify\Panel\Services\PerformanceSettings::all(),'roles'=>\Simplify\Panel\Services\RoleAccess::all(),'web'=>\Simplify\Panel\Services\Extensions::webInstalled()?app('simplify.web')->options():[]]);
+        $this->form->fill([...CreatorAccess::configuration(),'creation_defaults'=>\Simplify\Panel\Services\CreationDefaults::all(),'appearance'=>AppearanceSettings::all(),'features'=>\Simplify\Panel\Services\FeatureSettings::all(),'performance'=>\Simplify\Panel\Services\PerformanceSettings::all(),'roles'=>\Simplify\Panel\Services\RoleAccess::all(),'web'=>\Simplify\Panel\Services\Extensions::webInstalled()?app('simplify.web')->options():[],'external_shown'=>self::externalShown()]);
     }
     /** Settings categories, in order. The first setup walks the same pages; the banner library is added afterwards. */
     private const CATEGORIES = [
@@ -179,6 +179,16 @@ class SimplifySettings extends Page implements HasForms
         'People & roles' => 'tabler-users-group',
         'Plugin manager' => 'tabler-plug',
     ];
+
+    /** Pages other plugins add (empty when the service is not available, as in unit tests). */
+    private static function externalCatalog(): array
+    {
+        return class_exists(\Simplify\Panel\Services\ExternalPlugins::class) ? \Simplify\Panel\Services\ExternalPlugins::catalog() : [];
+    }
+    private static function externalShown(): array
+    {
+        return class_exists(\Simplify\Panel\Services\ExternalPlugins::class) ? array_values(array_diff(array_keys(self::externalCatalog()), \Simplify\Panel\Services\ExternalPlugins::hidden())) : [];
+    }
 
     /** Feature toggles of one group (FeatureSettings::definitions()[key][3]) as a titled section. */
     private static function featureSection(string $title, string $group, ?string $description = null): Section
@@ -223,6 +233,11 @@ class SimplifySettings extends Page implements HasForms
                 self::featureSection('Simplify interface', 'Interface', 'What Simplify replaces in Pelican.'),
                 self::featureSection('Server workspaces', 'Server features', 'Workspaces shown on every server page. Pelican permissions still decide who may use them.'),
                 self::featureSection('Add-ons', 'Add-ons', 'Optional parts of Simplify. Each add-on has its own settings tab at the bottom of the menu.'),
+                Section::make('Pages from other plugins')->description('Pages that other installed plugins add to the admin panel or to servers. Ticked pages show up in Simplify under "External" (Admin tools, host mode and the server page); they always stay available in Pelican\'s own panel.')->schema([
+                    \Filament\Forms\Components\CheckboxList::make('external_shown')->hiddenLabel()->options(fn () => self::externalCatalog())->bulkToggleable()->columns(1)
+                        ->visible(fn () => self::externalCatalog() !== []),
+                    \Filament\Schemas\Components\Text::make('No other plugins add pages right now.')->visible(fn () => self::externalCatalog() === []),
+                ]),
             ],
             'Appearance' => [
                 self::featureSection('Theme', 'Appearance'),
@@ -358,6 +373,7 @@ class SimplifySettings extends Page implements HasForms
         if ($firstSetup && !$this->setupStarted) return;
         $state=$this->form->getState();
         AppearanceSettings::save($state['appearance']??[]);
+        if (array_key_exists('external_shown', $state) && class_exists(\Simplify\Panel\Services\ExternalPlugins::class)) \Simplify\Panel\Services\ExternalPlugins::saveShown((array) $state['external_shown']);
         // Creator file: only the self-service location and games are edited here; who may create lives in RoleAccess.
         $data = CreatorAccess::configuration();
         foreach (['node_ids' => Node::class, 'other_egg_ids' => Egg::class] as $key => $model) {
