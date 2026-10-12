@@ -1,8 +1,11 @@
 #!/usr/bin/env python3
 """Build the native plugin package from the standard repository-root layout.
 
-Writes dist/pelican-simplify-v<version>.zip and dist/pelican-simplify-latest.zip (same bytes),
-removes older versioned archives, and updates update.json and SHA256SUMS.
+Writes dist/pelican-simplify-v<version>.zip and publishes it on an update channel:
+- a stable version (no "-beta" etc.) goes to update.json and update-beta.json, and becomes
+  dist/pelican-simplify-latest.zip (the download the README links to);
+- a pre-release (0.4.1-beta.2) goes to update-beta.json only.
+Archives no longer referenced by either channel are removed. SHA256SUMS is refreshed.
 Usage: build-package.py [output-dir]   (default: dist; SOURCE_DATE_EPOCH fixes the timestamps)
 """
 from pathlib import Path
@@ -37,10 +40,6 @@ def build(output: Path, epoch: int | None = None) -> Path:
             info.compress_type = zipfile.ZIP_DEFLATED
             info.external_attr = 0o100644 << 16
             package.writestr(info, path.read_bytes())
-    shutil.copyfile(archive, output / 'pelican-simplify-latest.zip')
-    for old in output.glob('pelican-simplify-v*.zip'):
-        if old != archive:
-            old.unlink()
     return archive
 
 
@@ -55,8 +54,20 @@ def publish(archive: Path) -> None:
         'download_url': REPOSITORY + archive.relative_to(root).as_posix(),
         'sha256': checksum,
     }
+    stable = '-' not in manifest['version']
     # One entry per Pelican release this build is validated on (Pelican looks up its own version).
-    (root / 'update.json').write_text(json.dumps({panel: entry for panel in SUPPORTED_PANELS}, indent=2) + '\n')
+    channels = ['update.json', 'update-beta.json'] if stable else ['update-beta.json']
+    for name in channels:
+        (root / name).write_text(json.dumps({panel: entry for panel in SUPPORTED_PANELS}, indent=2) + '\n')
+    if stable:
+        shutil.copyfile(archive, archive.parent / 'pelican-simplify-latest.zip')
+    keep = {archive.name}
+    for name in ['update.json', 'update-beta.json']:
+        if (root / name).is_file():
+            keep |= {item['download_url'].rsplit('/', 1)[-1] for item in json.loads((root / name).read_text()).values()}
+    for old in archive.parent.glob('pelican-simplify-v*.zip'):
+        if old.name not in keep:
+            old.unlink()
     with (root / 'SHA256SUMS').open('w') as sums:
         for path in sorted(root.rglob('*')):
             relative = path.relative_to(root)

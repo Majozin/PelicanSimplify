@@ -33,7 +33,7 @@ final class PluginUpdater
     public static function latestVersion(Plugin $plugin, bool $fresh = false): ?string
     {
         if (!$plugin->update_url) return null;
-        $key = 'simplify.plugin-latest.'.$plugin->id;
+        $key = 'simplify.plugin-latest.'.$plugin->id.'.'.self::channel();
         if ($fresh) Cache::forget($key);
         return Cache::remember($key, 50, function () use ($plugin, $fresh): ?string {
             $entry = self::entry($plugin, $fresh);
@@ -59,9 +59,39 @@ final class PluginUpdater
         } catch (\Throwable) {
             return null;
         }
+        $entry = self::pick($data, $plugin);
+        // Simplify on the beta channel: the newer of the stable and the beta build for this Pelican version.
+        if ($plugin->id === 'pelican-simplify' && self::channel() === 'beta' && str_ends_with($url, '/update.json')) {
+            $betaUrl = substr($url, 0, -strlen('update.json')).'update-beta.json';
+            $beta = null;
+            if ($fresh && preg_match('#^https://raw\.githubusercontent\.com/([^/]+)/([^/]+)/([^/]+)/(.+)$#', $betaUrl, $m)) {
+                try { $beta = $read("https://api.github.com/repos/{$m[1]}/{$m[2]}/contents/{$m[4]}?ref={$m[3]}", ['Accept' => 'application/vnd.github.raw+json']); } catch (\Throwable) { $beta = null; }
+            }
+            try { $beta = is_array($beta) ? $beta : $read($betaUrl); } catch (\Throwable) { $beta = null; }
+            $betaEntry = is_array($beta) ? self::pick($beta, $plugin) : null;
+            if ($betaEntry && is_string($betaEntry['version'] ?? null) && (!$entry || version_compare($betaEntry['version'], (string) ($entry['version'] ?? '0'), '>'))) $entry = $betaEntry;
+        }
+        return $entry;
+    }
+
+    /** The entry for this Pelican version in one update file. */
+    private static function pick(mixed $data, Plugin $plugin): ?array
+    {
+        if (!is_array($data)) return null;
         $data = is_array($data[$plugin->id] ?? null) ? $data[$plugin->id] : $data;
-        $entry = $data[config('app.version')] ?? $data['*'] ?? null;
+        $entry = $data[self::panelVersion()] ?? $data['*'] ?? null;
         return is_array($entry) ? $entry : null;
+    }
+
+    /** "stable" or "beta": which Simplify releases this panel follows. */
+    public static function channel(): string
+    {
+        return FeatureSettings::enabled('simplify_beta') ? 'beta' : 'stable';
+    }
+
+    public static function panelVersion(): string
+    {
+        return ltrim((string) config('app.version'), 'v');
     }
 
     /** @return array{ok: bool, message: string} */
@@ -117,7 +147,7 @@ final class PluginUpdater
                 Plugin::refreshRows();
                 cache()->forget('plugins.'.$id.'.update');
                 cache()->forget('simplify.plugin-update-queued.'.$id);
-                cache()->forget('simplify.plugin-latest.'.$id);
+                foreach (['stable', 'beta'] as $channel) cache()->forget('simplify.plugin-latest.'.$id.'.'.$channel);
             } catch (\Throwable) {}
         }
         self::notify($result, $notifyUserId);

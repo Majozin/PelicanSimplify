@@ -1,10 +1,16 @@
 # Changes
 
-## 0.3.0-beta.54 (Pelican 1.0.0-rc.1 compatibility, branch claude/pelican-rc1-compat)
-- Loads on Pelican 1.0.0-rc.1 as well as 1.0.0-beta38: plugin.json declares "^1.0.0-beta38" instead of pinning one exact release (exact pins are refused on any other version).
-- Plugin updates are announced for both releases (update.json lists 1.0.0-beta38 and 1.0.0-rc.1).
+## 0.4.1-beta.1 (beta channel) — Pelican 1.0.0-rc.1 support
+- Loads on Pelican 1.0.0-rc.1 as well as 1.0.0-beta38: plugin.json declares "^1.0.0-beta38" instead of pinning one exact release (Pelican refuses an exact pin on any other version).
+- The beta channel announces this build for both Pelican releases.
 - System checks accept 1.0.0-rc.1 as a supported release.
-- Server addresses respect Pelican rc.1's "hide port" allocation setting (display address), falling back to the plain address on beta38.
+- Server addresses respect rc.1's "hide port" allocation setting (display address), falling back to the plain address on beta38.
+
+## 0.4.0 — first stable release (Pelican 1.0.0-beta38)
+- Everything from the 0.3.0 betas, now marked stable for Pelican 1.0.0-beta38.
+- Update channels: stable releases are announced in update.json (also what Pelican's own updater reads), betas in update-beta.json. Simplify settings → Plugin manager → "Get Simplify beta versions" (off by default) follows the beta channel; you then get whichever of the stable or beta build is newer.
+- Updates are always the build made for your Pelican version; the plugin page states your Pelican version and channel.
+- The README download link (pelican-simplify-latest.zip) now always points at the latest stable release.
 
 ## 0.3.0-beta.53
 - Host mode pane: the server page fills it edge to edge. The pane has no frame or padding of its own; the banner, menu, console and side cards form its edges.
