@@ -1,5 +1,9 @@
 # Changes
 
+## 0.3.0-beta.46
+- "Customize overview" (was "Customize appearance") only appears on the simple-mode overview, in a calmer new style: rounded segmented controls and the card details as two columns of switches.
+- Theme and the simple/host mode switch moved to the account menu, so they stay available on every page.
+
 ## 0.3.0-beta.45
 - Overview: a small gap between the fading server list and the health tile, so no card peeks past the tile corners.
 

@@ -993,3 +993,16 @@ span.ps-card-background.ps-banner-color { width: 100%; opacity: .5; filter: none
 /* A clear gap between the (fading) server list and the health tile, so no card peeks past its corners. */
 .ps-overview > .ps-health-panel { margin-top: 10px; }
 .ps-server-scroll { mask-image: linear-gradient(to bottom, #000 calc(100% - 36px), transparent calc(100% - 4px)); }
+/* Customize overview: a calmer panel in the new style — labels above rounded segmented controls, and the
+   card details as a two-column set of switches. */
+.ps-overview-appearance-menu { width: 360px; padding: 16px; border-radius: 18px; }
+.ps-overview-appearance-menu .ps-dropdown-title { font-size: 15px; }
+.ps-dropdown-hint { margin: 0; color: var(--ps-muted); font-size: 12px; }
+.ps-overview-appearance-menu .ps-dropdown-section { display: grid; gap: 8px; margin-top: 14px; padding-top: 14px; }
+.ps-overview-appearance-menu .ps-label { font-size: 11px; letter-spacing: .06em; text-transform: uppercase; color: var(--ps-muted); }
+.ps-overview-appearance-menu .ps-segmented { display: grid; grid-auto-columns: minmax(0, 1fr); grid-auto-flow: column; padding: 3px; border-radius: 12px; }
+.ps-overview-appearance-menu .ps-segmented > button { justify-content: center; border-radius: 9px; }
+.ps-overview-appearance-menu .ps-dropdown-section:last-child { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.ps-overview-appearance-menu .ps-dropdown-section:last-child > .ps-label { grid-column: 1 / -1; }
+.ps-overview-appearance-menu .ps-toggle { padding: 8px 10px; border: 1px solid var(--ps-line); border-radius: 11px; background: var(--ps-raised); font-size: 12px; }
+@media (max-width: 480px) { .ps-overview-appearance-menu { width: min(360px, calc(100vw - 24px)); } }

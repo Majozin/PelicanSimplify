@@ -146,31 +146,14 @@
                     </div>
 
                     {{-- Personal appearance preferences. --}}
-                    <div class="ps-overview-appearance" x-on:click.outside="appearanceMenu=false" x-on:keydown.escape.stop="appearanceMenu=false; $refs.overviewAppearance.focus()">
-                        <button type="button" x-ref="overviewAppearance" class="ps-btn is-icon is-subtle" data-tip="Customize appearance" aria-label="Customize appearance" aria-controls="ps-overview-appearance-menu" :aria-expanded="appearanceMenu"
+                    <div class="ps-overview-appearance" x-show="!server && !hostMode" x-on:click.outside="appearanceMenu=false" x-on:keydown.escape.stop="appearanceMenu=false; $refs.overviewAppearance.focus()">
+                        <button type="button" x-ref="overviewAppearance" class="ps-btn is-icon is-subtle" data-tip="Customize overview" aria-label="Customize overview" aria-controls="ps-overview-appearance-menu" :aria-expanded="appearanceMenu"
                                 x-on:click="appearanceMenu=!appearanceMenu; accountMenu=false; notifyMenu=false">
-                            <svg aria-hidden="true"><use href="#ps-wand"/></svg><span class="ps-mobile-label">Customize appearance</span>
+                            <svg aria-hidden="true"><use href="#ps-wand"/></svg><span class="ps-mobile-label">Customize overview</span>
                         </button>
                         <div id="ps-overview-appearance-menu" class="ps-dropdown is-end ps-overview-appearance-menu" x-show="appearanceMenu" x-cloak x-transition.opacity>
-                            <strong class="ps-dropdown-title">Customize appearance</strong>
-                            <div class="ps-dropdown-section">
-                                <span class="ps-label">Theme</span>
-                                <div class="ps-segmented" role="group" aria-label="Colour theme">
-                                    <template x-for="t in ['light','dark','system']" :key="t">
-                                        <button type="button" x-on:click="setTheme(t)" :aria-pressed="theme===t" :aria-label="t+' theme'">
-                                            <svg aria-hidden="true"><use :href="t==='light'?'#ps-sun':t==='dark'?'#ps-moon':'#ps-monitor'"/></svg>
-                                            <span x-text="t==='light'?'Light':t==='dark'?'Dark':'System'"></span>
-                                        </button>
-                                    </template>
-                                </div>
-                            </div>
-                            <div class="ps-dropdown-section" x-show="adminPages().length && !server">
-                                <span class="ps-label">View</span>
-                                <div class="ps-segmented" role="group" aria-label="Dashboard view">
-                                    <button type="button" :aria-pressed="!hostMode" x-on:click="setHostMode(false)"><svg aria-hidden="true"><use href="#ps-grid"/></svg><span>Simple</span></button>
-                                    <button type="button" :aria-pressed="hostMode" x-on:click="setHostMode(true)"><svg aria-hidden="true"><use href="#ps-host"/></svg><span>Host mode</span></button>
-                                </div>
-                            </div>
+                            <strong class="ps-dropdown-title">Customize overview</strong>
+                            <p class="ps-dropdown-hint">Only for you, on this device.</p>
                             <template x-if="!server">
                                 <div>
                                     <div class="ps-dropdown-section" x-show="!overviewCompact">
@@ -206,8 +189,8 @@
                                         </div>
                                     </div>
                                     <div class="ps-dropdown-section">
-                                        <span class="ps-label">Server details</span>
-                                        <template x-for="option in [{key:'showMotd',label:'Minecraft MOTD'},{key:'showCpu',label:'CPU tile'},{key:'showRam',label:'RAM tile'},{key:'showQuickActions',label:'Show quick actions on server overview'},{key:'minecraftAlwaysGreen',label:'Always keep Minecraft creation green'}]" :key="option.key">
+                                        <span class="ps-label">Show on cards</span>
+                                        <template x-for="option in [{key:'showMotd',label:'Minecraft MOTD'},{key:'showCpu',label:'CPU tile'},{key:'showRam',label:'RAM tile'},{key:'showQuickActions',label:'Quick actions'},{key:'minecraftAlwaysGreen',label:'Always keep Minecraft creation green'}]" :key="option.key">
                                             <button type="button" class="ps-toggle" role="switch" :aria-checked="overviewPreferences[option.key]" x-on:click="setOverviewPreference(option.key, !overviewPreferences[option.key])">
                                                 <span x-text="option.label"></span>
                                                 <span class="ps-switch" :class="{'is-on': overviewPreferences[option.key]}" aria-hidden="true"></span>
@@ -230,6 +213,12 @@
                         </button>
                         <div id="ps-account-actions" class="ps-account-menu" :inert="!accountMenu" :aria-hidden="!accountMenu">
                             <div class="ps-account-actions-inner">
+                                <button type="button" class="ps-btn is-icon" x-on:click="setTheme(theme==='light' ? 'dark' : theme==='dark' ? 'system' : 'light')" :data-tip="'Theme: '+(theme==='light' ? 'Light' : theme==='dark' ? 'Dark' : 'System')+' (click to change)'" :aria-label="'Theme: '+theme+'. Change theme'">
+                                    <svg aria-hidden="true"><use :href="theme==='light' ? '#ps-sun' : theme==='dark' ? '#ps-moon' : '#ps-monitor'"/></svg>
+                                </button>
+                                <button type="button" class="ps-btn is-icon" x-show="adminPages().length && !server" x-on:click="setHostMode(!hostMode); accountMenu=false" :data-tip="hostMode ? 'Switch to simple mode' : 'Switch to host mode'" :aria-label="hostMode ? 'Switch to simple mode' : 'Switch to host mode'">
+                                    <svg aria-hidden="true"><use :href="hostMode ? '#ps-grid' : '#ps-host'"/></svg>
+                                </button>
                                 <button type="button" class="ps-btn is-icon" x-on:click="openAccount()" data-tip="Profile settings" aria-label="Profile settings" aria-haspopup="dialog">
                                     <svg aria-hidden="true"><use href="#ps-account"/></svg>
                                 </button>
