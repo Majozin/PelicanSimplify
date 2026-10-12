@@ -17,7 +17,7 @@ final class AdminPages
     ];
     private const GROUPS = ['Game servers', 'Infrastructure', 'People & access', 'Panel', 'Other'];
     /** Pages Simplify replaces or that need parameters. */
-    private const SKIP = ['Dashboard', 'ViewLogs', 'SimplifySettings', 'CreateMinecraftServer', 'ManagePlugins'];
+    private const SKIP = ['Dashboard', 'ViewLogs', 'SimplifySettings', 'CreateMinecraftServer', 'ManagePlugins', 'ManagePeople'];
 
     public static function menu(): array
     {
@@ -28,6 +28,7 @@ final class AdminPages
             return [];
         }
         $groups = array_fill_keys(self::GROUPS, []);
+        $people = \Simplify\Panel\Filament\Admin\Pages\ManagePeople::canAccess();
         foreach ([...$panel->getResources(), ...$panel->getPages()] as $class) {
             $name = class_basename($class);
             if (in_array($name, self::SKIP, true)) continue;
@@ -39,6 +40,8 @@ final class AdminPages
                     // Servers open straight on Pelican's (legacy) create form; plugins on Simplify's safe updater.
                     $name === 'ServerResource' => $class::canCreate() ? $class::getUrl('create', panel: 'admin') : $class::getUrl('index', panel: 'admin'),
                     $name === 'PluginResource' && FeatureSettings::enabled('plugin_manager') => \Simplify\Panel\Filament\Admin\Pages\ManagePlugins::getUrl(panel: 'admin'),
+                    // People & roles add-on: both lists open Simplify's page on the matching tab.
+                    $people && in_array($name, ['UserResource', 'RoleResource'], true) => \Simplify\Panel\Filament\Admin\Pages\ManagePeople::getUrl(['tab' => $name === 'RoleResource' ? 'roles' : 'people'], panel: 'admin'),
                     $isResource => $class::getUrl('index', panel: 'admin'),
                     default => $class::getUrl(panel: 'admin'),
                 };
@@ -48,6 +51,7 @@ final class AdminPages
             }
             [$group, $icon] = self::KNOWN[$name] ?? ['Other', 'legacy'];
             if ($name === 'ServerResource' && $class::canCreate()) $label = 'Create server (legacy)';
+            if ($people && $name === 'UserResource') $label = 'People';
             $groups[$group][] = ['key' => strtolower($name), 'label' => $label, 'url' => $url, 'icon' => $icon];
         }
         $menu = [];
@@ -68,6 +72,10 @@ final class AdminPages
             if (FeatureSettings::enabled('easy_creator') && Extensions::canCreate()) $items[] = ['key' => 'easycreator', 'label' => 'Create server', 'url' => \Simplify\Panel\Filament\App\Pages\CreateServer::getUrl(['game' => 'minecraft'], panel: 'app'), 'icon' => 'plus'];
             if (FeatureSettings::enabled('game_creator') && Extensions::canCreate()) $items[] = ['key' => 'gamecreator', 'label' => 'Create game server', 'url' => \Simplify\Panel\Filament\App\Pages\CreateServer::getUrl(['game' => 'other'], panel: 'app'), 'icon' => 'gamepad'];
             $plugins = \App\Filament\Admin\Resources\Plugins\PluginResource::class;
+            if (\Simplify\Panel\Filament\Admin\Pages\ManagePeople::canAccess() && FeatureSettings::enabled('legacy_pages')) {
+                $items[] = ['key' => 'legacyusers', 'label' => 'Users (legacy)', 'url' => \App\Filament\Admin\Resources\Users\UserResource::getUrl('index', ['simplify_legacy' => 1], panel: 'admin'), 'icon' => 'players'];
+                $items[] = ['key' => 'legacyroles', 'label' => 'Roles (legacy)', 'url' => \App\Filament\Admin\Resources\Roles\RoleResource::getUrl('index', ['simplify_legacy' => 1], panel: 'admin'), 'icon' => 'lock'];
+            }
             if ($plugins::canViewAny() && FeatureSettings::enabled('legacy_pages')) $items[] = ['key' => 'legacyplugins', 'label' => 'Plugin manager (legacy)', 'url' => $plugins::getUrl('index', ['simplify_legacy' => 1], panel: 'admin'), 'icon' => 'plugins'];
         } catch (\Throwable) {
         }

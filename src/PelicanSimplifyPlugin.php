@@ -31,7 +31,7 @@ final class PelicanSimplifyPlugin implements Plugin
         if($panel->getId()==='admin'){
             $panel->topbar(true);
             $panel->middleware([Http\Middleware\PluginsHome::class]);
-            $panel->pages([SimplifySettings::class,CreateMinecraftServer::class,\Simplify\Panel\Filament\Admin\Pages\ManagePlugins::class]);
+            $panel->pages([SimplifySettings::class,CreateMinecraftServer::class,\Simplify\Panel\Filament\Admin\Pages\ManagePlugins::class,\Simplify\Panel\Filament\Admin\Pages\ManagePeople::class]);
         }
         if($panel->getId()==='server')$panel->middleware([Http\Middleware\ServerHome::class]);
     }

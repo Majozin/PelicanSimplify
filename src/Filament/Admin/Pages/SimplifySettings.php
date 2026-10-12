@@ -152,6 +152,7 @@ class SimplifySettings extends Page implements HasForms
     private const ADDONS = [
         'Easy server creator' => 'tabler-server-bolt',
         'Easy game server creator' => 'tabler-device-gamepad-2',
+        'People & roles' => 'tabler-users-group',
         'Plugin manager' => 'tabler-plug',
     ];
 
@@ -210,7 +211,9 @@ class SimplifySettings extends Page implements HasForms
                 self::featureSection('Visibility', 'Access and visibility', 'Who sees which servers, and who may share them.'),
                 Section::make('Everyone')->description('Applies to every signed-in user. Administrators can always do everything. Pelican\'s own server permissions (owner, subusers) still decide which servers someone can manage.')
                     ->schema(self::abilityFields('roles.everyone')),
-                Section::make('Roles')->description('Members of a Pelican role get these abilities on top of Everyone, and the role\'s limits replace Everyone\'s. With several roles, abilities combine and the highest limit wins.')->schema([
+                Section::make('Roles')->description('Roles and their permissions are managed on the People & roles page (Admin tools → People), because "Let Simplify manage people & roles" is on.')
+                    ->visible(fn () => \Simplify\Panel\Services\FeatureSettings::enabled('people_manager')),
+                Section::make('Roles')->description('Members of a Pelican role get these abilities on top of Everyone, and the role\'s limits replace Everyone\'s. With several roles, abilities combine and the highest limit wins.')->visible(fn () => !\Simplify\Panel\Services\FeatureSettings::enabled('people_manager'))->schema([
                     Repeater::make('roles.roles')->hiddenLabel()->defaultItems(0)->collapsible()->addActionLabel('Add role')
                         ->itemLabel(fn (array $state): ?string => isset($state['role_id']) ? (Role::query()->whereKey($state['role_id'])->value('name') ?? 'Role') : 'New role')
                         ->schema([
@@ -252,6 +255,13 @@ class SimplifySettings extends Page implements HasForms
                 ]),
                 Section::make('Artwork')->extraAttributes(['class' => 'ps-setting-list'])->schema([self::featureToggle('steam_art')]),
                 Section::make('Installing new games')->description('Administrators can always install a game that is not on the panel yet: its egg is downloaded from the official Pelican egg repositories, checked and imported when they continue in the creator. To let other people do this, give their role the "Install new games" ability under Users & access. Root admins get a notification for every game installed this way.'),
+            ],
+            'People & roles' => [
+                Section::make('How it works')->description('With "Let Simplify manage people & roles" on (General → Add-ons), Admin tools and host mode open one People & roles page instead of Pelican\'s Users and Roles pages.')->schema([
+                    \Filament\Schemas\Components\Text::make('People: invite someone by username and email; they get an email to choose their own password (nobody else ever sees it). Assign roles, send a password reset link, or remove people who own no servers.'),
+                    \Filament\Schemas\Components\Text::make('Roles: each role combines Simplify permissions and limits (what members may do on their servers) with optional admin panel access. They are Pelican roles, so Pelican and other plugins keep working with them.'),
+                    \Filament\Schemas\Components\Text::make('Safety: only root admins manage people and roles, the Root Admin role is locked, you cannot remove your own root access, and the last root admin can never be removed or deleted.'),
+                ]),
             ],
             'Plugin manager' => [
                 Section::make('Plugin updates')->description('Applies to every installed plugin with a published update, Simplify included. Updates can also be started by hand from Admin tools → Plugins. Needs the plugin manager add-on.')->schema([self::featureToggle('auto_update_plugins')]),
@@ -316,6 +326,8 @@ class SimplifySettings extends Page implements HasForms
         if (!empty($state['clear_legacy_user_grants'])) { $data['user_ids'] = []; $data['user_limits'] = []; }
         $roles = $state['roles'] ?? [];
         $existingRoles = Role::query()->pluck('id')->map(fn ($id) => (int) $id)->all();
+        // With the People & roles page in charge, role profiles live there; this form only edits Everyone.
+        if (\Simplify\Panel\Services\FeatureSettings::enabled('people_manager')) $roles['roles'] = \Simplify\Panel\Services\RoleAccess::all()['roles'];
         $roles['roles'] = array_values(array_filter($roles['roles'] ?? [], fn ($role) => in_array((int) ($role['role_id'] ?? 0), $existingRoles, true)));
         $creates = in_array('create', $roles['everyone']['abilities'] ?? [], true) || array_filter($roles['roles'], fn ($role) => in_array('create', $role['abilities'] ?? [], true));
         if ($creates && (!$data['node_ids'] || (!$data['minecraft_enabled'] && !$data['other_egg_ids']))) {

@@ -1,5 +1,12 @@
 # Changes
 
+## 0.3.0-beta.26
+- New add-on "Let Simplify manage people & roles" (General → Add-ons, off by default). One People & roles page replaces Pelican's Users and Roles lists in Admin tools, host mode and Pelican's own links:
+  - People: search, invite (by email; they choose their own password), edit username/email/roles, send a password reset link, delete people who own no servers. Shows owned servers and whether two-factor sign-in is on.
+  - Roles: each role combines Simplify permissions and limits with optional admin panel access. They are Pelican roles, so Pelican and other plugins keep working with them.
+  - Safety: only root admins, the Root Admin role is locked, you cannot remove your own root access or delete yourself, the last root admin always stays, passwords of others are never set or shown, only known permissions are stored.
+  - Pelican's pages stay reachable under Legacy (Users (legacy), Roles (legacy)).
+
 ## 0.3.0-beta.25
 - Game creator: "Use the Steam banner and icon". When the chosen game is found in the Steam store (public store search by name, no API key, cached for a week), the creator shows a preview; after the server is created its Steam banner and a square icon are copied once to this panel, set as the server banner and used as the server icon. Can be switched off under Settings → Easy game server creator → Artwork.
 
