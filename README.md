@@ -1,12 +1,8 @@
 # PelicanSimplify
 
-> [!WARNING]
-> PelicanSimplify is imagined, designed and tested by me; the code is written with the help of AI.
-> Make a backup before installing and expect bugs, especially in beta builds. Simplify runs on top of your panel and does not touch running servers, but that is no guarantee.
-
 A cleaner, simpler interface for the [Pelican](https://github.com/pelican/panel) game server panel. You manage your servers from one overview and create new ones with a guided wizard. Everything still runs on Pelican and [Wings](https://github.com/pelican/wings), and the original panel stays available.
 
-**Beta · Pelican 1.0.0-beta38 · PHP 8.3+**
+**Stable 0.4.0 for Pelican 1.0.0-beta38 · Pelican 1.0.0-rc.1 support on the beta channel · PHP 8.3+**
 
 <a href="docs/screenshots/server-overview.png"><img src="docs/screenshots/server-overview.png" alt="Server overview" width="280"></a>
 <a href="docs/screenshots/server-dashboard.png"><img src="docs/screenshots/server-dashboard.png" alt="Server dashboard" width="280"></a>
@@ -20,6 +16,16 @@ A cleaner, simpler interface for the [Pelican](https://github.com/pelican/panel)
 - **Make it yours:** light and dark themes, server colors, banners, and your own logo or styled panel name.
 - **Friends mode, people and roles:** everyone can see every server but only manage their own, and roles set clear permissions and limits.
 
+## Before you install
+
+Simplify is a large change to how your panel looks and works. Please read this first.
+
+- **It replaces a lot of the panel.** The server overview, the server pages and server creation become Simplify's. Optionally it also takes over the Users, Roles and Plugins pages, and admins can use host mode.
+- **Everything can be switched off.** Each part has its own switch in Simplify settings, and you can turn off the whole Simplify dashboard. Pelican's original panel always stays available: the Legacy links in Admin tools lead to it, and even if you hide those links the pages keep working.
+- **It does not touch your running servers.** Servers, eggs, nodes and permissions stay Pelican's own. Simplify is a different way to look at and manage them.
+- **Other plugins are not supported inside Simplify yet.** They keep working in Pelican's original panel, but their pages and widgets do not show up in Simplify. This is the top item on the roadmap (see Coming features).
+- **Make a backup before installing**, as with any plugin that changes this much.
+
 ## Getting started
 
 1. In Pelican, go to **Admin → Plugins → Import from URL**.
@@ -27,6 +33,8 @@ A cleaner, simpler interface for the [Pelican](https://github.com/pelican/panel)
 3. Follow the setup checks. Anything missing is shown with how to fix it.
 
 **Requirements:** Node.js 22.12+ or 24+, Yarn, and a running queue worker and scheduler.
+
+**Updates:** Simplify updates itself through its plugin manager, with a backup and automatic rollback. You always get the build made for your Pelican version. Stable releases are the default; turn on "Get Simplify beta versions" in Simplify settings → Plugin manager to try new features earlier.
 
 Coming from the standalone creator? See the [installation notes](docs/INSTALLATION.md). Found a problem? Open an [issue](https://github.com/jerajerajerajera/PelicanSimplify/issues).
 
@@ -145,5 +153,9 @@ Items marked *(Pelican)* are existing Pelican or Wings features that Simplify sh
 - Optional automatic plugin updates
 
 </details>
+
+## How this project is made
+
+I came up with PelicanSimplify and designed every part of it myself: what it does, how it looks and how it should work. I write the code together with an AI assistant. Every change is checked and tested before it is released: automated tests run on each build, each change is tried in a test installation of Pelican, and I test everything myself on my own panel. Still, it is a young project: expect the odd bug, especially in beta builds, and please report anything you find through [Issues](https://github.com/jerajerajerajera/PelicanSimplify/issues).
 
 MIT licensed. Bundled game eggs keep their original licenses.
