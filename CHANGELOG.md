@@ -1,5 +1,9 @@
 # Changes
 
+## 0.3.0-beta.49
+- Simplify settings in the new style: one rounded card that fits the window. The menu on the left stays put and only the settings on the right scroll. Menu items have coloured icons and a tinted active state, and long add-on names are no longer cut off.
+- Customize overview: "Group by node" (Auto / Always / Off) is always shown, also with a single node.
+
 ## 0.3.0-beta.48
 - Overview: grid view is always four tiles wide, the same width as list view, and the health tile follows it. Cards keep their size with fewer servers.
 

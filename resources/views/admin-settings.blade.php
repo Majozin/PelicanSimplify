@@ -3,7 +3,10 @@
     <link rel="stylesheet" href="{{ \Simplify\Panel\Services\BuildInfo::asset('wizard.css') }}">
     <script src="{{ \Simplify\Panel\Services\BuildInfo::asset('wizard.js') }}"></script>
     @endassets
-    <div class="ps-settings-page {{ $this->embedded ? 'is-embedded' : 'is-standalone' }}">
+    <div class="ps-settings-page {{ $this->embedded ? 'is-embedded' : 'is-standalone' }}" x-data x-init="
+        const fit = () => { const tabs = $el.querySelector('.ps-settings-tabs.fi-vertical'); if (!tabs) return; const top = tabs.getBoundingClientRect().top + window.scrollY; tabs.style.setProperty('--ps-settings-height', Math.max(420, window.innerHeight - top - 16) + 'px'); };
+        fit(); window.addEventListener('resize', fit); new MutationObserver(() => requestAnimationFrame(fit)).observe($el, { childList: true, subtree: true });
+    ">
         @if(!$this->needsSetup())
             <header class="ps-settings-hero">
                 <span class="ps-settings-logo">@include('pelican-simplify::simplify-icon')</span>

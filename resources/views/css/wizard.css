@@ -351,3 +351,31 @@ html.ps-frame .ps-settings-tabs.fi-vertical > .fi-tabs { top: 0; max-height: 100
 .ps-brand-upload > img { height: 32px; max-width: 160px; object-fit: contain; border-radius: 6px; background: rgb(127 127 127 / .08); padding: 2px; }
 .ps-brand-upload .ps-btn { cursor: pointer; }
 .ps-visually-hidden { position: absolute !important; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
+
+/* Settings in the style of the server page: one rounded card that fits the window. The menu on the left
+   never moves; only the settings on the right scroll. */
+.ps-settings-page:not(:has(.ssc-progress)) .ps-settings-form { border-radius: 20px !important; }
+.ps-settings-tabs.fi-vertical { height: var(--ps-settings-height, auto) !important; align-items: stretch !important; background: linear-gradient(to right, var(--ps-nav-bg) 0 269px, var(--ps-line) 269px 270px, transparent 270px) !important; }
+.ps-settings-tabs.fi-vertical > .fi-tabs { position: static; width: 270px; max-height: none; height: 100%; padding: 14px 12px; }
+html.ps-frame .ps-settings-tabs.fi-vertical > .fi-tabs { max-height: none; }
+.ps-settings-tabs.fi-vertical > .fi-sc-tabs-tab { height: 100%; overflow-y: auto; overscroll-behavior: contain; scrollbar-width: thin; scrollbar-color: var(--ps-line) transparent; }
+.ps-settings-tabs .fi-tabs-item { min-height: 40px; padding: 5px 8px !important; border: 1px solid transparent; border-radius: 11px !important; white-space: nowrap; }
+.ps-settings-tabs .fi-tabs-item > .fi-icon { padding: 6px; border-radius: 9px; background: color-mix(in srgb, var(--ps-tone, var(--ps-accent)) 16%, transparent); color: var(--ps-tone, var(--ps-accent)); box-shadow: none; }
+.ps-settings-tabs .fi-tabs-item:hover { background: var(--ps-raised) !important; }
+.ps-settings-tabs .fi-tabs-item.fi-active { border-color: color-mix(in srgb, var(--ps-tone, var(--ps-accent)) 45%, transparent); background: color-mix(in srgb, var(--ps-tone, var(--ps-accent)) 12%, var(--ps-raised)) !important; box-shadow: none; }
+.ps-settings-tabs .fi-tabs-item.fi-active > .fi-icon { background: color-mix(in srgb, var(--ps-tone, var(--ps-accent)) 22%, transparent); color: var(--ps-tone, var(--ps-accent)); }
+.ps-settings-tabs .fi-tabs-item:nth-child(1) { --ps-tone: #9a9aa6; }
+.ps-settings-tabs .fi-tabs-item:nth-child(2) { --ps-tone: #e0a050; }
+.ps-settings-tabs .fi-tabs-item:nth-child(3) { --ps-tone: #6ea8fe; }
+.ps-settings-tabs .fi-tabs-item:nth-child(4) { --ps-tone: #7ad08a; }
+.ps-settings-tabs .fi-tabs-item:nth-child(5) { --ps-tone: #5cc8c0; }
+.ps-settings-tabs .fi-tabs-item:nth-child(6) { --ps-tone: #7ad08a; }
+.ps-settings-tabs .fi-tabs-item:nth-child(7) { --ps-tone: #b48cf2; }
+.ps-settings-tabs .fi-tabs-item:nth-child(8) { --ps-tone: #f2707a; }
+.ps-settings-tabs .fi-tabs-item:nth-child(9) { --ps-tone: #f5b84a; }
+.ps-settings-tabs .fi-section { border-radius: 16px !important; }
+@media (max-width: 900px) {
+  .ps-settings-tabs.fi-vertical { height: auto !important; }
+  .ps-settings-tabs.fi-vertical > .fi-tabs { width: 100%; height: auto; }
+  .ps-settings-tabs.fi-vertical > .fi-sc-tabs-tab { height: auto; overflow: visible; }
+}

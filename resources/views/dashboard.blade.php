@@ -178,8 +178,8 @@
                                             <button type="button" :aria-pressed="overviewPreferences.largeName==='name'" x-on:click="setOverviewPreference('largeName','name')">Name</button>
                                         </div>
                                     </div>
-                                    <div class="ps-customize-row" x-show="nodeOptions().length > 1 || overviewPreferences.groupByNode==='always'">
-                                        <div><strong>Group by node</strong><small>Automatic groups as soon as you have more than one node</small></div>
+                                    <div class="ps-customize-row">
+                                        <div><strong>Group by node</strong><small>Auto groups servers per node once you have more than one; Always also shows a single node</small></div>
                                         <div class="ps-segmented" role="group" aria-label="Group by node">
                                             <template x-for="mode in [{key:'auto',label:'Auto'},{key:'always',label:'Always'},{key:'off',label:'Off'}]" :key="mode.key">
                                                 <button type="button" :aria-pressed="overviewPreferences.groupByNode===mode.key" x-on:click="setOverviewPreference('groupByNode', mode.key)" x-text="mode.label"></button>
