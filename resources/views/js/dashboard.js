@@ -1198,7 +1198,7 @@
         if (this.modal === 'alias') return 'Change server alias';
         if (this.modal === 'background') return 'Server background';
         if (this.modal === 'panel-settings') return this.settingsSection === 'banners' ? 'Server banners' : 'Simplify settings';
-        if (this.modal === 'create') return { other: 'Create other game server', native: 'Create server' }[this.createGame] || 'Create Minecraft server';
+        if (this.modal === 'create') return { other: 'Create other server', native: 'Create server' }[this.createGame] || 'Create Minecraft server';
         if (this.modal === 'account') return 'Profile';
         if (this.modal === 'admin-page') return this.adminPage?.label || 'Admin';
         const widget = this.widgets.find((w) => w.key === this.modal);

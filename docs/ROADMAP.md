@@ -2,7 +2,7 @@
 
 Planned work after the 0.3 betas. Scope and order may change.
 
-## Easy game server creator
+## Easy server creator
 A separate add-on next to the **easy Minecraft server creator**.
 - Build a searchable index of games from Pelican's egg sources (the same GitHub index Pelican's *Import egg* dialog uses: Games Standalone, Games SteamCMD, Minecraft, …), so users can search "Valheim" instead of picking an egg.
 - Clicking a game downloads and installs the matching egg automatically for users with the *Install missing eggs* ability (Users & access), then continues with the same guided steps as the Minecraft creator.

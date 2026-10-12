@@ -1,5 +1,9 @@
 # Changes
 
+## 0.3.0-beta.31
+- Renamed the add-ons: "Easy game server creator" is now "Easy server creator" (not every egg is a game), and the Minecraft one is "Easy Minecraft server creator". The home tile and admin menu say "Create Other server".
+- Simple mode: the two create buttons are now half-size icons stacked on the right of one tile, without a border. The grid keeps its columns; the label slides out on hover with the existing animation.
+
 ## 0.3.0-beta.30
 - Host mode: clicking a server on the left opens its page in the right-hand area, in place of the admin pages. The cross closes it, picking another server swaps it, and Ctrl/Cmd-click or the "Open full page" button still opens the full page.
 

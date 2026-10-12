@@ -284,6 +284,15 @@ body:has(.ps) [data-ps-copyright-line] > * { display: inline; }
 }
 @media (prefers-reduced-motion: reduce) { .ps-create-plus > svg, .ps-create-plus::after { animation: none !important; } }
 
+/* Grid view: two half-size icon buttons stacked on the right of one tile; the label slides out to the left on hover. */
+.ps-server-grid:not(.is-list) .ps-create-tiles { justify-items: end; align-content: center; gap: 12px; }
+.ps-server-grid:not(.is-list) .ps-create-card { --ps-create-icon: 72px; --ps-create-small: 72px; flex-direction: row-reverse; width: auto; max-width: 100%; height: auto; padding: 4px; border: 0; background: none; box-shadow: none; }
+.ps-server-grid:not(.is-list) .ps-create-card:is(:hover, :focus-visible):not(:disabled) { background: none; }
+.ps-server-grid:not(.is-list) .ps-create-card .ps-create-plus { box-shadow: 0 0 0 1px color-mix(in srgb, var(--ps-accent) 22%, transparent); transition: width var(--ps-slow), height var(--ps-slow), transform var(--ps-slow), box-shadow var(--ps-slow); }
+.ps-server-grid:not(.is-list) .ps-create-card:is(:hover, :focus-visible):not(:disabled) .ps-create-plus { transform: scale(1.06); box-shadow: 0 0 0 2px var(--ps-accent), 0 8px 22px color-mix(in srgb, var(--ps-accent) 30%, transparent); }
+.ps-server-grid:not(.is-list) .ps-create-card h3 { text-align: right; transform: translateX(8px); }
+.ps-server-grid:not(.is-list) .ps-create-card h3 strong { margin-left: auto; }
+
 /* List view: one row per server; controls dock at the right edge. */
 .ps-server-grid.is-list .ps-create-tiles { grid-template-columns: repeat(2, minmax(0, 1fr)); grid-template-rows: none; height: 84px; min-height: 84px; }
 .ps-server-grid.is-list .ps-create-card { --ps-create-small: 48px; gap: 16px; padding: 6px 16px; }

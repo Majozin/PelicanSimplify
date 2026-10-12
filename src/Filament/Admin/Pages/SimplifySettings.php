@@ -174,8 +174,8 @@ class SimplifySettings extends Page implements HasForms
     ];
     /** Optional add-ons, switched on under General → Add-ons; each keeps its own settings tab after the core categories. */
     private const ADDONS = [
-        'Easy server creator' => 'tabler-server-bolt',
-        'Easy game server creator' => 'tabler-device-gamepad-2',
+        'Easy Minecraft server creator' => 'tabler-server-bolt',
+        'Easy server creator' => 'tabler-device-gamepad-2',
         'People & roles' => 'tabler-users-group',
         'Plugin manager' => 'tabler-plug',
     ];
@@ -277,7 +277,7 @@ class SimplifySettings extends Page implements HasForms
                 Section::make('Refresh rates')->columns(2)->description('Lower values feel livelier but cost more requests to the panel and Wings. Hidden browser tabs and open popups never refresh.')
                     ->schema(array_map($numberField, ['overview_seconds', 'server_seconds', 'restart_seconds', 'health_seconds'])),
             ],
-            'Easy server creator' => [
+            'Easy Minecraft server creator' => [
                 Section::make('Self-service creation')->columns(2)->description('Where users may create Minecraft servers (also used by the game creator). Who may create servers is set per role under Users & access ("Create servers").')->schema([
                     Select::make('node_ids')->label('Hosting machines')->multiple()->searchable()->options(fn () => Node::query()->pluck('name', 'id')->all())->helperText('Nodes used for self-service creation. Users do not choose ports or nodes.'),
                     Toggle::make('minecraft_enabled')->label('Allow Minecraft'),
@@ -289,7 +289,7 @@ class SimplifySettings extends Page implements HasForms
                         TextInput::make('creation_defaults.'.$type.'.disk_mb')->label('Disk (MB)')->integer()->minValue(1024)->maxValue(10485760)->required(),
                     ]), ['vanilla', 'plus', 'modded'], ['Vanilla', 'Vanilla+', 'Modded / modpacks'])),
             ],
-            'Easy game server creator' => [
+            'Easy server creator' => [
                 Section::make('Games for self-service')->description('Games users may create with the game creator. Administrators can pick any game, including the 170+ games from the official Pelican egg index.')->schema([
                     Select::make('other_egg_ids')->label('Approved games')->multiple()->searchable()->options(fn () => Egg::query()->orderBy('name')->pluck('name', 'id')->all())
                         ->helperText('A game installed from the egg index through the creator is added here automatically.'),
@@ -372,7 +372,7 @@ class SimplifySettings extends Page implements HasForms
         $roles['roles'] = array_values(array_filter($roles['roles'] ?? [], fn ($role) => in_array((int) ($role['role_id'] ?? 0), $existingRoles, true)));
         $creates = in_array('create', $roles['everyone']['abilities'] ?? [], true) || array_filter($roles['roles'], fn ($role) => in_array('create', $role['abilities'] ?? [], true));
         if ($creates && (!$data['node_ids'] || (!$data['minecraft_enabled'] && !$data['other_egg_ids']))) {
-            throw \Illuminate\Validation\ValidationException::withMessages(['data.node_ids' => 'Users may create servers: choose a hosting machine and at least one game under Easy server creator.']);
+            throw \Illuminate\Validation\ValidationException::withMessages(['data.node_ids' => 'Users may create servers: choose a hosting machine and at least one game under Easy Minecraft server creator.']);
         }
         \Simplify\Panel\Services\CreationDefaults::save($state['creation_defaults']??[]);
         \Simplify\Panel\Services\PerformanceSettings::save($state['performance']??[]);
