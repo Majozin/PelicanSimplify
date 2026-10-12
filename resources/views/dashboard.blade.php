@@ -526,6 +526,19 @@
 
         {{-- Server dashboard ----------------------------------------------------------------------- --}}
         <section x-show="server" class="ps-server-dashboard">
+            {{-- Status bar: slides in once the server card scrolls out of view, so status and power stay in reach. --}}
+            <div class="ps-statusbar" :class="{'is-visible': statusBarVisible && !!server}" :inert="!statusBarVisible" role="region" aria-label="Server status">
+                <span class="ps-statusbar-name" x-text="server?.alias || server?.name"></span>
+                <span class="ps-badge ps-status" :class="status"><i></i><span x-text="status"></span></span>
+                <button type="button" class="ps-statusbar-item ps-statusbar-address" x-show="server?.address" x-on:click="copy(server.address)" data-tip="Copy server address"><svg aria-hidden="true"><use href="#ps-link"/></svg><span x-text="server?.address"></span></button>
+                <span class="ps-statusbar-item" data-tip="Players online"><svg aria-hidden="true"><use href="#ps-players"/></svg><span x-text="playerCount({ ...server, status })"></span></span>
+                <div class="ps-statusbar-power" :inert="['installing','restoring_backup'].includes(serverSetup())">
+                    <button type="button" class="ps-btn is-sm is-primary" x-on:click="power('start')" :disabled="busy || !server?.permissions['control.start'] || status==='running'" aria-label="Start server" data-tip="Start"><svg aria-hidden="true"><use href="#ps-play"/></svg></button>
+                    <button type="button" class="ps-btn is-sm" x-on:click="power('restart')" :disabled="busy || !server?.permissions['control.restart']" aria-label="Restart server" data-tip="Restart"><svg aria-hidden="true"><use href="#ps-restart"/></svg></button>
+                    <button type="button" class="ps-btn is-sm" x-on:click="power('stop')" :disabled="busy || !server?.permissions['control.stop'] || status==='offline'" aria-label="Stop server" data-tip="Stop"><svg aria-hidden="true"><use href="#ps-stop"/></svg></button>
+                    <button type="button" class="ps-btn is-sm is-danger" x-on:click="power('kill')" :disabled="busy || !server?.permissions['control.stop'] || status==='offline'" aria-label="Force stop server" data-tip="Kill"><svg aria-hidden="true"><use href="#ps-kill"/></svg></button>
+                </div>
+            </div>
             <div class="ps-alert is-warn ps-pending" x-show="server?.pending" x-cloak>
                 <svg aria-hidden="true"><use href="#ps-alert"/></svg>
                 <div>
@@ -539,7 +552,7 @@
                 </div>
             </div>
 
-            <article class="ps-server-info" aria-label="Server information">
+            <article class="ps-server-info" aria-label="Server information" x-init="watchServerInfo($el)">
                 <span class="ps-offline-artwork" x-show="status==='offline'" aria-label="Server offline"><svg aria-hidden="true"><use href="#ps-offline"/></svg></span>
                 <img class="ps-server-banner" x-show="server?.background && status!=='offline'" :src="safeImage(server?.background)" alt="" x-on:error="$el.style.visibility='hidden'">
                 <div class="ps-info-badges ps-identity-badges">

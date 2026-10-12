@@ -1,5 +1,8 @@
 # Changes
 
+## 0.3.0-beta.35
+- Server page: a status bar slides in at the top once you scroll past the server card. It keeps the name, status, address (click to copy), players and the start, restart, stop and kill buttons in reach.
+
 ## 0.3.0-beta.34
 - Simple mode create buttons read clearly as "add": a dashed accent outline, a filled plus badge, and on hover a solid outline with the plus turning.
 

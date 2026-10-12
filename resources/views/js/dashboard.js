@@ -43,6 +43,7 @@
       hostSection: null,
       hostServersOpen: false,
       hostServer: null,
+      statusBarVisible: false,
       embedded: /[?&]simplify_embed=/.test(globalThis.location?.search || ''),
       adminPage: null,
       overviewCompact: false,
@@ -257,6 +258,13 @@
         return { '--ps-accent': `hsl(${hash % 360} 68% 76%)`, '--ps-on-accent': '#111118' };
       },
       /** Panel name gradient: the common accent, else the page accent (blue on an uncoloured overview). */
+      /** Shows the status bar while the server card is scrolled out of view. */
+      watchServerInfo(el) {
+        if (typeof IntersectionObserver !== 'function') return;
+        new IntersectionObserver(([entry]) => {
+          this.statusBarVisible = !entry.isIntersecting && entry.boundingClientRect.bottom < 0;
+        }).observe(el);
+      },
       openHostServer(s) {
         this.hostServer = s;
         this.hostServersOpen = false;
