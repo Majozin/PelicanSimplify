@@ -1,5 +1,8 @@
 # Changes
 
+## 0.3.0-beta.50
+- Header menus (admin tools, notifications, customize overview) now point at the button that opened them, with the same small arrow as incoming notifications.
+
 ## 0.3.0-beta.49
 - Simplify settings in the new style: one rounded card that fits the window. The menu on the left stays put and only the settings on the right scroll. Menu items have coloured icons and a tinted active state, and long add-on names are no longer cut off.
 - Customize overview: "Group by node" (Auto / Always / Off) is always shown, also with a single node.
