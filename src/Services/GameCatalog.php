@@ -92,7 +92,8 @@ final class GameCatalog
 
     private static function install(array $game): Egg
     {
-        $egg = Egg::query()->where('uuid', $game['uuid'] ?? '')->first() ?? Egg::query()->where('name', $game['name'])->first();
+        // UUID only: an unrelated egg that happens to share the name must never be approved for self-service.
+        $egg = filled($game['uuid'] ?? null) ? Egg::query()->where('uuid', $game['uuid'])->first() : null;
         if (!$egg) {
             if (!str_starts_with((string) $game['url'], 'https://raw.githubusercontent.com/pelican-eggs/')) throw new \RuntimeException('Unknown egg source.');
             $content = Http::timeout(20)->connectTimeout(5)->get($game['url'])->throw()->body();

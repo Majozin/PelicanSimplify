@@ -249,9 +249,14 @@ final class Dashboard extends Page
     public function saveWebsite(array $input,?string $uuid=null): void
     {
         abort_unless(Extensions::web(),404);$s=$uuid?Access::server($uuid):$this->server();Access::owner($s);
-        $fields=['visible','description','background_id','motd','icon_url'];
+        $input=array_intersect_key($input,array_flip(['visible','description','background_id','motd','icon_url']));
+        // Checked here as well, whatever the website extension does with it.
+        $valid=\Illuminate\Support\Facades\Validator::make($input,[
+            'visible'=>'sometimes|boolean','description'=>'sometimes|nullable|string|max:1000','motd'=>'sometimes|nullable|string|max:500',
+            'background_id'=>['sometimes','nullable','string','max:64','regex:/^[A-Za-z0-9_-]+$/'],'icon_url'=>'sometimes|nullable|string|max:2048|url:https',
+        ])->validate();
         $old=Extensions::webAdapter()->metadata($s);
-        Extensions::webAdapter()->save($s,array_replace($old,array_intersect_key($input,array_flip($fields))));
+        Extensions::webAdapter()->save($s,array_replace($old,$valid));
     }
     #[Renderless]
     public function packageSearch(string $query,string $version): array {abort_unless(Access::feature('packages'),404); return Packages::search($this->server(),$query,$version); }

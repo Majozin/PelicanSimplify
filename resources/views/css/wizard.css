@@ -64,14 +64,18 @@
 .ssc-progress button:disabled { cursor: default; opacity: .5; }
 .ssc-progress button:focus-visible { outline: 2px solid var(--ps-accent); outline-offset: 2px; }
 .ssc-step-arrow { color: var(--ps-muted); font-size: 14px; }
-.ssc-draft-bar { display: flex; align-items: center; justify-content: flex-end; gap: 8px; padding: 6px 16px; border-bottom: 1px solid var(--ps-line); }
+.ssc-draft-bar { position: sticky; top: 10px; z-index: 6; display: flex; align-items: center; justify-content: flex-end; gap: 8px; width: fit-content; max-width: calc(100% - 24px); margin: 10px 12px 10px auto; padding: 5px 6px 5px 16px; border: 1px solid var(--ps-line); border-radius: 999px; background: color-mix(in srgb, var(--ps-surface) 92%, transparent); box-shadow: 0 10px 28px -16px rgb(0 0 0 / .35); backdrop-filter: blur(10px); }
+.ssc-draft-status { font-size: 13px; font-weight: 600; }
+.ssc-discard { gap: 6px; border-radius: 999px !important; }
+.ssc-discard:hover:not(:disabled) { border-color: var(--ps-danger); color: var(--ps-danger); }
+.ssc-discard svg { width: 15px; height: 15px; }
 .ssc-draft-indicator { position: relative; display: grid; place-items: center; width: var(--ps-h); height: var(--ps-h); color: var(--ps-muted); }
 .ssc-draft-indicator > svg { width: 20px; height: 20px; }
 .ssc-draft-indicator.is-unsaved { color: var(--ps-accent); }
 .ssc-draft-indicator.is-saving > svg:not(.ssc-save-check) { animation: ssc-saving-pulse 1s ease-in-out infinite; }
 .ssc-draft-indicator > .ssc-save-check { position: absolute; right: 2px; bottom: 2px; width: 16px; height: 16px; padding: 2px; border-radius: 50%; background: var(--ps-surface); color: var(--ps-accent); }
 @keyframes ssc-saving-pulse { 50% { opacity: .4; } }
-.ssc-delete-concept { display: flex; justify-content: flex-end; width: var(--ps-h); overflow: hidden; transition: width var(--ps-fast); }
+.ssc-delete-concept { display: flex; justify-content: flex-end; }
 .ssc-delete-concept.is-confirming { width: calc(var(--ps-h) * 2 + 8px); }
 .ssc-delete-confirm { display: flex; align-items: center; gap: 8px; }
 .ssc-draft-icon { display: flex; align-items: center; gap: 12px; padding: 12px 20px; font-size: 13px; }
@@ -247,8 +251,10 @@
 
 /* Two panes: category menu on the left, settings on the right. */
 .ps-settings-page:not(:has(.ssc-progress)) .ps-settings-form { padding: 0 !important; overflow: clip; }
-.ps-settings-tabs.fi-vertical { height: auto !important; gap: 0 !important; align-items: stretch !important; }
-.ps-settings-tabs.fi-vertical > .fi-tabs { flex: none; width: 250px; gap: 2px !important; padding: 16px 12px; border: 0 !important; border-right: 1px solid var(--ps-line) !important; border-radius: 0 !important; background: color-mix(in srgb, var(--ps-raised) 55%, var(--ps-surface)) !important; box-shadow: none !important; }
+.ps-settings-tabs.fi-vertical { --ps-nav-bg: color-mix(in srgb, var(--ps-raised) 55%, var(--ps-surface)); height: auto !important; gap: 0 !important; align-items: flex-start !important; background: linear-gradient(to right, var(--ps-nav-bg) 0 249px, var(--ps-line) 249px 250px, transparent 250px) !important; }
+/* The category menu stays in view; only the settings beside it scroll with the page. */
+.ps-settings-tabs.fi-vertical > .fi-tabs { position: sticky; top: 80px; flex: none; width: 250px; max-height: calc(100vh - 96px); overflow-y: auto; gap: 2px !important; padding: 16px 12px; border: 0 !important; border-radius: 0 !important; background: transparent !important; box-shadow: none !important; }
+html.ps-frame .ps-settings-tabs.fi-vertical > .fi-tabs { top: 0; max-height: 100vh; }
 .ps-settings-tabs .fi-tabs-item { justify-content: flex-start; gap: 10px; min-height: 42px; padding: 5px 8px !important; border-radius: var(--ps-radius) !important; color: var(--ps-ink) !important; font-weight: 600; }
 .ps-settings-tabs .fi-tabs-item > .fi-icon { box-sizing: content-box; width: 17px; height: 17px; padding: 6px; border-radius: 9px; background: var(--ps-surface); color: var(--ps-muted); box-shadow: inset 0 0 0 1px var(--ps-line); }
 .ps-settings-tabs .fi-tabs-item:hover { background: var(--ps-surface) !important; }
@@ -278,17 +284,9 @@
 .ps-settings-tabs .fi-fo-field:has(> .fi-fo-field-label-col .fi-fo-toggle) .fi-fo-field-content-col { margin-top: 3px; color: var(--ps-muted); font-size: 13px; line-height: 1.45; }
 .ps-setting-list .fi-section-content { row-gap: 0 !important; }
 
-/* Save bar follows the page and says when something changed. */
-.ps-settings-actions { position: sticky; bottom: 12px; z-index: 4; display: flex; align-items: center; justify-content: flex-end; gap: 14px; margin: 12px 16px 16px; padding: 10px 10px 10px 18px; border: 1px solid var(--ps-line); border-radius: 999px; background: color-mix(in srgb, var(--ps-surface) 92%, transparent); box-shadow: 0 10px 30px -14px rgb(0 0 0 / .35); backdrop-filter: blur(8px); }
-.ps-settings-actions .fi-btn { border-radius: 999px !important; }
-.ps-settings-dirty, .ps-settings-clean { margin-right: auto; font-size: 13px; font-weight: 600; }
-.ps-settings-clean { color: var(--ps-muted); font-weight: 500; }
-.ps-settings-dirty { display: inline-flex; align-items: center; gap: 8px; color: var(--ps-ink); }
-.ps-settings-dirty i { display: inline-block; flex: none; width: 8px; height: 8px; border-radius: 50%; background: var(--ps-warn); box-shadow: 0 0 0 4px color-mix(in srgb, var(--ps-warn) 22%, transparent); }
-
 @media (max-width: 900px) {
-  .ps-settings-tabs.fi-vertical { flex-direction: column !important; }
-  .ps-settings-tabs.fi-vertical > .fi-tabs { width: auto; flex-direction: row !important; flex-wrap: nowrap !important; overflow-x: auto; border-right: 0 !important; border-bottom: 1px solid var(--ps-line) !important; }
+  .ps-settings-tabs.fi-vertical { flex-direction: column !important; align-items: stretch !important; background: none !important; }
+  .ps-settings-tabs.fi-vertical > .fi-tabs { position: static; max-height: none; width: auto; background: var(--ps-nav-bg) !important; flex-direction: row !important; flex-wrap: nowrap !important; overflow-x: auto; border-right: 0 !important; border-bottom: 1px solid var(--ps-line) !important; }
   .ps-settings-tabs .fi-tabs-item { flex: none; }
   .ps-settings-tabs .fi-tabs-item:not(:has(.fi-badge)) + .fi-tabs-item:has(.fi-badge) { margin-top: 0; margin-left: 14px; }
   .ps-settings-tabs .fi-tabs-item:not(:has(.fi-badge)) + .fi-tabs-item:has(.fi-badge)::before { display: none; }

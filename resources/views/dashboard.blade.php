@@ -297,7 +297,7 @@
                         <h2 x-text="hostSection?.label"></h2></div>
                         <div class="ps-segmented ps-host-subtabs" x-show="hostSection?.pages.length > 1" role="group" aria-label="Pages">
                             <template x-for="item in hostSection?.pages || []" :key="item.key">
-                                <button type="button" :aria-pressed="hostPage?.key===item.key" x-on:click="hostPage=item"><svg aria-hidden="true"><use :href="'#ps-'+item.icon"/></svg><span x-text="item.label"></span></button>
+                                <button type="button" :aria-pressed="hostPage?.key===item.key" x-on:click="setHostPage(item)"><svg aria-hidden="true"><use :href="'#ps-'+item.icon"/></svg><span x-text="item.label"></span></button>
                             </template>
                         </div>
                     </header>

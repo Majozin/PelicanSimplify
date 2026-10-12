@@ -347,11 +347,30 @@
           saved = localStorage.getItem(this.hostModeKey());
         } catch {}
         this.hostMode = saved === null ? !!this.boot.host_mode_auto && this.nodeOptions().length > 1 : saved === '1';
-        if (this.hostMode) this.openHostSection(this.hostSections().find((x) => x.key === 'health') || this.hostSections()[0], false);
+        if (!this.hostMode) return;
+        // Back from a server: reopen the section and page that were open (this browser tab only).
+        let last = {};
+        try {
+          last = JSON.parse(sessionStorage.getItem(this.hostModeKey() + '.place') || '{}') || {};
+        } catch {}
+        const sections = this.hostSections();
+        const section = sections.find((x) => x.key === last.section) || sections.find((x) => x.key === 'health') || sections[0];
+        this.openHostSection(section);
+        const page = section?.pages.find((item) => item.key === last.page);
+        if (page) this.setHostPage(page);
+      },
+      setHostPage(item) {
+        this.hostPage = item;
+        this.rememberHostPlace();
+      },
+      rememberHostPlace() {
+        try {
+          sessionStorage.setItem(this.hostModeKey() + '.place', JSON.stringify({ section: this.hostSection?.key || null, page: this.hostPage?.key || null }));
+        } catch {}
       },
       setHostMode(on) {
         this.hostMode = !!on && this.adminPages().length > 0;
-        if (this.hostMode && !this.hostPage) this.openHostSection(this.hostSections().find((x) => x.key === 'health') || this.hostSections()[0], false);
+        if (this.hostMode && !this.hostPage) this.openHostSection(this.hostSections().find((x) => x.key === 'health') || this.hostSections()[0]);
         try {
           localStorage.setItem(this.hostModeKey(), this.hostMode ? '1' : '0');
         } catch {}
@@ -386,6 +405,7 @@
         if (!section) return;
         this.hostSection = section;
         this.hostPage = section.pages[0] || null;
+        this.rememberHostPlace();
       },
       hostServerVersion(s) {
         const version = String(s.reported_version || '').trim();

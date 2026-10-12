@@ -11,7 +11,6 @@ use App\Models\Node;
 use App\Models\User;
 use App\Models\Server;
 use Simplify\Panel\Services\AppearanceSettings;
-use Simplify\Panel\Services\ServerAppearance;
 use Filament\Forms\Components\ColorPicker;
 use Filament\Schemas\Components\Utilities\Get;
 use Filament\Schemas\Components\Utilities\Set;
@@ -204,9 +203,7 @@ class SimplifySettings extends Page implements HasForms
                 self::featureSection('Theme', 'Appearance'),
                 Section::make('Colours')->columns(2)->schema([
                     ColorPicker::make('appearance.accent_color')->view('pelican-simplify::filament.admin.accent-picker')->label('Panel accent color')->hex()->required()->rules(['regex:/^#[0-9a-fA-F]{6}$/'])->helperText('Used throughout the shared interface and by every server when separate colors are off.')->columnSpanFull(),
-                    Toggle::make('appearance.individual_colors')->label('Use separate server colors')->live()->helperText('On assigns a color to every server without one. Off makes all servers use the panel accent; saved colors are retained.')->columnSpanFull(),
-                    Select::make('appearance.server_uuid')->label('Server color to edit')->searchable()->options(fn () => Server::query()->orderBy('name')->pluck('name', 'uuid')->all())->live()->visible(fn (Get $get) => $get('appearance.individual_colors'))->afterStateUpdated(function (?string $state, Set $set): void { $server = $state ? Server::query()->where('uuid', $state)->first() : null; $set('appearance.server_color', $server ? ServerAppearance::color($server) : null); }),
-                    ColorPicker::make('appearance.server_color')->view('pelican-simplify::filament.admin.accent-picker')->label('Selected server accent')->hex()->nullable()->rules(['regex:/^#[0-9a-fA-F]{6}$/'])->visible(fn (Get $get) => $get('appearance.individual_colors') && filled($get('appearance.server_uuid')))->helperText('Choose a color and save settings to apply it to this server.'),
+                    Toggle::make('appearance.individual_colors')->label('Use separate server colors')->helperText('On assigns a color to every server without one. Off makes all servers use the panel accent; saved colors are retained.')->columnSpanFull(),
                 ]),
             ],
             'Users & access' => [
@@ -308,10 +305,6 @@ class SimplifySettings extends Page implements HasForms
         $firstSetup = $this->needsSetup();
         if ($firstSetup && !$this->setupStarted) return;
         $state=$this->form->getState();
-        if(!empty($state['appearance']['server_uuid'])&&!empty($state['appearance']['server_color'])){
-            $server=Server::query()->where('uuid',$state['appearance']['server_uuid'])->firstOrFail();
-            ServerAppearance::save($server,$state['appearance']['server_color']);
-        }
         AppearanceSettings::save($state['appearance']??[]);
         // Creator file: only the self-service location and games are edited here; who may create lives in RoleAccess.
         $data = CreatorAccess::configuration();

@@ -201,5 +201,3 @@ html.ps-frame .fi-page:has(.fi-sc-tabs) .fi-sc-tabs .fi-tabs { padding-right: 11
 html.ps-frame .fi-section:not(.fi-section .fi-section) + .fi-section:not(.fi-section .fi-section) { margin-top: 4px; }
 
 /* Settings popup: the category menu stays in place while the settings beside it scroll. */
-html.ps-frame .ps-settings-tabs.fi-vertical { align-items: flex-start; }
-html.ps-frame .ps-settings-tabs.fi-vertical > .fi-tabs { position: sticky; top: 12px; max-height: calc(100vh - 24px); overflow-y: auto; }

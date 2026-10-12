@@ -1,5 +1,14 @@
 # Changes
 
+## 0.3.0-beta.24
+- One save bar everywhere: on Simplify settings and on Pelican's own edit pages (users, nodes, settings…) a floating bar appears once something changed; after a successful save the button turns into a check and the bar slides away. Failed validation keeps it open.
+- Creators: the draft bar uses the same style, with a "Discard" button that asks for confirmation.
+- Settings page: the category menu stays in place while the settings scroll.
+- Host mode remembers the open section and page when you open a server and come back.
+- Appearance settings no longer have the per-server colour picker (set colours on the server page).
+- Dark theme: no dark haze around the health dock.
+- Review fixes: a game from the egg index is only matched to an existing egg by UUID (never by name), and website settings are validated before they are passed on.
+
 ## 0.3.0-beta.23
 - Settings page overhaul: header with the Simplify icon, version and quick actions; a two-pane layout with a calmer category menu and a separate "Add-ons" group; switches shown as setting rows (name and explanation left, switch right); quieter section cards; a floating save bar that shows "Unsaved changes".
 - Server page: while Pelican is still installing a new or reinstalled server, a clear "Setting up your server…" card is shown and workspaces and power buttons are locked; it checks every 5 seconds and unlocks with a "Your server is ready" message. A failed installation or a running backup restore is shown the same way.

@@ -176,8 +176,15 @@ window.sscDraft = function (wire) {
     },
     async discard(approved = false) {
       if (!approved) {
+        if (this.saving || this.uploading || this.completed) return;
+        // Same confirmation as everywhere else in Simplify; the inline check stays as a fallback.
+        if (!window.Simplify?.confirm) {
+          this.deleteConfirm = true;
+          return;
+        }
+        const ok = await window.Simplify.confirm({ title: 'Discard this draft?', message: 'Everything you filled in for this server is removed. This cannot be undone.', confirmLabel: 'Discard draft', tone: 'danger' });
+        if (!ok) return;
         this.deleteConfirm = true;
-        return;
       }
       if (!this.deleteConfirm || this.saving || this.uploading || this.completed) return;
       this.deleteConfirm = false;

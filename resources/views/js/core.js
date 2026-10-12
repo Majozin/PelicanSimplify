@@ -337,6 +337,106 @@
       }
     }).observe(document.documentElement, { childList: true, subtree: true });
   };
+  /* Save bar: the same floating bar on every form. It slides in once something changed; when saving
+     worked the button shows a check and the bar slides away again. */
+  let pendingSaves = [];
+  const settleSaves = (ok) => {
+    const waiting = pendingSaves;
+    pendingSaves = [];
+    // Let Livewire paint validation messages first, then judge the result by them.
+    setTimeout(() => waiting.forEach(({ api, scope }) => (ok && !scope.querySelector('.fi-fo-field-wrp-error-message, [data-validation-error]') ? api.saved() : api.failed())), 60);
+  };
+  const hookLivewire = () => {
+    if (hookLivewire.done || !window.Livewire?.hook) return;
+    hookLivewire.done = true;
+    window.Livewire.hook('commit', ({ succeed, fail }) => {
+      if (!pendingSaves.length) return;
+      succeed(() => settleSaves(true));
+      fail(() => settleSaves(false));
+    });
+  };
+  document.addEventListener('livewire:init', hookLivewire);
+  const saveBar = ({ mount, scope = mount, within = null, fixed = false, label = 'Save changes', onSave, onDiscard = null, discardMessage = 'Your changes since the last save are lost.' }) => {
+    hookLivewire();
+    const bar = document.createElement('div');
+    bar.className = 'ps-savebar' + (fixed ? ' is-fixed' : '');
+    bar.setAttribute('role', 'region');
+    bar.setAttribute('aria-label', 'Save changes');
+    bar.innerHTML = '<span class="ps-savebar-status" role="status"><i aria-hidden="true"></i><span class="ps-savebar-text">Unsaved changes</span></span>'
+      + (onDiscard ? '<button type="button" class="ps-savebar-discard">Discard</button>' : '')
+      + '<button type="button" class="ps-savebar-save"><svg class="ps-savebar-check" viewBox="0 0 24 24" aria-hidden="true"><path d="m5 12 4.5 4.5L19 7"/></svg><span class="ps-savebar-label"></span></button>';
+    const text = bar.querySelector('.ps-savebar-text');
+    const button = bar.querySelector('.ps-savebar-save');
+    bar.querySelector('.ps-savebar-label').textContent = label;
+    let timer = 0;
+    const api = {
+      el: bar,
+      dirty(on = true) {
+        if (bar.classList.contains('is-saving')) return;
+        clearTimeout(timer);
+        bar.classList.remove('is-saved');
+        bar.classList.toggle('is-dirty', on);
+        text.textContent = 'Unsaved changes';
+      },
+      saving() {
+        bar.classList.add('is-saving');
+        button.disabled = true;
+      },
+      saved() {
+        bar.classList.remove('is-saving', 'is-dirty');
+        bar.classList.add('is-saved');
+        button.disabled = false;
+        text.textContent = 'All changes saved';
+        clearTimeout(timer);
+        timer = setTimeout(() => bar.classList.remove('is-saved'), 1600);
+      },
+      failed() {
+        bar.classList.remove('is-saving');
+        button.disabled = false;
+        text.textContent = 'Not saved — check the highlighted fields';
+      },
+      // Waits for the Livewire request that saving starts.
+      expectSave() {
+        api.saving();
+        pendingSaves.push({ api, scope });
+      },
+    };
+    button.addEventListener('click', () => onSave(api));
+    bar.querySelector('.ps-savebar-discard')?.addEventListener('click', () => {
+      dialog({ title: 'Discard changes?', message: discardMessage, confirmLabel: 'Discard', tone: 'danger' }).then((ok) => ok && onDiscard(api));
+    });
+    // Anything typed, picked or switched in the form marks it as changed.
+    const changed = (event) => {
+      if (event.target.closest?.('.ps-savebar, .fi-modal, [role="dialog"]') || (within && !event.target.closest?.(within))) return;
+      if (event.type === 'click' && !event.target.closest?.('[role="switch"], [role="radio"], [role="checkbox"], input[type="checkbox"], input[type="radio"], .fi-fo-color-picker')) return;
+      api.dirty(true);
+    };
+    ['input', 'change', 'click'].forEach((type) => scope.addEventListener(type, changed, true));
+    mount.append(bar);
+    return api;
+  };
+
+  // Pelican's own edit pages (users, nodes, settings…) keep their Save action in the page header.
+  const enhanceEditPages = () => {
+    const PAGE = '.fi-page.fi-resource-edit-record-page, .fi-page.fi-page-settings';
+    const page = () => document.querySelector(PAGE);
+    if (!page() || root.dataset.psSavebar) return;
+    const saveButton = () => [...(page()?.querySelectorAll('.fi-header-actions-ctn :is(button, a)') || [])].find((el) => /^save\b/i.test((el.getAttribute('aria-label') || el.textContent || '').trim()));
+    if (!saveButton()) return;
+    root.dataset.psSavebar = '1';
+    // Mounted outside the page: Livewire re-renders the page after saving and would remove it.
+    const bar = saveBar({ mount: document.body, scope: document, within: PAGE, fixed: true, onSave: (api) => { api.expectSave(); saveButton()?.click(); } });
+    // The header's own Save button reports to the same bar.
+    document.addEventListener('click', (event) => {
+      const header = event.target.closest?.('.fi-header-actions-ctn :is(button, a)');
+      if (header && header === saveButton() && !bar.el.classList.contains('is-saving')) bar.expectSave();
+    }, true);
+  };
+  const scheduleEnhance = () => setTimeout(enhanceEditPages, 300);
+  document.addEventListener('DOMContentLoaded', scheduleEnhance);
+  document.addEventListener('livewire:navigated', scheduleEnhance);
+  window.Simplify.saveBar = saveBar;
+
   apply();
   forwardNotifications();
 })();

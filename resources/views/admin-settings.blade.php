@@ -49,11 +49,8 @@
                 <form wire:submit="save">
                     {{ $this->form }}
                     @if(!$this->needsSetup())
-                        <footer class="ps-settings-actions">
-                            <span class="ps-settings-dirty" wire:dirty><i aria-hidden="true"></i>Unsaved changes</span>
-                            <span class="ps-settings-clean" wire:dirty.remove>All changes saved</span>
-                            <x-filament::button type="submit" wire:loading.attr="disabled" icon="tabler-check">Save settings</x-filament::button>
-                        </footer>
+                        {{-- Shared save bar (core.js): appears on changes, confirms the save, then slides away. --}}
+                        <div wire:ignore x-data x-init="Simplify.saveBar({ mount: document.body, fixed: true, scope: $el.closest('form'), label: 'Save settings', onSave: (api) => { api.expectSave(); $wire.save(); } })"></div>
                     @endif
                 </form>
             </div>

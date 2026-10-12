@@ -366,7 +366,7 @@ body:has(.ps) [data-ps-copyright-line] > * { display: inline; }
 
 /* Host health dock: compact summary row that expands upward into node details. */
 .ps-health-panel { position: relative; z-index: 1; flex: none; width: var(--ps-health-width, calc(100% - 8px)); margin: 0 var(--ps-health-left, auto) 0 var(--ps-health-left, auto); overflow: hidden; border: 1px solid var(--ps-line); border-radius: var(--ps-radius-lg); background: var(--ps-surface); box-shadow: 0 -4px 12px rgb(0 0 0 / .1); }
-.ps.dark .ps-health-panel { box-shadow: 0 -4px 14px rgb(0 0 0 / .3); }
+.ps.dark .ps-health-panel { box-shadow: none; }
 .ps-host-health { display: grid; grid-template-columns: minmax(180px, 1.2fr) repeat(4, minmax(0, 1fr)); gap: 18px; padding: 16px 18px; cursor: pointer; transition: background-color var(--ps-fast); }
 .ps-host-health:hover { background: color-mix(in srgb, var(--ps-raised) 40%, var(--ps-surface)); }
 .ps-host-health:focus-visible { outline: 2px solid var(--ps-accent); outline-offset: -2px; border-radius: var(--ps-radius-lg); }
