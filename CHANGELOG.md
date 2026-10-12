@@ -1,5 +1,8 @@
 # Changes
 
+## 0.3.0-beta.45
+- Overview: a small gap between the fading server list and the health tile, so no card peeks past the tile corners.
+
 ## 0.3.0-beta.44
 - Host mode pane: the server card sits flush at the top of the pane, and the workspace gets exactly the height that is left, so the pane no longer scrolls (also with a section open; the small console then takes the players card's place).
 - Files: a button in the file manager header opens it in a separate window.

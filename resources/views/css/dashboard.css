@@ -990,3 +990,6 @@ span.ps-card-background.ps-banner-color { width: 100%; opacity: .5; filter: none
 .ps.is-embedded .ps-server-workspace.has-dock .ps-players-stat { display: none; }
 /* The server list fades out softly above the health tile instead of being cut off by a hard edge. */
 .ps-server-scroll { mask-image: linear-gradient(to bottom, #000 calc(100% - 28px), transparent); }
+/* A clear gap between the (fading) server list and the health tile, so no card peeks past its corners. */
+.ps-overview > .ps-health-panel { margin-top: 10px; }
+.ps-server-scroll { mask-image: linear-gradient(to bottom, #000 calc(100% - 36px), transparent calc(100% - 4px)); }
