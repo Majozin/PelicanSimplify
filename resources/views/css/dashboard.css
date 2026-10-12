@@ -96,7 +96,7 @@ body:has(.ps) [data-ps-copyright-line] > * { display: inline; }
 .ps-overview { display: flex; flex: 1 1 0; flex-direction: column; min-height: 0; overflow: hidden; }
 .ps-server-scroll { display: flex; flex: 1 1 0; flex-direction: column; min-height: 0; overflow: hidden auto; padding: 12px 4px; overscroll-behavior: contain; scrollbar-width: thin; scrollbar-color: var(--ps-line) transparent; }
 .ps-server-scroll:focus-visible { outline: 2px solid var(--ps-line); outline-offset: 2px; border-radius: var(--ps-radius); }
-.ps-server-stage { --ps-grid-width: calc(max(var(--grid-columns, 4), 3) * 260px + (max(var(--grid-columns, 4), 3) - 1) * 16px); flex: none; width: 100%; max-width: var(--ps-grid-width); margin: auto; }
+.ps-server-stage { --ps-grid-width: calc(4 * 260px + 3 * 16px); flex: none; width: 100%; max-width: var(--ps-grid-width); margin: auto; }
 .ps-server-stage.is-list { max-width: 1088px; margin: clamp(4px, calc(4dvh - 28px), 24px) auto 0; }
 .ps-overview-toolbar { display: flex; flex-wrap: wrap-reverse; align-items: center; justify-content: space-between; gap: 8px 16px; margin: 0 0 12px; }
 .ps-overview-toolbar > .ps-game-filters { margin-left: auto; order: 2; }

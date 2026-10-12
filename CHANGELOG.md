@@ -1,5 +1,8 @@
 # Changes
 
+## 0.3.0-beta.48
+- Overview: grid view is always four tiles wide, the same width as list view, and the health tile follows it. Cards keep their size with fewer servers.
+
 ## 0.3.0-beta.47
 - Customize overview, redone: every option has a clear name and a one-line explanation, with its control on the right (Layout, Card icon, Card title, Group by node), then "Show on each card" switches: Message of the day, CPU usage, Memory usage and Quick actions on hover.
 - Account menu: theme, profile, the host/simple mode switch (its icon shows the mode you switch to) and sign out, in that order.
