@@ -1,5 +1,11 @@
 # Changes
 
+## 0.4.0 — first stable release (Pelican 1.0.0-beta38)
+- Everything from the 0.3.0 betas, now marked stable for Pelican 1.0.0-beta38.
+- Update channels: stable releases are announced in update.json (also what Pelican's own updater reads), betas in update-beta.json. Simplify settings → Plugin manager → "Get Simplify beta versions" (off by default) follows the beta channel; you then get whichever of the stable or beta build is newer.
+- Updates are always the build made for your Pelican version; the plugin page states your Pelican version and channel.
+- The README download link (pelican-simplify-latest.zip) now always points at the latest stable release.
+
 ## 0.3.0-beta.53
 - Host mode pane: the server page fills it edge to edge. The pane has no frame or padding of its own; the banner, menu, console and side cards form its edges.
 

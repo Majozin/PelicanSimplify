@@ -305,7 +305,7 @@ class SimplifySettings extends Page implements HasForms
                 ]),
             ],
             'Plugin manager' => [
-                Section::make('Plugin updates')->description('Applies to every installed plugin with a published update, Simplify included. Updates can also be started by hand from Admin tools → Plugins. Needs the plugin manager add-on.')->schema([self::featureToggle('auto_update_plugins')]),
+                Section::make('Plugin updates')->description('Applies to every installed plugin with a published update, Simplify included. Updates can also be started by hand from Admin tools → Plugins. Needs the plugin manager add-on.')->schema([self::featureToggle('auto_update_plugins'), self::featureToggle('simplify_beta')]),
             ],
         ];
         $icons = [...self::CATEGORIES, ...self::ADDONS];

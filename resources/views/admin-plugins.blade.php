@@ -5,6 +5,13 @@
     @php($plugins = $this->plugins())
     <div class="ps-admin-page ps-plugins">
         <header class="ps-plugins-head">
+            <div class="ps-alert is-info ps-plugin-channel" role="note">
+                <x-tabler-versions class="ps-ico" aria-hidden="true" />
+                <div>
+                    <strong>Pelican {{ \Simplify\Panel\Services\PluginUpdater::panelVersion() }} · Simplify {{ \Simplify\Panel\Services\PluginUpdater::channel() === 'beta' ? 'beta' : 'stable' }} channel</strong>
+                    <small>Updates are always the build made for your Pelican version, so you never get a version that does not fit your panel. {{ \Simplify\Panel\Services\PluginUpdater::channel() === 'beta' ? 'You also get beta releases.' : 'You get stable releases only.' }} Change this in Simplify settings → Plugin manager.</small>
+                </div>
+            </div>
             <p class="ps-help">
                 @if(\Simplify\Panel\Services\FeatureSettings::enabled('auto_update_plugins'))
                     New versions are installed automatically within about a minute, with a backup and automatic rollback.
