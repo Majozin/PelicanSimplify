@@ -1,5 +1,10 @@
 # Changes
 
+## 0.3.0-beta.28
+- Steam moved to the profile page (new "Steam" tab). It shows the Steam account linked with Pelican's own "Sign in with Steam" (OAuth), and your Web API key for game server login tokens. A key must belong to the linked Steam account.
+- Automatic tokens: with a connected key, a new server for a game that needs a token gets one by itself when the field is left empty (one token per server, named after it). Can be turned off on the Steam tab.
+- Save bar: it now compares real values with the last saved state. Switching tabs or clicking around no longer shows it, putting a value back hides it, and after saving the check is a status, not a button, until the next change.
+
 ## 0.3.0-beta.27
 - Steam account (account menu → Steam): connect your own Steam Web API key once. It is checked with Steam, stored encrypted, only used for your own requests and never shown again (only its last four characters).
 - Game creator: fields that take a Game Server Login Token (GSLT; e.g. Unturned, Insurgency: Sandstorm, Euro/American Truck Simulator, The Forest, CS-style STEAM_ACC) get a "Create with Steam" button that creates a token for the game on your account and fills it in. Without a connected key the field explains how to connect.

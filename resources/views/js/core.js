@@ -376,6 +376,8 @@
         clearTimeout(timer);
         bar.classList.remove('is-saved');
         bar.classList.toggle('is-dirty', on);
+        button.disabled = !on;
+        button.removeAttribute('aria-disabled');
         text.textContent = 'Unsaved changes';
       },
       saving() {
@@ -385,7 +387,10 @@
       saved() {
         bar.classList.remove('is-saving', 'is-dirty');
         bar.classList.add('is-saved');
-        button.disabled = false;
+        api.rebase?.();
+        // Nothing left to save: the check is a status, not a button.
+        button.disabled = true;
+        button.setAttribute('aria-disabled', 'true');
         text.textContent = 'All changes saved';
         clearTimeout(timer);
         timer = setTimeout(() => bar.classList.remove('is-saved'), 1600);
@@ -401,17 +406,58 @@
         pendingSaves.push({ api, scope });
       },
     };
-    button.addEventListener('click', () => onSave(api));
+    button.addEventListener('click', () => {
+      if (button.disabled || bar.classList.contains('is-saved') || bar.classList.contains('is-saving')) return;
+      onSave(api);
+    });
     bar.querySelector('.ps-savebar-discard')?.addEventListener('click', () => {
       dialog({ title: 'Discard changes?', message: discardMessage, confirmLabel: 'Discard', tone: 'danger' }).then((ok) => ok && onDiscard(api));
     });
-    // Anything typed, picked or switched in the form marks it as changed.
-    const changed = (event) => {
-      if (event.target.closest?.('.ps-savebar, .fi-modal, [role="dialog"]') || (within && !event.target.closest?.(within))) return;
-      if (event.type === 'click' && !event.target.closest?.('[role="switch"], [role="radio"], [role="checkbox"], input[type="checkbox"], input[type="radio"], .fi-fo-color-picker')) return;
-      api.dirty(true);
+    // Changed means: the values differ from the last saved state. Switching tabs, focusing or clicking
+    // around never counts, and putting a value back hides the bar again.
+    const controls = () => [...scope.querySelectorAll('input, select, textarea, [role="switch"]')].filter((el) =>
+      !el.closest('.ps-savebar, .fi-modal, [role="dialog"], [role="tablist"]')
+      && (!within || el.closest(within))
+      && !el.matches('input[type="search"], input[type="file"], .fi-sc-tabs > input')
+      && !(el.type === 'hidden' && !el.name));
+    // Each control gets a stable key, so controls that render later (lazy parts of a page) are new,
+    // not changed. Values are compared per key against the last saved state.
+    const keyOf = (el, index) => {
+      const option = ['checkbox', 'radio'].includes(el.type) ? ':' + el.value : '';
+      if (el.id) return 'id:' + el.id + option;
+      if (el.name) return 'name:' + el.name + option;
+      const wrapper = el.closest('[data-field-wrapper]');
+      const anchor = wrapper?.querySelector('[id]')?.id || wrapper?.querySelector('label')?.textContent?.trim();
+      return anchor ? 'field:' + anchor + option : 'index:' + index;
     };
-    ['input', 'change', 'click'].forEach((type) => scope.addEventListener(type, changed, true));
+    const valueOf = (el) => (el.getAttribute('role') === 'switch' ? el.getAttribute('aria-checked')
+      : ['checkbox', 'radio'].includes(el.type) ? String(el.checked) : el.value);
+    const snapshot = () => new Map(controls().map((el, index) => [keyOf(el, index), valueOf(el)]));
+    let baseline = null;
+    const remember = () => { baseline = snapshot(); };
+    api.rebase = remember;
+    const check = () => {
+      if (baseline === null) remember();
+      let changed = false;
+      for (const [key, value] of snapshot()) {
+        if (!baseline.has(key)) baseline.set(key, value);
+        else if (baseline.get(key) !== value) changed = true;
+      }
+      if (changed !== bar.classList.contains('is-dirty')) api.dirty(changed);
+    };
+    const later = (event) => {
+      if (event.target.closest?.('.ps-savebar, .fi-modal, [role="dialog"]') || (within && !event.target.closest?.(within))) return;
+      setTimeout(check, 30);
+    };
+    ['input', 'change', 'click'].forEach((type) => scope.addEventListener(type, later, true));
+    // Values that settle after the page loads (switches, pickers) must not count: while nothing is
+    // changed, the state just before each press or key is the saved state.
+    const settle = (event) => {
+      if (bar.classList.contains('is-dirty') || bar.classList.contains('is-saving') || event.target.closest?.('.ps-savebar')) return;
+      remember();
+    };
+    ['pointerdown', 'keydown'].forEach((type) => scope.addEventListener(type, settle, true));
+    setTimeout(remember, 400);
     mount.append(bar);
     return api;
   };

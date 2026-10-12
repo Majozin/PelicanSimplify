@@ -338,3 +338,4 @@ html.ps-frame .ps-settings-tabs.fi-vertical > .fi-tabs { top: 0; max-height: 100
 .ps-role footer { display: flex; align-items: center; gap: 6px; }
 .ps-role footer .ps-help { display: inline-flex; align-items: center; gap: 5px; }
 @media (max-width: 760px) { .ps-person { grid-template-columns: 40px minmax(0, 1fr); } .ps-person-meta, .ps-person-actions { grid-column: 2; } }
+.ssc-draft-indicator { cursor: default; }

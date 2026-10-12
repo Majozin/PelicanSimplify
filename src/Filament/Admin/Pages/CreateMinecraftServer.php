@@ -359,6 +359,28 @@ class CreateMinecraftServer extends Page implements HasForms
         }
     }
 
+    /**
+     * Empty Game Server Login Token fields get a token from the creator's own Steam key when they turned
+     * automatic tokens on (profile → Steam). One token per server, named after the server.
+     */
+    private function autoSteamTokens(array $state): array
+    {
+        $values = (array) ($state['game_variables'] ?? []);
+        $egg = OtherGameCatalog::selected($state['game_egg_id'] ?? null);
+        if (!$egg || !\Simplify\Panel\Services\SteamAccount::autoTokens(user())) return $values;
+        foreach ($egg->variables as $variable) {
+            $name = (string) $variable->env_variable;
+            if (!in_array(strtoupper($name), \Simplify\Panel\Services\SteamAccount::TOKEN_VARIABLES, true) || trim((string) ($values[$name] ?? '')) !== '') continue;
+            if (!CreatorAccess::admin() && !($variable->user_editable && $variable->user_viewable)) continue;
+            try {
+                $values[$name] = \Simplify\Panel\Services\SteamAccount::createTokenForGame(user(), (string) $egg->name, trim((string) ($state['name'] ?? '')) ?: (string) $egg->name);
+            } catch (ValidationException $exception) {
+                throw ValidationException::withMessages(['data.game_variables.'.$name => 'No Steam token could be created: '.collect($exception->errors())->flatten()->first().' Paste a token yourself or try again.']);
+            }
+        }
+        return $values;
+    }
+
     /** Steam art for the chosen game, if the add-on option is on and the store has a match. */
     public function steamArt(): ?array
     {
@@ -720,6 +742,7 @@ class CreateMinecraftServer extends Page implements HasForms
             }
             $prepared = ServerProperties::prepare($state, true, ($state['game'] ?? 'minecraft') === 'minecraft' ? $this->draftIcon : null);
             validator(['server_alias'=>$state['server_alias']??''],['server_alias'=>'nullable|string|max:100'])->validate();
+            if (($state['game'] ?? '') === 'other') $state['game_variables'] = $this->autoSteamTokens($state);
             $payload = $this->buildPayload($state);
             $websitePack = ($state['game'] ?? 'minecraft') === 'minecraft' ? \Simplify\Panel\Services\ModpackSnapshot::fromState($state, $payload['environment']) : null;
             $server = CreationGuard::create($service, $payload, $state);

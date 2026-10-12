@@ -26,7 +26,29 @@ final class SteamAccount
     public static function status(object $user): array
     {
         $data = self::read($user);
-        return ['connected' => $data !== null, 'hint' => $data['hint'] ?? null, 'saved_at' => $data['saved_at'] ?? null];
+        return ['connected' => $data !== null, 'hint' => $data['hint'] ?? null, 'saved_at' => $data['saved_at'] ?? null,
+            'steamid' => $data['steamid'] ?? null, 'auto' => (bool) ($data['auto'] ?? true), 'linked' => self::linkedSteamId($user)];
+    }
+
+    /** The SteamID linked with Pelican's "Sign in with Steam" (profile → OAuth), if any. */
+    public static function linkedSteamId(object $user): ?string
+    {
+        $id = $user->oauth['steam'] ?? null;
+        return is_scalar($id) && preg_match('/^\d{17}$/', (string) $id) ? (string) $id : null;
+    }
+
+    /** Create tokens by themselves when a new server needs one and the field was left empty. */
+    public static function autoTokens(?object $user): bool
+    {
+        return $user !== null && (bool) (self::read($user)['auto'] ?? false);
+    }
+
+    public static function setAuto(object $user, bool $on): void
+    {
+        $data = self::read($user);
+        if ($data === null) return;
+        $data['auto'] = $on;
+        Storage::disk('local')->put(self::path($user), json_encode($data, JSON_THROW_ON_ERROR));
     }
 
     public static function connected(?object $user): bool
@@ -46,7 +68,12 @@ final class SteamAccount
         }
         if (in_array($response->status(), [401, 403], true)) throw ValidationException::withMessages(['key' => 'Steam did not accept this key.']);
         if (!$response->successful()) throw ValidationException::withMessages(['key' => 'Steam answered with an error ('.$response->status().'). Try again later.']);
-        $data = ['key' => Crypt::encryptString($key), 'hint' => substr($key, -4), 'saved_at' => now()->toIso8601String()];
+        // Steam reports whose key this is; with a linked Steam account the two must be the same person.
+        $owner = $response->json('response.actor');
+        $owner = is_scalar($owner) && preg_match('/^\d{17}$/', (string) $owner) ? (string) $owner : null;
+        $linked = self::linkedSteamId($user);
+        if ($linked !== null && $owner !== null && $owner !== $linked) throw ValidationException::withMessages(['key' => 'This key belongs to a different Steam account than the one linked to your profile.']);
+        $data = ['key' => Crypt::encryptString($key), 'hint' => substr($key, -4), 'saved_at' => now()->toIso8601String(), 'steamid' => $owner, 'auto' => true];
         if (!Storage::disk('local')->put(self::path($user), json_encode($data, JSON_THROW_ON_ERROR))) throw new \RuntimeException('Could not save the Steam key.');
         return self::status($user);
     }
@@ -63,7 +90,7 @@ final class SteamAccount
     public static function createToken(object $user, int $appId, string $memo): string
     {
         $data = self::read($user);
-        if ($data === null) throw ValidationException::withMessages(['token' => 'Connect your Steam account first (account menu → Steam).']);
+        if ($data === null) throw ValidationException::withMessages(['token' => 'Connect your Steam key first (profile → Steam).']);
         try {
             $key = Crypt::decryptString($data['key']);
         } catch (Throwable) {

@@ -15,6 +15,7 @@ final class PelicanSimplifyPlugin implements Plugin
     public function register(Panel $panel): void
     {
         if(!in_array($panel->getId(),['app','admin','server'],true))return;
+        if(class_exists(Filament\Profile\SteamProfileTab::class))Filament\Profile\SteamProfileTab::register();
         $panel->middleware([Http\Middleware\Setup::class,Http\Middleware\CreatorFramePolicy::class]);
         $panel->renderHook('panels::head.end',fn()=>view('pelican-simplify::shared-assets'));
         $panel->renderHook('panels::global-search.after',fn()=>view('pelican-simplify::legacy-return'));

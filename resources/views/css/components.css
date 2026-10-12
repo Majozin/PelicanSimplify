@@ -482,7 +482,8 @@ html:has(.ps-modal-layer[data-open="true"]), html.ps-ui-locked { overflow: hidde
 .ps-savebar-discard, .ps-savebar-save { display: inline-flex; align-items: center; justify-content: center; gap: 7px; min-height: 38px; padding: 0 16px; border: 1px solid var(--ps-line); border-radius: 999px; background: var(--ps-surface); color: var(--ps-ink); font: 650 13px/1 var(--ps-font, inherit); cursor: pointer; transition: background-color .2s, border-color .2s, color .2s, width .2s; }
 .ps-savebar-discard:hover { border-color: var(--ps-danger); color: var(--ps-danger); }
 .ps-savebar-save { min-width: 132px; border-color: transparent; background: var(--ps-accent); color: var(--ps-accent-ink, #fff); }
-.ps-savebar-save:disabled { cursor: progress; opacity: .8; }
+.ps-savebar.is-saving .ps-savebar-save:disabled { cursor: progress; opacity: .8; }
+.ps-savebar.is-saved .ps-savebar-save { cursor: default; pointer-events: none; opacity: 1; }
 .ps-savebar-check { display: none; width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 2.6; stroke-linecap: round; stroke-linejoin: round; stroke-dasharray: 22; stroke-dashoffset: 22; }
 .ps-savebar.is-saving .ps-savebar-save .ps-savebar-label::after { content: "…"; }
 .ps-savebar.is-saved .ps-savebar-save { min-width: 46px; padding: 0 12px; background: var(--ps-ok); color: #fff; }
@@ -492,8 +493,3 @@ html:has(.ps-modal-layer[data-open="true"]), html.ps-ui-locked { overflow: hidde
 @keyframes ps-savebar-draw { to { stroke-dashoffset: 0; } }
 @media (prefers-reduced-motion: reduce) { .ps-savebar { transition: opacity .2s ease, visibility 0s linear .2s; transform: none; } .ps-savebar-check { animation: none !important; stroke-dashoffset: 0; } }
 .ps-error { color: var(--ps-danger); font-weight: 600; }
-.ps-steam-status { display: flex; align-items: center; gap: 12px; }
-.ps-steam-status > svg { flex: none; width: 26px; height: 26px; fill: none; stroke: currentColor; stroke-width: 1.6; }
-.ps-steam-status > div { display: grid; gap: 2px; }
-.ps-steam-status small { color: var(--ps-muted); }
-.ps-steam-account { display: grid; gap: 12px; }

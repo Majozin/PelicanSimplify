@@ -67,7 +67,8 @@ final class OtherGameCatalog
                         \Filament\Notifications\Notification::make()->title('No token created')->body(collect($exception->errors())->flatten()->first())->danger()->send();
                     }
                 })
-        )->hint(fn () => SteamAccount::connected(user()) ? null : 'Connect Steam in your account menu to create this with one click.');
+        )->hint(fn () => !SteamAccount::connected(user()) ? 'Connect your Steam key in your profile (Steam tab) to create this with one click or automatically.'
+            : (SteamAccount::autoTokens(user()) ? 'Leave empty: a token is created for this server automatically.' : null));
     }
 
     /** Starting values for the game settings form (toggles as true/false). */
@@ -95,6 +96,9 @@ final class OtherGameCatalog
             if (!CreatorAccess::admin() && !($variable->user_editable && $variable->user_viewable)) continue;
             $rules = is_array($variable->rules) ? $variable->rules : explode('|', (string) $variable->rules);
             $rules = array_values(array_filter(array_map('trim', $rules)));
+            // An empty token field is filled at creation time when the person has automatic Steam tokens on.
+            $autoToken = in_array(strtoupper((string) $variable->env_variable), SteamAccount::TOKEN_VARIABLES, true) && SteamAccount::autoTokens(user());
+            if ($autoToken) $rules = array_values(array_diff($rules, ['required']));
             $in = null;
             foreach ($rules as $rule) if (str_starts_with($rule, 'in:')) $in = array_map('trim', explode(',', substr($rule, 3)));
             $path = 'game_variables.' . $variable->env_variable;
