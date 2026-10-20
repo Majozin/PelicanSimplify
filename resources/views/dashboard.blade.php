@@ -575,6 +575,9 @@
                     </button>
                 </div>
                 <div class="ps-color-control" x-on:click.outside="colorMenu=false" x-on:keydown.escape.stop="colorMenu=false">
+                    <button type="button" class="ps-web-listing" x-show="server?.website_listing" x-cloak role="switch" :aria-checked="!!server?.website_listing?.visible" :disabled="busy" x-on:click="saveListing(!server.website_listing.visible)" aria-label="Show on website" :data-tip="server?.website_listing?.visible ? 'Shown on the website' : 'Hidden from the website'">
+                        <svg aria-hidden="true"><use href="#ps-web"/></svg><span class="ps-switch" :class="{'is-on': server?.website_listing?.visible}" aria-hidden="true"></span>
+                    </button>
                     <button type="button" class="ps-swatch ps-color-dot" :disabled="busy || !server?.permissions['settings.rename']" :aria-expanded="colorMenu" aria-label="Change server color" data-tip="Server color" x-on:click="toggleColorMenu($el)"></button>
                     <button type="button" class="ps-btn is-icon is-sm" :disabled="busy || !server?.permissions['settings.rename']" aria-label="Change server background" data-tip="Server background" aria-haspopup="dialog" x-on:click="openBackground()"><svg aria-hidden="true"><use href="#ps-image"/></svg></button>
                     <div class="ps-dropdown is-fixed ps-color-dropdown" x-show="colorMenu" x-cloak :style="colorMenuStyle" x-on:click.stop>
