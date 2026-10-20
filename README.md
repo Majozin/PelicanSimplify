@@ -12,7 +12,7 @@ Este repositório é um fork do [PelicanSimplify original](https://github.com/je
 - **Tamanho da interface:** tamanho do texto e tamanho dos elementos, com um padrão definido pelo administrador e uma escolha pessoal por dispositivo em Personalizar, separada para o modo simples e o modo host.
 - **Atualizações por este fork:** o plugin busca as atualizações aqui, então uma versão do original não substitui a versão traduzida.
 
-As versões deste fork terminam em `-ptbr.N` (por exemplo, `0.4.2-beta.7-ptbr.6`). O histórico de mudanças está no [CHANGELOG](CHANGELOG.md) (em inglês).
+As versões deste fork terminam em `-ptbr.N` (por exemplo, `0.4.2-beta.7-ptbr.8`). O histórico de mudanças está no [CHANGELOG](CHANGELOG.md) (em inglês).
 
 *As capturas de tela usam servidores de exemplo e mostram a interface em inglês.*
 
@@ -53,7 +53,7 @@ O Simplify muda bastante a aparência e o funcionamento do painel. Leia isto pri
 
 **Atualizações:** o Simplify se atualiza pelo próprio gerenciador de plugins, com backup e reversão automática se algo falhar. Você sempre recebe a build feita para a sua versão do Pelican. Este fork publica as versões traduzidas no canal beta, então ative **"Receber versões beta do Simplify"** em Configurações do Simplify → Gerenciador de plugins.
 
-Vindo do criador avulso? Veja as [notas de instalação](docs/INSTALLATION.md) (em inglês). Encontrou um problema na tradução ou nas mudanças deste fork? Abra uma [issue aqui](https://github.com/Majozin/PelicanSimplify/issues). Problemas do plugin em si também podem ser relatados no [projeto original](https://github.com/jerajerajerajera/PelicanSimplify/issues).
+Vindo do criador avulso? Veja as [notas de instalação](docs/INSTALLATION.md). Encontrou um problema na tradução ou nas mudanças deste fork? Abra uma [issue aqui](https://github.com/Majozin/PelicanSimplify/issues). Problemas do plugin em si também podem ser relatados no [projeto original](https://github.com/jerajerajerajera/PelicanSimplify/issues).
 
 ## Próximos recursos
 
@@ -86,7 +86,7 @@ O suporte a plugins também é o que torna possível o passo seguinte: deixar o 
 - **Relatórios de diagnóstico:** exportar diagnósticos sem nenhum segredo, para facilitar o suporte.
 - **Mais opções na visão geral:** campos de informação e layouts extras.
 
-Veja o [roadmap](docs/ROADMAP.md) (em inglês) para mais detalhes.
+Veja o [roadmap](docs/ROADMAP.md) do projeto original para mais detalhes.
 
 ## Todos os recursos
 

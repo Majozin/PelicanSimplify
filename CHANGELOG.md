@@ -1,5 +1,8 @@
 # Changes
 
+## 0.4.2-beta.7-ptbr.8 (fork Majozin/PelicanSimplify, beta channel)
+- docs/INSTALLATION.md and docs/ROADMAP.md in Portuguese (Brazil); the installation notes import this fork's beta build. The README no longer marks them as English. No code changes.
+
 ## 0.4.2-beta.7-ptbr.7 (fork Majozin/PelicanSimplify, beta channel)
 - Fixed: the step bar at the top of the server creator ("Server Type", "Version & Content"…) stayed in English. The step names are still saved in English in drafts, so restoring a draft keeps working, and are now translated on screen. `tests/translations.php` checks these names too.
 
