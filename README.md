@@ -1,167 +1,180 @@
-# PelicanSimplify
+# PelicanSimplify (pt-BR)
 
-A cleaner, simpler interface for the [Pelican](https://github.com/pelican/panel) game server panel. You manage your servers from one overview and create new ones with a guided wizard. Everything still runs on Pelican and [Wings](https://github.com/pelican/wings), and the original panel stays available.
+Uma interface mais limpa e simples para o painel de servidores de jogos [Pelican](https://github.com/pelican/panel). Você gerencia seus servidores a partir de uma visão geral e cria novos com um assistente guiado. Tudo continua rodando no Pelican e no [Wings](https://github.com/pelican/wings), e o painel original continua disponível.
 
-**Stable 0.4.0 for Pelican 1.0.0-beta38 · Release candidate 0.4.1-rc.2 (adds Pelican 1.0.0-rc.1 support) on the beta channel · PHP 8.3+**
+**Baseado no 0.4.2-beta.7 · Pelican 1.0.0-beta38 e 1.0.0-rc.1 · PHP 8.3+**
 
-*Screenshots use example servers.*
+## Sobre este fork
 
-<a href="docs/screenshots/server-overview.png"><img src="docs/screenshots/server-overview.png" alt="Server overview" width="280"></a>
-<a href="docs/screenshots/server-dashboard.png"><img src="docs/screenshots/server-dashboard.png" alt="Server dashboard" width="280"></a>
-<a href="docs/screenshots/server-creator.png"><img src="docs/screenshots/server-creator.png" alt="Guided server creation" width="280"></a>
-<a href="docs/screenshots/server-list.png"><img src="docs/screenshots/server-list.png" alt="List view grouped by node" width="280"></a>
+Este repositório é um fork do [PelicanSimplify original](https://github.com/jerajerajerajera/PelicanSimplify), criado por jerajerajerajera e distribuído sob a licença MIT. Ele acrescenta:
 
-## Highlights
+- **Português (Brasil):** o plugin inteiro segue o idioma escolhido no perfil de cada usuário do Pelican. As notificações chegam no idioma de quem as recebe.
+- **Tamanho da interface:** tamanho do texto e tamanho dos elementos, com um padrão definido pelo administrador e uma escolha pessoal por dispositivo em Personalizar, separada para o modo simples e o modo host.
+- **Atualizações por este fork:** o plugin busca as atualizações aqui, então uma versão do original não substitui a versão traduzida.
 
-- **One overview for all servers:** live status, players, CPU and RAM at a glance, in a grid or list view.
-- **Guided server creation:** pick Minecraft (Vanilla, Paper or a modpack) or search 170+ other games; Simplify picks and installs the right egg.
-- **Simple and host mode:** simple mode suits a few servers. Host mode adds a server list per node and the admin pages side by side, for larger hosts.
-- **Make it yours:** light and dark themes, server colors, banners, and your own logo or styled panel name.
-- **Friends mode, people and roles:** everyone can see every server but only manage their own, and roles set clear permissions and limits.
+As versões deste fork terminam em `-ptbr.N` (por exemplo, `0.4.2-beta.7-ptbr.6`). O histórico de mudanças está no [CHANGELOG](CHANGELOG.md) (em inglês).
 
-## Before you install
+*As capturas de tela usam servidores de exemplo e mostram a interface em inglês.*
 
-Simplify is a large change to how your panel looks and works. Please read this first.
+<a href="docs/screenshots/server-overview.png"><img src="docs/screenshots/server-overview.png" alt="Visão geral dos servidores" width="280"></a>
+<a href="docs/screenshots/server-dashboard.png"><img src="docs/screenshots/server-dashboard.png" alt="Painel do servidor" width="280"></a>
+<a href="docs/screenshots/server-creator.png"><img src="docs/screenshots/server-creator.png" alt="Criação guiada de servidor" width="280"></a>
+<a href="docs/screenshots/server-list.png"><img src="docs/screenshots/server-list.png" alt="Lista agrupada por node" width="280"></a>
 
-- **It replaces a lot of the panel.** The server overview, the server pages and server creation become Simplify's. Optionally it also takes over the Users, Roles and Plugins pages, and admins can use host mode.
-- **Everything can be switched off.** Each part has its own switch in Simplify settings, and you can turn off the whole Simplify dashboard. Pelican's original panel always stays available: the Legacy links in Admin tools lead to it, and even if you hide those links the pages keep working.
-- **It does not touch your running servers.** Servers, eggs, nodes and permissions stay Pelican's own. Simplify is a different way to look at and manage them.
-- **Other plugins are only partly supported inside Simplify.** They keep working in Pelican's original panel. In stable 0.4.0 their pages do not show up in Simplify; release candidate 0.4.1-rc.2 shows their admin and server pages under "External". Widgets and tiles from other plugins are not supported yet. Full plugin support is the top item on the roadmap (see Coming features).
-- **Make a backup before installing**, as with any plugin that changes this much.
+## Destaques
 
-## Getting started
+- **Uma visão geral de todos os servidores:** status ao vivo, jogadores, CPU e RAM num relance, em grade ou em lista.
+- **Criação guiada de servidores:** escolha Minecraft (Vanilla, Paper ou um modpack) ou procure entre mais de 170 outros jogos; o Simplify escolhe e instala o egg certo.
+- **Modo simples e modo host:** o modo simples serve para poucos servidores. O modo host acrescenta uma lista de servidores por node e as páginas de administração lado a lado, para hospedagens maiores.
+- **Do seu jeito:** temas claro e escuro, cores por servidor, banners e o seu próprio logo ou nome do painel estilizado.
+- **Modo amigos, pessoas e funções:** todos veem todos os servidores, mas só gerenciam os próprios, e as funções definem permissões e limites claros.
 
-1. In Pelican, go to **Admin → Plugins → Import from URL**.
-2. Paste the link to the [latest stable plugin ZIP](https://github.com/jerajerajerajera/PelicanSimplify/releases/download/v0.4.0/pelican-simplify-v0.4.0.zip) and click **Install**. All versions are on the [Releases page](https://github.com/jerajerajerajera/PelicanSimplify/releases).
+## Antes de instalar
 
-   **Beta channel:** the newest beta is always at `https://raw.githubusercontent.com/jerajerajerajera/PelicanSimplify/main/dist/pelican-simplify-beta-latest.zip`. Betas get new features first but are less tested. It currently holds release candidate 0.4.1-rc.2, with Pelican 1.0.0-rc.1 support and pages from other plugins; see the [changelog](CHANGELOG.md).
-3. Follow the setup checks. Anything missing is shown with how to fix it.
+O Simplify muda bastante a aparência e o funcionamento do painel. Leia isto primeiro.
 
-**Requirements:** Node.js 22.12+ or 24+, Yarn, and a running queue worker and scheduler.
+- **Ele substitui boa parte do painel.** A visão geral, as páginas de servidor e a criação de servidores passam a ser do Simplify. Opcionalmente, ele também assume as páginas de Usuários, Funções e Plugins, e os administradores podem usar o modo host.
+- **Tudo pode ser desligado.** Cada parte tem a sua própria chave nas configurações do Simplify, e você pode desligar o dashboard do Simplify inteiro. O painel original do Pelican continua sempre disponível: os links "Legado" em Ferramentas de administração levam até ele, e mesmo que você esconda esses links as páginas continuam funcionando.
+- **Ele não mexe nos servidores em execução.** Servidores, eggs, nodes e permissões continuam sendo do Pelican. O Simplify é outra forma de vê-los e gerenciá-los.
+- **Outros plugins têm suporte parcial dentro do Simplify.** Eles continuam funcionando no painel original do Pelican. Nesta versão, as páginas de administração e de servidor deles aparecem em "Externo". Widgets e blocos de outros plugins ainda não são suportados. O suporte completo a plugins é o primeiro item do roadmap (veja Próximos recursos).
+- **Faça um backup antes de instalar**, como com qualquer plugin que muda tanta coisa.
 
-**Updates:** Simplify updates itself through its plugin manager, with a backup and automatic rollback. You always get the build made for your Pelican version. Stable releases are the default; turn on "Get Simplify beta versions" in Simplify settings → Plugin manager to try new features earlier.
+## Primeiros passos
 
-Coming from the standalone creator? See the [installation notes](docs/INSTALLATION.md). Found a problem? Open an [issue](https://github.com/jerajerajerajera/PelicanSimplify/issues).
+1. No Pelican, vá em **Admin → Plugins → Importar de URL**.
+2. Cole o link da versão mais recente deste fork e clique em **Instalar**:
 
-## Coming features
+   `https://raw.githubusercontent.com/Majozin/PelicanSimplify/main/dist/pelican-simplify-beta-latest.zip`
 
-The order and scope may still change. Everything Simplify does not cover yet is still available in the original Pelican panel.
+3. Siga as verificações de instalação. O que estiver faltando aparece com a explicação de como resolver.
+4. No seu perfil do Pelican, escolha o idioma **Português (Brasil)**.
 
-### Top priority: plugin support
+**Requisitos:** Node.js 22.12+ ou 24+, Yarn, e um worker de fila e o agendador em execução.
 
-Simplify should work together with other Pelican plugins instead of beside them:
+**Atualizações:** o Simplify se atualiza pelo próprio gerenciador de plugins, com backup e reversão automática se algo falhar. Você sempre recebe a build feita para a sua versão do Pelican. Este fork publica as versões traduzidas no canal beta, então ative **"Receber versões beta do Simplify"** em Configurações do Simplify → Gerenciador de plugins.
 
-- Pages and settings from other installed plugins show up inside Simplify (admin menu, host mode and server pages), styled to match.
-- Plugins can add their own tiles to the server dashboard.
-- Plugins are installed, updated and switched on or off from Simplify's plugin manager.
+Vindo do criador avulso? Veja as [notas de instalação](docs/INSTALLATION.md) (em inglês). Encontrou um problema na tradução ou nas mudanças deste fork? Abra uma [issue aqui](https://github.com/Majozin/PelicanSimplify/issues). Problemas do plugin em si também podem ser relatados no [projeto original](https://github.com/jerajerajerajera/PelicanSimplify/issues).
 
-Plugin support is also what makes the next step possible: letting Simplify replace the original panel completely.
+## Próximos recursos
 
-### Next up
+Este é o roadmap do projeto original; a ordem e o escopo ainda podem mudar. Tudo o que o Simplify ainda não cobre continua disponível no painel original do Pelican.
 
-- **A real phone experience.** Every page built for one hand: a bottom tab bar, full-screen sheets instead of popups, a phone-friendly console and power buttons, and Simplify installable as an app on your home screen.
-- **A better server page.** A clear status bar at the top, a console that gets the space it needs, workspaces that open inside the page instead of popups, and one place for everything that needs your attention.
-- **Simplify as the whole panel.** An option in setup that makes Simplify the only panel. The original stays reachable under `/legacy`, or switches off entirely when no other plugin needs it.
-- **Clearer server installation.** One clear "setting up…" state until a new server is ready, and the Minecraft EULA accepted up front without a restart loop.
-- **Better server creation for every game.** Recommended resources per game and an install progress card.
-- **Egg settings in the dashboard.** Startup settings for every game, with plain descriptions and checks.
+### Prioridade máxima: suporte a plugins
 
-### Later
+O Simplify deve funcionar junto com os outros plugins do Pelican, e não ao lado deles:
 
-- **Alerts** for crashes and servers running out of resources.
-- **Startup fixes:** recognize common startup problems and offer a one-click fix.
-- **Server presets:** save settings once and reuse them for new servers.
-- **Troubleshooting reports:** export diagnostics with all secrets removed, for easier support.
-- **More overview options:** extra information fields and layouts.
+- Páginas e configurações de outros plugins instalados aparecem dentro do Simplify (menu de administração, modo host e páginas de servidor), no mesmo estilo.
+- Plugins podem adicionar os próprios blocos ao painel do servidor.
+- Plugins são instalados, atualizados e ligados ou desligados pelo gerenciador de plugins do Simplify.
 
-See the [roadmap](docs/ROADMAP.md) for details.
+O suporte a plugins também é o que torna possível o passo seguinte: deixar o Simplify substituir o painel original por completo.
 
-## All features
+### Em seguida
 
-Items marked *(Pelican)* are existing Pelican or Wings features that Simplify shows in its own interface. Everything else is added by Simplify.
+- **Uma experiência de verdade no celular.** Todas as páginas pensadas para uma mão só: barra de abas embaixo, telas cheias no lugar de janelas, console e botões de energia adequados ao celular, e o Simplify instalável como app na tela inicial.
+- **Uma página de servidor melhor.** Uma barra de status clara no topo, um console com o espaço que precisa, áreas de trabalho que abrem dentro da página em vez de janelas, e um só lugar para tudo o que precisa da sua atenção.
+- **O Simplify como painel inteiro.** Uma opção na instalação que torna o Simplify o único painel. O original continua acessível em `/legacy`, ou é desligado de vez quando nenhum outro plugin precisa dele.
+- **Instalação de servidores mais clara.** Um único estado "configurando…" até o servidor novo ficar pronto, e o EULA do Minecraft aceito logo no começo, sem ciclo de reinício.
+- **Criação de servidores melhor para todos os jogos.** Recursos recomendados por jogo e um cartão de progresso da instalação.
+- **Configurações do egg no dashboard.** Configurações de inicialização para todos os jogos, com descrições simples e verificações.
+
+### Mais adiante
+
+- **Alertas** para travamentos e servidores ficando sem recursos.
+- **Correções de inicialização:** reconhecer problemas comuns de inicialização e oferecer correção com um clique.
+- **Predefinições de servidor:** salvar configurações uma vez e reutilizá-las em servidores novos.
+- **Relatórios de diagnóstico:** exportar diagnósticos sem nenhum segredo, para facilitar o suporte.
+- **Mais opções na visão geral:** campos de informação e layouts extras.
+
+Veja o [roadmap](docs/ROADMAP.md) (em inglês) para mais detalhes.
+
+## Todos os recursos
+
+Os itens marcados com *(Pelican)* são recursos que já existem no Pelican ou no Wings e que o Simplify mostra na própria interface. Todo o resto é acrescentado pelo Simplify.
 
 <details>
-<summary><strong>Overview and host mode</strong></summary>
+<summary><strong>Visão geral e modo host</strong></summary>
 
-- Grid and list views, remembered per user; phones use the list view automatically
-- Server name, alias, icon, game, live status *(Pelican)*, players, and CPU and RAM graphs
-- Filter by game; servers grouped by node when there is more than one
-- Quick start, stop and restart buttons on each server
-- Health panel per node: CPU, RAM, disk and network, with a warning when something is wrong
-- **Host mode:** a server list per node, the admin pages in the middle, and servers that open next to the list
+- Visualização em grade ou lista, lembrada por usuário; no celular, a lista é usada automaticamente
+- Nome, apelido, ícone, jogo e status ao vivo *(Pelican)* do servidor, jogadores, e gráficos de CPU e RAM
+- Filtro por jogo; servidores agrupados por node quando há mais de um
+- Botões rápidos de iniciar, parar e reiniciar em cada servidor
+- Painel de saúde por node: CPU, RAM, disco e rede, com aviso quando algo está errado
+- **Modo host:** uma lista de servidores por node, as páginas de administração no meio, e servidores que abrem ao lado da lista
 
 </details>
 
 <details>
-<summary><strong>Creating servers</strong></summary>
+<summary><strong>Criação de servidores</strong></summary>
 
-- **Easy Minecraft server creator:** a step-by-step wizard for Vanilla, Paper and modpacks (Modrinth, CurseForge, FTB and Technic)
-- **Easy server creator:** search 170+ games from the official Pelican eggs; missing eggs are installed automatically
-- Steam banners and icons for games, and automatic Steam game server tokens for games that need one
-- Resource presets, per-user limits, a name generator *(Pelican)*, and server color and icon choice
-- Drafts are saved automatically and can be discarded
-- **Automatic subdomains** *(add-on, Cloudflare)*: choose a name such as `oak` in the creator or the server's Network section; Simplify creates the DNS records (a CNAME, plus an SRV record so Minecraft players need no port) and removes them with the server
-- Pelican's own creator stays available
+- **Criador fácil de servidor Minecraft:** um assistente passo a passo para Vanilla, Paper e modpacks (Modrinth, CurseForge, FTB e Technic)
+- **Criador fácil de servidor:** procure entre mais de 170 jogos dos eggs oficiais do Pelican; eggs que faltam são instalados automaticamente
+- Banners e ícones da Steam para os jogos, e tokens de servidor de jogo da Steam automáticos para os jogos que precisam de um
+- Predefinições de recursos, limites por usuário, gerador de nomes *(Pelican)*, e escolha de cor e ícone do servidor
+- Rascunhos salvos automaticamente, que podem ser descartados
+- **Subdomínios automáticos** *(complemento, Cloudflare)*: escolha um nome como `oak` no criador ou na seção Rede do servidor; o Simplify cria os registros DNS (um CNAME, e um registro SRV para que jogadores de Minecraft não precisem digitar a porta) e os remove junto com o servidor
+- O criador do próprio Pelican continua disponível
 
 </details>
 
 <details>
-<summary><strong>Managing a server</strong></summary>
+<summary><strong>Gerenciando um servidor</strong></summary>
 
-- Live console with command history *(Pelican)*
-- Power controls and resource usage *(Pelican)*
-- Minecraft settings with a live MOTD preview: players, difficulty, game mode, PvP, whitelist and more
-- Player management: whitelist, operators, kicks and bans
-- Plugins and mods from Modrinth: search, install, update and remove
-- Change software, version or modpack, with a recent backup required first
-- Files, schedules, activity log, databases and SFTP details *(Pelican)*
-- Changes that need a restart are collected, with an option to restart now or later
+- Console ao vivo com histórico de comandos *(Pelican)*
+- Controles de energia e uso de recursos *(Pelican)*
+- Configurações do Minecraft com prévia do MOTD ao vivo: jogadores, dificuldade, modo de jogo, PvP, whitelist e mais
+- Gerenciamento de jogadores: whitelist, operadores, expulsões e banimentos
+- Plugins e mods do Modrinth: procurar, instalar, atualizar e remover
+- Troca de software, versão ou modpack, exigindo antes um backup recente
+- Arquivos, agendamentos, registro de atividades, bancos de dados e dados de SFTP *(Pelican)*
+- Mudanças que exigem reinício ficam reunidas, com a opção de reiniciar agora ou depois
 
 </details>
 
 <details>
 <summary><strong>Backups</strong></summary>
 
-- Automatic backups with your own interval and retention, and a pause button
-- A failed backup never removes the last good one
-- Restore and download *(Pelican)*
+- Backups automáticos com intervalo e retenção definidos por você, e um botão de pausa
+- Um backup que falha nunca remove o último backup bom
+- Restaurar e baixar *(Pelican)*
 
 </details>
 
 <details>
-<summary><strong>Look and feel</strong></summary>
+<summary><strong>Aparência</strong></summary>
 
-- Light, dark or system theme
-- One accent color for the whole panel, or a color per server
-- Banners: built-in Minecraft art, Steam art, or your own uploads
-- Panel name and logo: upload a logo, or style the name with your own font and colors
-- The same save bar on every settings page
-
-</details>
-
-<details>
-<summary><strong>People, access and settings</strong></summary>
-
-- **Friends mode:** see all servers, manage only your own or the ones shared with you *(Pelican permissions)*
-- **People & roles:** add people with an email invite, and create roles with Simplify permissions, limits and admin access
-- Switch individual features on or off for users: files, backups, schedules, players, plugins and more
-- Optional self-service server creation, with limits per role or per person
-- Steam account on the profile page for game server tokens
+- Tema claro, escuro ou do sistema
+- Uma cor de destaque para o painel inteiro, ou uma cor por servidor
+- Banners: arte do Minecraft incluída, arte da Steam ou os seus próprios envios
+- Nome e logo do painel: envie um logo ou estilize o nome com a sua fonte e as suas cores
+- Tamanho do texto e dos elementos, com escolha pessoal por dispositivo *(este fork)*
+- A mesma barra de salvar em todas as páginas de configuração
 
 </details>
 
 <details>
-<summary><strong>Installation and maintenance</strong></summary>
+<summary><strong>Pessoas, acesso e configurações</strong></summary>
 
-- Installs through Pelican's own plugin import *(Pelican)*
-- Setup checks for PHP, Node.js, the database, queue, storage and upload limits, each with fix instructions
-- Plugin manager with safe updates: backup first, checksum check, and automatic rollback if an update fails
-- Optional automatic plugin updates
+- **Modo amigos:** veja todos os servidores, gerencie só os seus ou os compartilhados com você *(permissões do Pelican)*
+- **Pessoas e funções:** adicione pessoas com convite por e-mail, e crie funções com permissões do Simplify, limites e acesso de administração
+- Ligue ou desligue recursos individuais para os usuários: arquivos, backups, agendamentos, jogadores, plugins e mais
+- Criação de servidores por conta própria opcional, com limites por função ou por pessoa
+- Conta Steam na página de perfil para os tokens de servidor de jogo
 
 </details>
 
-## How this project is made
+<details>
+<summary><strong>Instalação e manutenção</strong></summary>
 
-I came up with PelicanSimplify and designed every part of it myself: what it does, how it looks and how it should work. I write the code together with an AI assistant. Every change is checked and tested before it is released: automated tests run on each build, each change is tried in a test installation of Pelican, and I test everything myself on my own panel. Still, it is a young project: expect the odd bug, especially in beta builds, and please report anything you find through [Issues](https://github.com/jerajerajerajera/PelicanSimplify/issues).
+- Instala pela importação de plugins do próprio Pelican *(Pelican)*
+- Verificações de PHP, Node.js, banco de dados, fila, armazenamento e limites de envio, cada uma com instruções de correção
+- Gerenciador de plugins com atualizações seguras: backup antes, verificação de checksum e reversão automática se uma atualização falhar
+- Atualizações automáticas de plugins opcionais
 
-MIT licensed. Bundled game eggs keep their original licenses.
+</details>
+
+## Como este projeto é feito
+
+O PelicanSimplify foi idealizado e projetado por jerajerajerajera, autor do projeto original: o que ele faz, como ele parece e como deve funcionar. O código é escrito junto com um assistente de IA. Cada mudança é verificada e testada antes de ser lançada: testes automatizados rodam em cada build, cada mudança é experimentada numa instalação de teste do Pelican e testada no painel do próprio autor. As mudanças deste fork seguem o mesmo processo e são validadas num painel real. Ainda assim, é um projeto jovem: espere um bug ou outro, principalmente nas versões beta, e relate o que encontrar pelas [issues](https://github.com/Majozin/PelicanSimplify/issues).
+
+Licença MIT (veja [LICENSE](LICENSE), com o aviso de copyright original). Os eggs de jogos incluídos mantêm as suas licenças originais.

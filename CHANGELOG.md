@@ -1,5 +1,8 @@
 # Changes
 
+## 0.4.2-beta.7-ptbr.6 (fork Majozin/PelicanSimplify, beta channel)
+- README in Portuguese (Brazil), with a section about this fork, installation from this fork's beta channel and credit to the original project. No code changes.
+
 ## 0.4.2-beta.7-ptbr.5 (fork Majozin/PelicanSimplify, beta channel)
 - Interface size settings line up: the three fields have short labels ("Text", "Elements (simple mode)", "Elements (host mode)") so none wraps and pushes its dropdown down, and the automatic option is called "Automatic (window)" so it fits on one line, also in Customize.
 - Fixed: the dashboard and host mode stayed in English for people with Portuguese (or any other language) in their profile. The upstream plugin forced English on the dashboard and on pages embedded in host mode; both now follow the profile language like the rest of Pelican. Two checks that depended on English text were made language independent first (saving the creator draft when its window closes, and reloading after a plugin update notice).
