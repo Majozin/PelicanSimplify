@@ -34,6 +34,10 @@
                     <a x-show="boot.admin_url" :href="server?.admin_server_url || boot.admin_url" class="ps-btn is-icon is-subtle" data-tip="Legacy panel" aria-label="Legacy panel">
                         <svg aria-hidden="true"><use href="#ps-legacy"/></svg><span class="ps-mobile-label">Legacy panel</span>
                     </a>
+                    {{-- Host mode and simple mode, always one click away for admins (not on a server page). --}}
+                    <button type="button" class="ps-btn is-icon is-subtle" x-show="adminPages().length && !server" x-on:click="setHostMode(!hostMode)" :data-tip="hostMode ? 'Switch to simple mode' : 'Switch to host mode'" :aria-label="hostMode ? 'Switch to simple mode' : 'Switch to host mode'">
+                        <svg aria-hidden="true"><use :href="hostMode ? '#ps-grid' : '#ps-host'"/></svg><span class="ps-mobile-label" x-text="hostMode ? 'Simple mode' : 'Host mode'"></span>
+                    </button>
                     <button type="button" x-show="boot.settings_url" x-on:click="openPanelSettings()" class="ps-btn is-icon is-subtle" data-tip="Simplify settings" aria-label="Simplify settings" aria-haspopup="dialog">
                         <span class="ps-settings-mark" aria-hidden="true"><svg><use href="#ps-simplify"/></svg><svg class="ps-settings-gear"><use href="#ps-gear"/></svg></span><span class="ps-mobile-label">Simplify settings</span>
                     </button>
@@ -207,7 +211,7 @@
                             </span>
                             <span class="ps-account-username" x-text="boot.user"></span>
                         </button>
-                        <div id="ps-account-actions" class="ps-account-menu" :style="{'--ps-account-count': (adminPages().length && !server ? 4 : 3) + (themeOpen ? 2 : 0)}" :inert="!accountMenu" :aria-hidden="!accountMenu">
+                        <div id="ps-account-actions" class="ps-account-menu" :style="{'--ps-account-count': 3 + (themeOpen ? 2 : 0)}" :inert="!accountMenu" :aria-hidden="!accountMenu">
                             <div class="ps-account-actions-inner">
                                 <button type="button" class="ps-btn is-icon" x-on:click="openAccount()" data-tip="Profile settings" aria-label="Profile settings" aria-haspopup="dialog">
                                     <svg aria-hidden="true"><use href="#ps-account"/></svg>
@@ -221,9 +225,6 @@
                                         <svg aria-hidden="true"><use :href="t==='light' ? '#ps-sun' : t==='dark' ? '#ps-moon' : '#ps-monitor'"/></svg>
                                     </button>
                                 </template>
-                                <button type="button" class="ps-btn is-icon" x-show="adminPages().length && !server" x-on:click="setHostMode(!hostMode); accountMenu=false" :data-tip="hostMode ? 'Switch to simple mode' : 'Switch to host mode'" :aria-label="hostMode ? 'Switch to simple mode' : 'Switch to host mode'">
-                                    <svg aria-hidden="true"><use :href="hostMode ? '#ps-grid' : '#ps-host'"/></svg>
-                                </button>
                                 <form method="post" action="{{ route('filament.app.auth.logout') }}">@csrf
                                     <button type="submit" class="ps-btn is-icon" data-tip="Sign out" aria-label="Sign out"><svg aria-hidden="true"><use href="#ps-logout"/></svg></button>
                                 </form>

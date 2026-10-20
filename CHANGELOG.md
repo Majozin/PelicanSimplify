@@ -1,5 +1,8 @@
 # Changes
 
+## 0.4.2-beta.7-ptbr.3 (fork Majozin/PelicanSimplify, beta channel)
+- The host mode / simple mode switch sits in the top bar next to "Legacy panel" instead of inside the profile menu, so switching takes one click. It shows for admins on the overview and in host mode (not on a server page, as before); on phones it is in the navigation menu as "Host mode" / "Simple mode".
+
 ## 0.4.2-beta.7-ptbr.2 (fork Majozin/PelicanSimplify, beta channel)
 - New Appearance setting "Element size" for the Simplify dashboard and host mode: Automatic (the previous behaviour, which shrinks everything below 1440p: about 79% on a 1080p screen), 100% (no reduction), 110, 125, 150, 175 or 200%. A fixed size is limited to what the window can show (at least a 1280 × 720 layout), so smaller screens never get a horizontal scrollbar or a cut-off overview.
 - Fixed: the save bar of the settings page did not appear after changing a dropdown. Pelican turns every Filament select into a JavaScript select without a `<select>` element, which the save bar did not see; it now reads those selects too (also from the keyboard). This affected every dropdown on the page, including the original ones (font, weight, colour, hosting machines, approved games).
