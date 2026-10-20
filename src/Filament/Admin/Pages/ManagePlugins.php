@@ -11,6 +11,8 @@ use Simplify\Panel\Services\PluginUpdater;
 final class ManagePlugins extends Page
 {
     protected static ?string $title = 'Plugins';
+    public function getTitle(): string|\Illuminate\Contracts\Support\Htmlable { return __(static::$title); }
+    public static function getNavigationLabel(): string { return __(static::$title); }
     protected static ?string $slug = 'simplify-plugins';
     protected string $view = 'pelican-simplify::admin-plugins';
     protected static bool $shouldRegisterNavigation = false;
@@ -64,7 +66,7 @@ final class ManagePlugins extends Page
         \Illuminate\Support\Facades\Cache::put('simplify.plugin-update-queued.'.$id, true, 1200);
         $this->busy = true;
         \Simplify\Panel\Jobs\UpdatePlugin::dispatchAfterResponse($plugin->id, (int) user()->id);
-        Notification::make()->title('Update started')->body($plugin->name.' is updated in the background. You get a notification when it is done; if anything fails, the current version is restored.')->info()->send();
+        Notification::make()->title(__('Update started'))->body(__(':name is updated in the background. You get a notification when it is done; if anything fails, the current version is restored.', ['name' => $plugin->name]))->info()->send();
     }
 
     public function setEnabled(string $id, bool $enabled): void
@@ -73,7 +75,7 @@ final class ManagePlugins extends Page
         abort_unless($this->canChange($plugin) && in_array($plugin->status->value, ['enabled', 'disabled'], true), 403);
         $service = app(\App\Services\Helpers\PluginService::class);
         $enabled ? $service->enablePlugin($plugin) : $service->disablePlugin($plugin);
-        Notification::make()->title($plugin->name.($enabled ? ' enabled' : ' disabled'))->body('Reload the panel to apply the change.')->success()->send();
+        Notification::make()->title($plugin->name.($enabled ? ' enabled' : ' disabled'))->body(__('Reload the panel to apply the change.'))->success()->send();
     }
 
     /** Install, uninstall and delete run through Pelican's own jobs and service, so nothing needs the legacy page. */
@@ -84,7 +86,7 @@ final class ManagePlugins extends Page
         \Illuminate\Support\Facades\Cache::put('simplify.plugin-queued.'.$id, now()->timestamp, 1800);
         $this->busy = true;
         \Simplify\Panel\Jobs\ChangePlugin::dispatchAfterResponse($plugin->id, 'install', (int) user()->id);
-        Notification::make()->title('Install started')->body($plugin->name.' is installed in the background. You get a notification when it is done.')->info()->send();
+        Notification::make()->title(__('Install started'))->body(__(':name is installed in the background. You get a notification when it is done.', ['name' => $plugin->name]))->info()->send();
     }
 
     public function uninstallPlugin(string $id): void
@@ -94,7 +96,7 @@ final class ManagePlugins extends Page
         \Illuminate\Support\Facades\Cache::put('simplify.plugin-queued.'.$id, now()->timestamp, 1800);
         $this->busy = true;
         \Simplify\Panel\Jobs\ChangePlugin::dispatchAfterResponse($plugin->id, 'uninstall', (int) user()->id);
-        Notification::make()->title('Uninstall started')->body($plugin->name.' is removed in the background. Its files stay until you delete it.')->info()->send();
+        Notification::make()->title(__('Uninstall started'))->body(__(':name is removed in the background. Its files stay until you delete it.', ['name' => $plugin->name]))->info()->send();
     }
 
     public function deletePlugin(string $id): void
@@ -102,7 +104,7 @@ final class ManagePlugins extends Page
         $plugin = Plugin::query()->findOrFail($id);
         abort_unless(user()?->can('delete', $plugin) && in_array($plugin->status->value, ['not_installed', 'errored'], true), 403);
         app(\App\Services\Helpers\PluginService::class)->deletePlugin($plugin);
-        Notification::make()->title($plugin->name.' deleted')->success()->send();
+        Notification::make()->title(__(':name deleted', ['name' => $plugin->name]))->success()->send();
     }
 
     protected function getHeaderActions(): array
@@ -110,26 +112,26 @@ final class ManagePlugins extends Page
         $import = fn (callable $download) => function (array $data) use ($download): void {
             try {
                 $download(app(\App\Services\Helpers\PluginService::class), $data);
-                Notification::make()->title('Plugin imported')->body('Install it from the list to start using it.')->success()->send();
+                Notification::make()->title(__('Plugin imported'))->body(__('Install it from the list to start using it.'))->success()->send();
             } catch (\Throwable $exception) {
                 report($exception);
-                Notification::make()->title('Import failed')->body($exception->getMessage())->danger()->send();
+                Notification::make()->title(__('Import failed'))->body($exception->getMessage())->danger()->send();
             }
         };
         return [
-            \Filament\Actions\Action::make('checkUpdates')->label('Check for updates')->tooltip('Check for updates now')->icon('tabler-refresh')
+            \Filament\Actions\Action::make('checkUpdates')->label(__('Check for updates'))->tooltip(__('Check for updates now'))->icon('tabler-refresh')
                 ->action(function (): void {
                     \Simplify\Panel\Services\UpdateCheck::forget();
                     $count = count(PluginUpdater::available(true));
-                    Notification::make()->title($count ? $count.' update(s) available' : 'Everything is up to date')->success()->send();
+                    Notification::make()->title($count ? trans_choice(':count update available|:count updates available', $count, ['count' => $count]) : __('Everything is up to date'))->success()->send();
                 }),
-            \Filament\Actions\Action::make('importUrl')->label('Import from URL')->tooltip('Import from URL')->icon('tabler-world-download')
+            \Filament\Actions\Action::make('importUrl')->label(__('Import from URL'))->tooltip(__('Import from URL'))->icon('tabler-world-download')
                 ->authorize(fn () => user()?->can('create', Plugin::class))
-                ->schema([\Filament\Forms\Components\TextInput::make('url')->label('Zip URL')->required()->url()->endsWith('.zip')])
+                ->schema([\Filament\Forms\Components\TextInput::make('url')->label(__('Zip URL'))->required()->url()->endsWith('.zip')])
                 ->action($import(fn ($service, array $data) => $service->downloadPluginFromUrl($data['url']))),
-            \Filament\Actions\Action::make('importFile')->label('Upload zip')->tooltip('Upload zip')->icon('tabler-file-upload')
+            \Filament\Actions\Action::make('importFile')->label(__('Upload zip'))->tooltip(__('Upload zip'))->icon('tabler-file-upload')
                 ->authorize(fn () => user()?->can('create', Plugin::class))
-                ->schema([\Filament\Forms\Components\FileUpload::make('file')->label('Plugin zip')->required()
+                ->schema([\Filament\Forms\Components\FileUpload::make('file')->label(__('Plugin zip'))->required()
                     ->acceptedFileTypes(['application/zip', 'application/zip-compressed', 'application/x-zip-compressed'])
                     ->preserveFilenames()->previewable(false)->storeFiles(false)])
                 ->action($import(fn ($service, array $data) => $service->downloadPluginFromFile($data['file']))),

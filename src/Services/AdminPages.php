@@ -54,15 +54,15 @@ final class AdminPages
             $plugin = isset(self::KNOWN[$name]) ? null : ExternalPlugins::owner($class);
             if ($plugin && ExternalPlugins::isHidden('admin', $class)) continue;
             [$group, $icon] = self::KNOWN[$name] ?? ($plugin ? ['External', 'plugins'] : ['Other', 'legacy']);
-            if ($name === 'ServerResource' && $class::canCreate()) $label = 'Create server (legacy)';
-            if ($people && $name === 'UserResource') $label = 'People';
+            if ($name === 'ServerResource' && $class::canCreate()) $label = __('Create server (legacy)');
+            if ($people && $name === 'UserResource') $label = __('People');
             $groups[$group][] = ['key' => strtolower($name), 'label' => $label, 'url' => $url, 'icon' => $icon, 'plugin' => $plugin['name'] ?? null];
         }
         $menu = [];
         foreach ($groups as $label => $items) {
             if (!$items) continue;
             usort($items, fn (array $a, array $b): int => strnatcasecmp($a['label'], $b['label']));
-            $menu[] = ['label' => $label, 'items' => $items];
+            $menu[] = ['label' => __($label), 'items' => $items];
         }
         return $menu;
     }
@@ -73,14 +73,14 @@ final class AdminPages
         if (!user()?->isAdmin()) return [];
         $items = [];
         try {
-            if (FeatureSettings::enabled('easy_creator') && Extensions::canCreate()) $items[] = ['key' => 'easycreator', 'label' => 'Create server', 'url' => \Simplify\Panel\Filament\App\Pages\CreateServer::getUrl(['game' => 'minecraft'], panel: 'app'), 'icon' => 'plus'];
-            if (FeatureSettings::enabled('game_creator') && Extensions::canCreate()) $items[] = ['key' => 'gamecreator', 'label' => 'Create other server', 'url' => \Simplify\Panel\Filament\App\Pages\CreateServer::getUrl(['game' => 'other'], panel: 'app'), 'icon' => 'gamepad'];
+            if (FeatureSettings::enabled('easy_creator') && Extensions::canCreate()) $items[] = ['key' => 'easycreator', 'label' => __('Create server'), 'url' => \Simplify\Panel\Filament\App\Pages\CreateServer::getUrl(['game' => 'minecraft'], panel: 'app'), 'icon' => 'plus'];
+            if (FeatureSettings::enabled('game_creator') && Extensions::canCreate()) $items[] = ['key' => 'gamecreator', 'label' => __('Create other server'), 'url' => \Simplify\Panel\Filament\App\Pages\CreateServer::getUrl(['game' => 'other'], panel: 'app'), 'icon' => 'gamepad'];
             $plugins = \App\Filament\Admin\Resources\Plugins\PluginResource::class;
             if (\Simplify\Panel\Filament\Admin\Pages\ManagePeople::canAccess() && FeatureSettings::enabled('legacy_pages')) {
-                $items[] = ['key' => 'legacyusers', 'label' => 'Users (legacy)', 'url' => \App\Filament\Admin\Resources\Users\UserResource::getUrl('index', ['simplify_legacy' => 1], panel: 'admin'), 'icon' => 'players'];
-                $items[] = ['key' => 'legacyroles', 'label' => 'Roles (legacy)', 'url' => \App\Filament\Admin\Resources\Roles\RoleResource::getUrl('index', ['simplify_legacy' => 1], panel: 'admin'), 'icon' => 'lock'];
+                $items[] = ['key' => 'legacyusers', 'label' => __('Users (legacy)'), 'url' => \App\Filament\Admin\Resources\Users\UserResource::getUrl('index', ['simplify_legacy' => 1], panel: 'admin'), 'icon' => 'players'];
+                $items[] = ['key' => 'legacyroles', 'label' => __('Roles (legacy)'), 'url' => \App\Filament\Admin\Resources\Roles\RoleResource::getUrl('index', ['simplify_legacy' => 1], panel: 'admin'), 'icon' => 'lock'];
             }
-            if ($plugins::canViewAny() && FeatureSettings::enabled('legacy_pages')) $items[] = ['key' => 'legacyplugins', 'label' => 'Plugin manager (legacy)', 'url' => $plugins::getUrl('index', ['simplify_legacy' => 1], panel: 'admin'), 'icon' => 'plugins'];
+            if ($plugins::canViewAny() && FeatureSettings::enabled('legacy_pages')) $items[] = ['key' => 'legacyplugins', 'label' => __('Plugin manager (legacy)'), 'url' => $plugins::getUrl('index', ['simplify_legacy' => 1], panel: 'admin'), 'icon' => 'plugins'];
         } catch (\Throwable) {
         }
         return $items;

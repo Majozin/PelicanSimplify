@@ -11,13 +11,13 @@
             <header class="ps-settings-hero">
                 <span class="ps-settings-logo">@include('pelican-simplify::simplify-icon')</span>
                 <div class="ps-settings-hero-text">
-                    <h1>Simplify settings</h1>
-                    <p>Version {{ \Simplify\Panel\Services\BuildInfo::version() ?? 'unknown' }} · Changes apply to everyone on this panel after saving.</p>
+                    <h1>{{ __('Simplify settings') }}</h1>
+                    <p>{{ __('Version :version · Changes apply to everyone on this panel after saving.', ['version' => \Simplify\Panel\Services\BuildInfo::version() ?? __('unknown')]) }}</p>
                 </div>
                 @if(!$this->embedded && !$showDiagnostics)
                     <div class="ps-settings-hero-actions">
-                        <button type="button" class="ps-btn is-sm" wire:click="toggleDiagnostics" wire:loading.attr="disabled"><x-tabler-shield-check class="ps-ico" />System checks</button>
-                        <button type="button" class="ps-btn is-sm" wire:loading.attr="disabled" x-on:click="Simplify.confirm({title:'Run the setup wizard again?', message:'You walk through the system checks and every settings page again, starting from your current settings. Nothing changes until you finish the wizard.', confirmLabel:'Start setup'}).then((ok) => ok && $wire.startSetupAgain())"><x-tabler-wand class="ps-ico" />Setup wizard</button>
+                        <button type="button" class="ps-btn is-sm" wire:click="toggleDiagnostics" wire:loading.attr="disabled"><x-tabler-shield-check class="ps-ico" />{{ __('System checks') }}</button>
+                        <button type="button" class="ps-btn is-sm" wire:loading.attr="disabled" x-on:click="Simplify.confirm({title:@js(__('Run the setup wizard again?')), message:@js(__('You walk through the system checks and every settings page again, starting from your current settings. Nothing changes until you finish the wizard.')), confirmLabel:@js(__('Start setup'))}).then((ok) => ok && $wire.startSetupAgain())"><x-tabler-wand class="ps-ico" />{{ __('Setup wizard') }}</button>
                     </div>
                 @endif
             </header>
@@ -27,25 +27,25 @@
         @if($update && $update['available'])
             <div class="ps-alert is-info ps-update-card" role="status">
                 <x-tabler-sparkles class="ps-ico" aria-hidden="true" />
-                <div><strong>Simplify {{ $update['version'] }} is available</strong><small>You are running {{ $update['current'] }}. Install the update from Pelican’s plugin page; your settings stay in place.</small></div>
-                @if($update['url'])<a class="ps-btn is-sm" href="{{ $update['url'] }}" target="_top">Open plugins</a>@endif
+                <div><strong>{{ __('Simplify :version is available', ['version' => $update['version']]) }}</strong><small>{{ __('You are running :current. Install the update from Pelican’s plugin page; your settings stay in place.', ['current' => $update['current']]) }}</small></div>
+                @if($update['url'])<a class="ps-btn is-sm" href="{{ $update['url'] }}" target="_top">{{ __('Open plugins') }}</a>@endif
             </div>
         @endif
         @if($rerunSetup)
-            <div class="ps-alert is-info ps-rerun-banner" role="status"><x-tabler-wand class="ps-ico" aria-hidden="true" /><div><strong>Running the setup wizard again</strong><small>Your current settings stay active until you finish.</small></div><button type="button" class="ps-btn is-sm" wire:click="cancelSetupAgain">Cancel</button></div>
+            <div class="ps-alert is-info ps-rerun-banner" role="status"><x-tabler-wand class="ps-ico" aria-hidden="true" /><div><strong>{{ __('Running the setup wizard again') }}</strong><small>{{ __('Your current settings stay active until you finish.') }}</small></div><button type="button" class="ps-btn is-sm" wire:click="cancelSetupAgain">{{ __('Cancel') }}</button></div>
         @endif
         @if($this->needsSetup() && !$setupStarted)
             @include('pelican-simplify::system-checks')
         @endif
         @if(!$this->needsSetup() || $setupStarted)
             @if($this->needsSetup())
-                <header class="ps-setup-heading ps-setup-welcome"><span class="ps-setup-mark"><x-tabler-adjustments /></span><div><span class="ps-setup-eyebrow">First setup · Preferences</span><h2>Make Simplify yours</h2><p>Choose your features, access rules and resource limits. You can change these later.</p></div></header>
+                <header class="ps-setup-heading ps-setup-welcome"><span class="ps-setup-mark"><x-tabler-adjustments /></span><div><span class="ps-setup-eyebrow">{{ __('First setup · Preferences') }}</span><h2>{{ __('Make Simplify yours') }}</h2><p>{{ __('Choose your features, access rules and resource limits. You can change these later.') }}</p></div></header>
             @endif
             <div class="ssc-wizard ps-settings-form" @if($this->needsSetup()) x-data="simplifySetupProgress()" @endif>
                 @if($this->needsSetup())
-                    <nav class="ssc-progress" wire:ignore aria-label="Simplify setup progress">
+                    <nav class="ssc-progress" wire:ignore aria-label="{{ __('Simplify setup progress') }}">
                         @foreach($this->setupSteps() as $index => $label)
-                            <button type="button" :class="{'is-current':step==={{ $index+1 }},'is-complete':furthestStep>{{ $index+1 }}}" :disabled="{{ $index+1 }}>furthestStep" :aria-current="step==={{ $index+1 }}?'step':null" x-on:click="goToStep({{ $index+1 }})"><span>{{ $index+1 }}</span>{{ $label }}</button>
+                            <button type="button" :class="{'is-current':step==={{ $index+1 }},'is-complete':furthestStep>{{ $index+1 }}}" :disabled="{{ $index+1 }}>furthestStep" :aria-current="step==={{ $index+1 }}?'step':null" x-on:click="goToStep({{ $index+1 }})"><span>{{ $index+1 }}</span>{{ __($label) }}</button>
                             @unless($loop->last)<span class="ssc-step-arrow" aria-hidden="true">&gt;</span>@endunless
                         @endforeach
                     </nav>
@@ -54,7 +54,7 @@
                     {{ $this->form }}
                     @if(!$this->needsSetup())
                         {{-- Shared save bar (core.js): appears on changes, confirms the save, then slides away. --}}
-                        <div wire:ignore x-data x-init="Simplify.saveBar({ mount: document.body, fixed: true, scope: $el.closest('form'), label: 'Save settings', onSave: (api) => { api.expectSave(); $wire.save(); } })"></div>
+                        <div wire:ignore x-data x-init="Simplify.saveBar({ mount: document.body, fixed: true, scope: $el.closest('form'), label: @js(__('Save settings')), onSave: (api) => { api.expectSave(); $wire.save(); } })"></div>
                     @endif
                 </form>
             </div>

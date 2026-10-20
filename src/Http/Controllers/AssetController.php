@@ -22,6 +22,7 @@ final class AssetController
         if (trim((string) $request->header('If-None-Match')) === $etag) return response('', 304, $headers);
         $content = '';
         foreach ($files as $file) $content .= (string) file_get_contents($file)."\n";
+        if (str_ends_with($asset, '.css')) $content = \Simplify\Panel\Services\InterfaceScale::css($content);
         return response($content, 200, $headers);
     }
 

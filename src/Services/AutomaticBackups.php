@@ -52,7 +52,7 @@ final class AutomaticBackups
 
     private static function write(Server $s, array $options): void
     {
-        if (!Storage::disk('local')->put(self::path($s), json_encode($options, JSON_THROW_ON_ERROR))) throw new \RuntimeException('Could not save the backup policy.');
+        if (!Storage::disk('local')->put(self::path($s), json_encode($options, JSON_THROW_ON_ERROR))) throw new \RuntimeException(__('Could not save the backup policy.'));
     }
 
     public static function tick(Server $s): void

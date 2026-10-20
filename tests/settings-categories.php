@@ -20,6 +20,7 @@ namespace Simplify\Panel\Services {
 }
 namespace {
 require __DIR__.'/../src/Services/BrandSettings.php';
+require __DIR__.'/../src/Services/InterfaceScale.php';
  require __DIR__.'/../src/Filament/Admin/Pages/SimplifySettings.php';
  function view($name){return new class{function render(){return '<button>Finish setup</button>';}};}
  $page=new \Simplify\Panel\Filament\Admin\Pages\SimplifySettings;

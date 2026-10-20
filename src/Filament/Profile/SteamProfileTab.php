@@ -49,48 +49,48 @@ final class SteamProfileTab
         $status = SteamAccount::status($user);
         $linked = $status['linked'];
         $linkText = $linked !== null
-            ? 'Linked to Steam account '.$linked.'.'
-            : (self::steamSignInEnabled() ? 'Not linked yet. Use "Link Steam" on the OAuth tab.' : 'Steam sign-in is not enabled on this panel. An administrator can turn it on under Admin → Settings → OAuth.');
+            ? __('Linked to Steam account :account.', ['account' => $linked])
+            : (self::steamSignInEnabled() ? __('Not linked yet. Use "Link Steam" on the OAuth tab.') : __('Steam sign-in is not enabled on this panel. An administrator can turn it on under Admin → Settings → OAuth.'));
         $keyText = $status['connected']
-            ? 'Steam Web API key ending in '.$status['hint'].($status['steamid'] ? ' (Steam account '.$status['steamid'].')' : '').'. Automatic tokens are '.($status['auto'] ? 'on' : 'off').'.'
-            : 'No key connected. Games that need a token show an empty field in the creator.';
+            ? ($status['steamid'] ? __('Steam Web API key ending in :hint (Steam account :account).', ['hint' => $status['hint'], 'account' => $status['steamid']]) : __('Steam Web API key ending in :hint.', ['hint' => $status['hint']])).' '.($status['auto'] ? __('Automatic tokens are on.') : __('Automatic tokens are off.'))
+            : __('No key connected. Games that need a token show an empty field in the creator.');
 
         return [
-            Section::make('Steam account')->description('Linking proves which Steam account is yours. A key you connect below must belong to that same account.')->schema([
+            Section::make(__('Steam account'))->description(__('Linking proves which Steam account is yours. A key you connect below must belong to that same account.'))->schema([
                 \Filament\Schemas\Components\Text::make($linkText),
             ]),
-            Section::make('Game server login tokens')
-                ->description('Games such as CS2, Unturned and Insurgency: Sandstorm need a token per server. Steam only lets the account itself create them, through its Web API key, so connect your key once. Simplify stores it encrypted, uses it only for your own servers and never shows it again.')
+            Section::make(__('Game server login tokens'))
+                ->description(__('Games such as CS2, Unturned and Insurgency: Sandstorm need a token per server. Steam only lets the account itself create them, through its Web API key, so connect your key once. Simplify stores it encrypted, uses it only for your own servers and never shows it again.'))
                 ->schema([
                     \Filament\Schemas\Components\Text::make($keyText),
                     Actions::make([
-                        Action::make('simplify_steam_connect')->button()->label($status['connected'] ? 'Replace key' : 'Connect key')->icon('tabler-key')
-                            ->modalHeading('Connect your Steam Web API key')
-                            ->modalDescription('Create or copy your key at steamcommunity.com/dev/apikey (any domain name works). Steam requires a phone-verified account to create tokens.')
-                            ->schema([TextInput::make('key')->label('Steam Web API key')->password()->required()->maxLength(32)->autocomplete(false)])
-                            ->modalSubmitActionLabel('Connect')
+                        Action::make('simplify_steam_connect')->button()->label($status['connected'] ? __('Replace key') : __('Connect key'))->icon('tabler-key')
+                            ->modalHeading(__('Connect your Steam Web API key'))
+                            ->modalDescription(__('Create or copy your key at steamcommunity.com/dev/apikey (any domain name works). Steam requires a phone-verified account to create tokens.'))
+                            ->schema([TextInput::make('key')->label(__('Steam Web API key'))->password()->required()->maxLength(32)->autocomplete(false)])
+                            ->modalSubmitActionLabel(__('Connect'))
                             ->action(function (array $data, Action $action): void {
                                 try {
                                     SteamAccount::save(user(), (string) $data['key']);
-                                    Notification::make()->title('Steam key connected')->success()->send();
+                                    Notification::make()->title(__('Steam key connected'))->success()->send();
                                 } catch (ValidationException $exception) {
-                                    Notification::make()->title('Key not connected')->body(collect($exception->errors())->flatten()->first())->danger()->send();
+                                    Notification::make()->title(__('Key not connected'))->body(collect($exception->errors())->flatten()->first())->danger()->send();
                                     $action->halt();
                                 }
                             }),
-                        Action::make('simplify_steam_auto')->button()->label($status['auto'] ? 'Turn automatic tokens off' : 'Turn automatic tokens on')->icon('tabler-wand')
+                        Action::make('simplify_steam_auto')->button()->label($status['auto'] ? __('Turn automatic tokens off') : __('Turn automatic tokens on'))->icon('tabler-wand')
                             ->visible($status['connected'])
-                            ->tooltip('Automatic: a new server for a game that needs a token gets one by itself when you leave the field empty.')
+                            ->tooltip(__('Automatic: a new server for a game that needs a token gets one by itself when you leave the field empty.'))
                             ->action(function () use ($status): void {
                                 SteamAccount::setAuto(user(), !$status['auto']);
-                                Notification::make()->title('Automatic tokens '.($status['auto'] ? 'off' : 'on'))->success()->send();
+                                Notification::make()->title($status['auto'] ? __('Automatic tokens off') : __('Automatic tokens on'))->success()->send();
                             }),
-                        Action::make('simplify_steam_disconnect')->button()->label('Disconnect')->icon('tabler-unlink')->color('danger')
+                        Action::make('simplify_steam_disconnect')->button()->label(__('Disconnect'))->icon('tabler-unlink')->color('danger')
                             ->visible($status['connected'])->requiresConfirmation()
-                            ->modalDescription('Simplify forgets your key. Tokens already created keep working; manage them on steamcommunity.com/dev/managegameservers.')
+                            ->modalDescription(__('Simplify forgets your key. Tokens already created keep working; manage them on steamcommunity.com/dev/managegameservers.'))
                             ->action(function (): void {
                                 SteamAccount::remove(user());
-                                Notification::make()->title('Steam key disconnected')->success()->send();
+                                Notification::make()->title(__('Steam key disconnected'))->success()->send();
                             }),
                     ]),
                 ]),

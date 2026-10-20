@@ -6,6 +6,9 @@ const repo = path.resolve(__dirname, '..');
 const views = path.join(repo, 'resources/views');
 const tools = path.join(repo, 'node_modules');
 const read = (p) => fs.readFileSync(path.join(views, p), 'utf8');
+// HARNESS_LOCALE=pt_BR renders the views in that language, like the panel does for a user's language.
+const locale = process.env.HARNESS_LOCALE || '';
+const translations = locale ? JSON.parse(fs.readFileSync(path.join(repo, 'lang', locale + '.json'), 'utf8')) : {};
 
 // Mirrors AssetController: bundle definitions come from BuildInfo::BUNDLES.
 function asset(name) {
@@ -38,6 +41,8 @@ function bladeToHtml(src) {
     .replace(/@include\('pelican-simplify::dashboard-icons'\)/g, () => read('dashboard-icons.blade.php'))
     .replace(/@include\('pelican-simplify::motd-editor'\)/g, () => read('motd-editor.blade.php'))
     .replace(/\{\{--[\s\S]*?--\}\}/g, '')
+    // Translated text: the harness shows the English text (the translation key).
+    .replace(/\{\{\s*__\('((?:[^'\\]|\\.)*)'\)\s*\}\}/g, (_, text) => { const key = text.replace(/\\(['\\])/g, '$1'); return translations[key] || key; })
     .replace(/<x-filament-panels::page>|<\/x-filament-panels::page>/g, '')
     .replace(/@assets[\s\S]*?@endassets/g, '')
     .replace(/@js\(\$this->initial\(\)\)/g, 'window.__boot')
@@ -63,9 +68,9 @@ ${opts.head || ''}</head><body class="fi-body"><div class="fi-layout"><div class
 
 function sharedAssets(themeConfig) {
   const v = '?v=h';
-  return `<link id="simplify-core-css" rel="stylesheet" href="/assets/core.css${v}"><script>window.simplifyThemeConfig=${JSON.stringify(themeConfig)};</script><script src="/assets/core.js${v}"></script>`;
+  return `<link id="simplify-core-css" rel="stylesheet" href="/assets/core.css${v}"><script>window.simplifyThemeConfig=${JSON.stringify(themeConfig)};${locale ? 'window.simplifyI18n=' + JSON.stringify(translations) + ';' : ''}</script><script src="/assets/core.js${v}"></script>`;
 }
-const themeConfig = (extra = {}) => ({ global_theme: true, legacy_theme: true, console_dark: true, accent_color: '', individual_colors: true, legacy_page: false, ...extra });
+const themeConfig = (extra = {}) => ({ global_theme: true, legacy_theme: true, console_dark: true, accent_color: '', individual_colors: true, legacy_page: false, user: 'jera', ...extra });
 
 function dashboardPage(q) {
   const mode = q.get('mode') || 'overview';

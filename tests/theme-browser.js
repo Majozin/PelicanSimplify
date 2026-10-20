@@ -217,6 +217,51 @@ const { start } = require('./browser-harness');
     await performance.close();
     console.log('PASS performance presets like the creator, with custom values');
 
+    // 13. Element size: chosen in Customize per mode, applied at once, kept per device; popups fit the window when zoomed in.
+    const sized = await open('/?mode=overview&theme=dark', { width: 1920, height: 950 });
+    await sized.click('[aria-controls="ps-overview-appearance-menu"]');
+    await sized.selectOption('.ps-scale-select', '150');
+    assert.equal(await sized.evaluate(() => document.querySelector('.ps').style.zoom), '1.32', '150% is limited to what a 950 px window can show');
+    await data(sized, (d) => { d.appearanceMenu = false; d.openPopup('panel-settings'); });
+    await sized.waitForTimeout(300);
+    assert.ok(await sized.evaluate(() => [...document.querySelectorAll('.ps-modal')].find((m) => m.offsetParent).getBoundingClientRect().bottom <= innerHeight), 'zoomed popup stays inside the window');
+    await data(sized, (d) => { d.modal = null; d.setHostMode(true); });
+    assert.equal(await sized.evaluate(() => document.querySelector('.ps').style.zoom), '0.79', 'host mode keeps its own (automatic) size');
+    await sized.reload();
+    await sized.waitForFunction(() => window.Alpine && document.querySelector('.ps')?.style);
+    assert.deepEqual(await sized.evaluate(() => JSON.parse(localStorage.getItem('pelicanSimplify.uiScale.jera'))), { simple: '150', host: 'panel' });
+    await sized.close();
+    console.log('PASS element size per mode from Customize, zoomed popups inside the window');
+
+    // 14. Text size: chosen in Customize, one value for both modes and the whole panel, applied before paint and synced to other pages.
+    // Two tabs of the same browser (shared storage): the second stands for Pelican's own pages.
+    const textContext = await browser.newContext({ viewport: { width: 1440, height: 900 } });
+    const [texts, other] = await Promise.all([textContext.newPage(), textContext.newPage()]);
+    for (const tab of [texts, other]) {
+      tab.on('pageerror', (e) => errors.push('text size: ' + e.message));
+      await tab.goto(base + '/?mode=overview&theme=dark');
+      await tab.waitForFunction(() => window.Alpine && document.querySelector('.ps-text-scale-select'));
+    }
+    const textScale = (page) => page.evaluate(() => [document.documentElement.style.getPropertyValue('--ps-scale'), document.documentElement.style.fontSize]);
+    assert.deepEqual(await textScale(texts), ['', ''], 'panel default leaves the Appearance setting alone');
+    await texts.click('[aria-controls="ps-overview-appearance-menu"]');
+    await texts.selectOption('.ps-text-scale-select', '125');
+    assert.deepEqual(await textScale(texts), ['1.25', '125%']);
+    assert.equal(await texts.evaluate(() => localStorage.getItem('pelicanSimplify.textScale.jera')), '125');
+    await other.waitForFunction(() => document.documentElement.style.fontSize === '125%');
+    await data(texts, (d) => d.setHostMode(true));
+    assert.equal(await texts.$eval('.ps-text-scale-select', (s) => s.value), '125', 'host mode shows the same text size');
+    await texts.reload();
+    assert.deepEqual(await textScale(texts), ['1.25', '125%'], 'kept after reloading');
+    await texts.waitForFunction(() => window.Alpine && document.querySelector('.ps-text-scale-select'));
+    await texts.click('[aria-controls="ps-overview-appearance-menu"]');
+    await texts.selectOption('.ps-text-scale-select', 'panel');
+    assert.deepEqual(await textScale(texts), ['', '']);
+    assert.equal(await texts.evaluate(() => localStorage.getItem('pelicanSimplify.textScale.jera')), null);
+    await other.waitForFunction(() => document.documentElement.style.fontSize === '');
+    await textContext.close();
+    console.log('PASS text size from Customize, the same in both modes, kept per device and synced');
+
     assert.deepEqual(errors, []);
   } finally {
     await browser.close();

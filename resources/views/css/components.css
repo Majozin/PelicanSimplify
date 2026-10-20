@@ -275,7 +275,7 @@ input[type="file"].ps-input::file-selector-button {
   width: max-content;
   min-width: 220px;
   max-width: calc(100vw - 24px);
-  max-height: min(72dvh, 560px);
+  max-height: min(calc(72dvh / var(--ps-ui-scale, 1)), 560px);
   overflow-y: auto;
   overscroll-behavior: contain;
   padding: 12px;
@@ -318,7 +318,9 @@ input[type="file"].ps-input::file-selector-button {
   display: flex;
   flex-direction: column;
   width: min(var(--ps-modal-w), 100%);
-  height: min(var(--ps-modal-h), calc(100dvh - 2 * var(--ps-modal-gap)));
+  /* 100dvh is the window; inside the zoomed dashboard it is divided by the zoom (--ps-ui-scale, dashboard.js
+     applyScale), or a popup taller than the window would push its footer and save bar off screen. */
+  height: min(var(--ps-modal-h), calc(100dvh / var(--ps-ui-scale, 1) - 2 * var(--ps-modal-gap)));
   min-height: 0;
   overflow: hidden;
   border: 1px solid var(--ps-line);
@@ -329,7 +331,7 @@ input[type="file"].ps-input::file-selector-button {
   font: 400 14px/1.5 var(--ps-font);
   animation: ps-modal-in .16s ease-out;
 }
-.ps-modal.is-sm { --ps-modal-w: 460px; height: auto; max-height: calc(100dvh - 2 * var(--ps-modal-gap)); }
+.ps-modal.is-sm { --ps-modal-w: 460px; height: auto; max-height: calc(100dvh / var(--ps-ui-scale, 1) - 2 * var(--ps-modal-gap)); }
 .ps-modal.is-md { --ps-modal-w: 760px; --ps-modal-h: 680px; }
 .ps-modal.is-lg { --ps-modal-w: 1120px; --ps-modal-h: 880px; }
 .ps-modal-head { display: flex; flex: none; align-items: center; gap: 12px; min-height: 60px; padding: 10px 12px 10px 22px; border-bottom: 1px solid var(--ps-line); }
@@ -344,7 +346,7 @@ input[type="file"].ps-input::file-selector-button {
 @media (max-width: 640px) {
   .ps-modal-layer { --ps-modal-gap: 8px; }
   .ps-modal { border-radius: var(--ps-radius-lg); }
-  .ps-modal:is(.is-md, .is-lg) { height: calc(100dvh - 2 * var(--ps-modal-gap)); }
+  .ps-modal:is(.is-md, .is-lg) { height: calc(100dvh / var(--ps-ui-scale, 1) - 2 * var(--ps-modal-gap)); }
   .ps-modal-head { padding-left: 16px; min-height: 56px; }
   .ps-modal-body { padding: 16px; }
 }

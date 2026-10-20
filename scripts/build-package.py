@@ -20,7 +20,7 @@ import sys
 import zipfile
 
 root = Path(__file__).resolve().parent.parent
-REPOSITORY = 'https://raw.githubusercontent.com/jerajerajerajera/PelicanSimplify/main/'
+REPOSITORY = 'https://raw.githubusercontent.com/Majozin/PelicanSimplify/main/'
 
 
 def build(output: Path, epoch: int | None = None) -> Path:

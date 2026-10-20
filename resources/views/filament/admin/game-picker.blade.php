@@ -42,26 +42,26 @@
          }">
         <div class="ssc-games-install" x-show="installing" x-cloak role="status" aria-live="polite">
             <span class="ssc-games-install-spinner" aria-hidden="true"></span>
-            <strong>Installing <span x-text="installing"></span></strong>
+            <strong>{{ __('Installing') }} <span x-text="installing"></span></strong>
             <ol>
-                <li :class="{'is-done': phase > 0, 'is-now': phase === 0}">Downloading the egg from the Pelican egg index</li>
-                <li :class="{'is-done': phase > 1, 'is-now': phase === 1}">Checking it against the published checksum</li>
-                <li :class="{'is-now': phase === 2}">Adding it to this panel</li>
+                <li :class="{'is-done': phase > 0, 'is-now': phase === 0}">{{ __('Downloading the egg from the Pelican egg index') }}</li>
+                <li :class="{'is-done': phase > 1, 'is-now': phase === 1}">{{ __('Checking it against the published checksum') }}</li>
+                <li :class="{'is-now': phase === 2}">{{ __('Adding it to this panel') }}</li>
             </ol>
-            <small>The creator continues by itself when the game is ready.</small>
+            <small>{{ __('The creator continues by itself when the game is ready.') }}</small>
         </div>
         <div class="ssc-games-bar">
             <label class="ssc-games-search">
                 <x-tabler-search class="ssc-games-search-icon" />
-                <input type="search" x-model.debounce.120ms="query" x-on:input="limit = 24" placeholder="Search {{ count($cards) }} games…" aria-label="Search games" autocomplete="off" />
+                <input type="search" x-model.debounce.120ms="query" x-on:input="limit = 24" placeholder="{{ __('Search :count games…', ['count' => count($cards)]) }}" aria-label="{{ __('Search games') }}" autocomplete="off" />
             </label>
-            <div class="ssc-games-chips" role="group" aria-label="Filter games">
-                <button type="button" :aria-pressed="filter==='all'" x-on:click="filter='all'; limit=24">All</button>
-                <button type="button" :aria-pressed="filter==='popular'" x-on:click="filter='popular'; limit=24">Popular</button>
-                <button type="button" :aria-pressed="filter==='installed'" x-on:click="filter='installed'; limit=24">Installed</button>
+            <div class="ssc-games-chips" role="group" aria-label="{{ __('Filter games') }}">
+                <button type="button" :aria-pressed="filter==='all'" x-on:click="filter='all'; limit=24">{{ __('All') }}</button>
+                <button type="button" :aria-pressed="filter==='popular'" x-on:click="filter='popular'; limit=24">{{ __('Popular') }}</button>
+                <button type="button" :aria-pressed="filter==='installed'" x-on:click="filter='installed'; limit=24">{{ __('Installed') }}</button>
             </div>
         </div>
-        <div class="ssc-games-grid" role="radiogroup" aria-label="Games">
+        <div class="ssc-games-grid" role="radiogroup" aria-label="{{ __('Games') }}">
             <template x-for="card in shown().slice(0, limit)" :key="card.key">
                 <button type="button" class="ssc-game" role="radio" :aria-checked="state===card.key" x-on:click="state = card.key">
                     <span class="ssc-game-icon" :style="{'--hue': hue(card.name)}" x-text="initials(card.name)"></span>
@@ -69,14 +69,14 @@
                         <strong x-text="card.name"></strong>
                         <small x-text="card.description"></small>
                     </span>
-                    <span class="ssc-game-badge" :class="card.installed ? 'is-installed' : 'is-available'" x-text="card.installed ? 'Installed' : 'Available'"></span>
+                    <span class="ssc-game-badge" :class="card.installed ? 'is-installed' : 'is-available'" x-text="card.installed ? Simplify.t('Installed') : Simplify.t('Available')"></span>
                 </button>
             </template>
         </div>
-        <p class="ssc-games-empty" x-show="!shown().length">No game matches “<span x-text="query"></span>”.</p>
-        <button type="button" class="ssc-games-more" x-show="shown().length > limit" x-on:click="limit += 48" x-text="'Show more (' + (shown().length - limit) + ')'"></button>
+        <p class="ssc-games-empty" x-show="!shown().length" x-text="Simplify.t('No game matches “:query”.', {query})"></p>
+        <button type="button" class="ssc-games-more" x-show="shown().length > limit" x-on:click="limit += 48" x-text="Simplify.t('Show more (:count)', {count: shown().length - limit})"></button>
         <p class="ssc-games-note" x-show="selected() && !selected().installed">
-            <strong x-text="selected()?.name"></strong> is not on this panel yet. Its egg is downloaded from the official Pelican egg index and installed when you continue.
+            <strong x-text="selected()?.name"></strong> {{ __('is not on this panel yet. Its egg is downloaded from the official Pelican egg index and installed when you continue.') }}
         </p>
     </div>
 </x-dynamic-component>

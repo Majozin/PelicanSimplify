@@ -1,41 +1,43 @@
-# Installation
+# Instalação
 
-Target: Pelican 1.0.0-beta38 and PHP 8.3 or newer. This is a beta release.
+Alvo: Pelican 1.0.0-beta38 ou 1.0.0-rc.1, com PHP 8.3 ou mais novo. Esta é uma versão beta.
 
-## Panel import
+## Importação pelo painel
 
-In **Admin → Plugins → Import from URL**, paste `https://raw.githubusercontent.com/jerajerajerajera/PelicanSimplify/main/dist/pelican-simplify-latest.zip`, import it, then click **Install**. You can also upload the ZIP through Import. The repository also uses Pelican's standard plugin layout, with plugin.json and src at its root. The installer checks dependencies before enabling the plugin. Open Simplify settings and finish setup after every required check passes.
+Em **Admin → Plugins → Importar de URL**, cole `https://raw.githubusercontent.com/Majozin/PelicanSimplify/main/dist/pelican-simplify-beta-latest.zip` (a versão mais recente deste fork, em português), importe e clique em **Instalar**. Você também pode enviar o ZIP pela importação. O repositório segue a estrutura padrão de plugins do Pelican, com plugin.json e src na raiz. O instalador verifica as dependências antes de ativar o plugin. Abra as Configurações do Simplify e conclua a configuração depois que todas as verificações obrigatórias passarem.
 
-Node.js 22.12+ or 24+, Yarn, the panel's PHP extensions and Composer dependencies, writable Laravel storage, a working database/cache and a persistent queue connection are required. The setup page lists failed checks and repair instructions; use **Check again** after fixing them. The configured queue check does not prove that the worker or scheduler is running. Keep both services active as required by Pelican.
+São necessários: Node.js 22.12+ ou 24+, Yarn, as extensões PHP e as dependências do Composer do painel, o storage do Laravel com permissão de escrita, banco de dados e cache funcionando, e uma conexão de fila persistente. A página de configuração lista as verificações que falharam e como corrigi-las; use **Verificar de novo** depois de corrigir. A verificação da fila configurada não prova que o worker ou o agendador estejam rodando. Mantenha os dois serviços ativos, como o Pelican exige.
 
-Simplify supplies its own CSS/JavaScript without a separate build. Pelican's own compiled assets must exist and be readable. If the build check fails, repair Node/Yarn and run `yarn install` and `yarn build` from your Pelican directory. Browser delivery, reverse-proxy configuration and Wings operations still need testing on your installation.
+O Simplify traz o próprio CSS e JavaScript, sem build separado. Os assets compilados do próprio Pelican precisam existir e ter permissão de leitura. Se a verificação de build falhar, corrija o Node/Yarn e rode `yarn install` e `yarn build` na pasta do Pelican. A entrega no navegador, a configuração de proxy reverso e as operações do Wings ainda precisam ser testadas na sua instalação.
 
-## Migration from the standalone creator
+Para receber as atualizações deste fork, ative **"Receber versões beta do Simplify"** em Configurações do Simplify → Gerenciador de plugins.
 
-The former standalone creator must not run alongside the unified creator. Use the full migration package rather than a panel import:
+## Migração a partir do criador avulso
+
+O antigo criador avulso não pode rodar junto com o criador unificado. Use o pacote completo de migração em vez da importação pelo painel:
 
 ```bash
 sudo bash INSTALL-PELICAN-SIMPLIFY.sh /var/www/pelican core
 ```
 
-The path can be changed. The installer checks dependencies as the panel user before replacing files, preserves configuration and creates a rollback copy. Use the exact backup path printed during installation:
+O caminho pode ser alterado. O instalador verifica as dependências como o usuário do painel antes de substituir arquivos, preserva a configuração e cria uma cópia para reversão. Use exatamente o caminho de backup exibido durante a instalação:
 
 ```bash
 sudo bash ROLLBACK-PELICAN-SIMPLIFY.sh /var/backups/pelican-simplify-XXXXXXXX /var/www/pelican
 ```
 
-## Development
+## Desenvolvimento
 
-Run `bash tests/run.sh` with PHP 8.3 and Node installed. For the browser theme check, run `npm ci`, `npx playwright install chromium`, then `RUN_BROWSER_TESTS=1 bash tests/run.sh`.
+Rode `bash tests/run.sh` com PHP 8.3 e Node instalados. Para a verificação de tema no navegador, rode `npm ci`, `npx playwright install chromium` e depois `RUN_BROWSER_TESTS=1 bash tests/run.sh`.
 
-## Reset existing plugins to test the setup wizard
+## Redefinir os plugins existentes para testar o assistente de configuração
 
-Run the reset script on the panel host:
+Rode o script de redefinição no servidor do painel:
 
 ```bash
 sudo bash RESET-PLUGINS.sh reset /var/www/pelican
 ```
 
-It enters maintenance mode, archives and verifies all current panel plugins, moves them outside the active plugins folder, clears panel caches and resets only Simplify's setup-completed flag. Then import the plugin ZIP through Admin → Plugins and click Install. All former panel plugins, including Essentials, stay inactive until restored or reinstalled. Game servers, accounts, eggs, Wings and server files are left in place.
+Ele coloca o painel em modo de manutenção, arquiva e verifica todos os plugins atuais, move-os para fora da pasta de plugins ativos, limpa os caches do painel e redefine apenas o indicador de configuração concluída do Simplify. Depois, importe o ZIP do plugin em Admin → Plugins e clique em Instalar. Todos os plugins anteriores do painel, incluindo o Essentials, ficam inativos até serem restaurados ou reinstalados. Servidores de jogo, contas, eggs, Wings e arquivos dos servidores não são tocados.
 
-The script prints an exact restore command. Keep the backup directory until you have tested the new installation. A failed reset attempts to restore the previous plugin folder and setup state automatically.
+O script exibe o comando exato de restauração. Guarde a pasta de backup até testar a nova instalação. Se a redefinição falhar, ele tenta restaurar automaticamente a pasta de plugins e o estado de configuração anteriores.

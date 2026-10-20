@@ -6,6 +6,8 @@ final class SimplifyProvider extends ServiceProvider
 {
     public function register(): void
     {
+        // lang/<locale>.json, keyed by the English text (see Services\Translations).
+        $this->callAfterResolving('translator', fn ($translator) => $translator->addJsonPath(plugin_path('pelican-simplify', 'lang')));
         $path=plugin_path('pelican-simplify','config/compatibility.json');
         $legacy=is_file($path)?json_decode(file_get_contents($path),true):[];
         foreach(is_array($legacy)?$legacy:[] as $namespace){
@@ -39,16 +41,16 @@ final class SimplifyProvider extends ServiceProvider
             if(\Simplify\Panel\Services\FeatureSettings::enabled('subdomains'))app()->terminating(function()use($uuid):void{try{\Simplify\Panel\Services\Subdomains::forget($uuid);}catch(\Throwable $e){report($e);}});
         });
         \App\Models\User::creating(function():void {
-            if(\Simplify\Panel\Services\FeatureSettings::enabled('restrict_access')) abort_unless(user()?->isAdmin(),403,'Only an administrator can create accounts.');
+            if(\Simplify\Panel\Services\FeatureSettings::enabled('restrict_access')) abort_unless(user()?->isAdmin(),403,__('Only an administrator can create accounts.'));
         });
         foreach(['creating','updating','deleting'] as $event) {
             \App\Models\Subuser::$event(function():void {
-                if(\Simplify\Panel\Services\FeatureSettings::enabled('restrict_access')) abort_unless(user()?->isAdmin(),403,'Only an administrator can change server access.');
+                if(\Simplify\Panel\Services\FeatureSettings::enabled('restrict_access')) abort_unless(user()?->isAdmin(),403,__('Only an administrator can change server access.'));
             });
         }
         foreach(['creating','updating','deleting'] as $event) {
             \App\Models\Schedule::$event(function():void {
-                if(user() && \Simplify\Panel\Services\FeatureSettings::enabled('restrict_access')) abort_unless(user()->isAdmin(),403,'Only an administrator can manage additional scheduled tasks.');
+                if(user() && \Simplify\Panel\Services\FeatureSettings::enabled('restrict_access')) abort_unless(user()->isAdmin(),403,__('Only an administrator can manage additional scheduled tasks.'));
             });
         }
         \Illuminate\Support\Facades\Gate::before(function(\App\Models\User $user,string $ability,array $arguments):?bool{

@@ -1,5 +1,38 @@
 # Changes
 
+## 0.4.2-beta.7-ptbr.8 (fork Majozin/PelicanSimplify, beta channel)
+- docs/INSTALLATION.md and docs/ROADMAP.md in Portuguese (Brazil); the installation notes import this fork's beta build. The README no longer marks them as English. No code changes.
+
+## 0.4.2-beta.7-ptbr.7 (fork Majozin/PelicanSimplify, beta channel)
+- Fixed: the step bar at the top of the server creator ("Server Type", "Version & Content"…) stayed in English. The step names are still saved in English in drafts, so restoring a draft keeps working, and are now translated on screen. `tests/translations.php` checks these names too.
+
+## 0.4.2-beta.7-ptbr.6 (fork Majozin/PelicanSimplify, beta channel)
+- README in Portuguese (Brazil), with a section about this fork, installation from this fork's beta channel and credit to the original project. No code changes.
+
+## 0.4.2-beta.7-ptbr.5 (fork Majozin/PelicanSimplify, beta channel)
+- Interface size settings line up: the three fields have short labels ("Text", "Elements (simple mode)", "Elements (host mode)") so none wraps and pushes its dropdown down, and the automatic option is called "Automatic (window)" so it fits on one line, also in Customize.
+- Fixed: the dashboard and host mode stayed in English for people with Portuguese (or any other language) in their profile. The upstream plugin forced English on the dashboard and on pages embedded in host mode; both now follow the profile language like the rest of Pelican. Two checks that depended on English text were made language independent first (saving the creator draft when its window closes, and reloading after a plugin update notice).
+- Text size in Customize (simple and host mode): each person can pick their own text size on each device, for the whole panel including Pelican's own pages and pages open in host mode. "Panel default" keeps the Appearance setting. It applies at once and to other open tabs.
+
+## 0.4.2-beta.7-ptbr.4 (fork Majozin/PelicanSimplify, beta channel)
+- Portuguese (Brazil) now covers the whole plugin: dashboard and host mode, server creators (Minecraft, modpacks and other games), MOTD editor, People, Plugins, the Steam profile tab and the messages and notifications of the services. Notifications are written in the language of each recipient's profile. Player commands, Wings events and saved wizard step names stay in English internally and are only translated on screen.
+- Element size is set separately for host mode (Appearance → "Default element size (host mode)"), because host mode needs more room than the simple dashboard.
+- Each person can choose their own element size per device in Customize, separately for the simple dashboard and for host mode ("Panel default" follows the admin setting). Host mode now has its own Customize menu for this. The choice applies at once, without a save bar, so it also works on small windows at a large zoom.
+- Fixed: with a large element size on a small window, popups (Customize, confirmations) were taller than the window and their buttons could not be reached. They now always fit the window.
+
+## 0.4.2-beta.7-ptbr.3 (fork Majozin/PelicanSimplify, beta channel)
+- The host mode / simple mode switch sits in the top bar next to "Legacy panel" instead of inside the profile menu, so switching takes one click. It shows for admins on the overview and in host mode (not on a server page, as before); on phones it is in the navigation menu as "Host mode" / "Simple mode".
+
+## 0.4.2-beta.7-ptbr.2 (fork Majozin/PelicanSimplify, beta channel)
+- New Appearance setting "Element size" for the Simplify dashboard and host mode: Automatic (the previous behaviour, which shrinks everything below 1440p: about 79% on a 1080p screen), 100% (no reduction), 110, 125, 150, 175 or 200%. A fixed size is limited to what the window can show (at least a 1280 × 720 layout), so smaller screens never get a horizontal scrollbar or a cut-off overview.
+- Fixed: the save bar of the settings page did not appear after changing a dropdown. Pelican turns every Filament select into a JavaScript select without a `<select>` element, which the save bar did not see; it now reads those selects too (also from the keyboard). This affected every dropdown on the page, including the original ones (font, weight, colour, hosting machines, approved games).
+
+## 0.4.2-beta.7-ptbr.1 (fork Majozin/PelicanSimplify, beta channel)
+- Portuguese (Brazil): Simplify follows the language set in each user's Pelican profile. This release translates the Simplify settings page (all tabs and the setup wizard pages), the system checks, the banner library, the save bar and confirmation dialogs. Other pages follow in later releases; untranslated text stays in English. Translations live in `lang/pt_BR.json`, keyed by the English text, and `tests/translations.php` fails when a translatable text has no translation.
+- New Appearance setting "Interface size" (100, 110, 125 or 150%) makes text larger for everyone, in Simplify and in Pelican's own pages. Simplify's text sizes are scaled when its CSS is served; layouts that fill the window keep fitting.
+- Long names in the server page's section menu wrap to a second line instead of being cut off.
+- Plugin updates are read from this fork (`update_url`), so an upstream release can no longer replace the translated build automatically.
+
 ## 0.4.2-beta.7 (beta channel)
 - New MOTD editor, on the server's settings page and in the creator's Server properties step. You type the two MOTD lines straight into a Minecraft server-list row, in their real colours: select text and pick a colour or bold, italic, underline, strikethrough or obfuscated (the buttons show what the selection already has and switch it on or off); without a selection the choice applies to what you type next. "Show codes" shows and edits the exact text with § codes (& works too).
 - Fixed: the MOTD editor wrote a reset (§r) after every coloured selection, which wiped the colour of the rest of the line; a colour picked after bold removed the bold (in Minecraft a colour code clears formatting); and repeated clicks stacked codes, giving double colours. The codes are now generated from the text and its styles, so they are always minimal and in the right order. An MOTD you do not edit is left exactly as it is.

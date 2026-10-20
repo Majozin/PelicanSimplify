@@ -74,7 +74,7 @@ final class FeatureSettings
             $settings=app(self::class);$settings->loaded=null;$old=$settings->load();
             $next=array_replace($old,array_map(fn($v):bool=>$v===true,array_intersect_key($input,self::definitions())));
             if($complete)$next['setup_completed']=true;
-            if(!Storage::disk('local')->put(self::FILE,json_encode($next,JSON_THROW_ON_ERROR|JSON_PRETTY_PRINT)))throw new \RuntimeException('Could not save Simplify settings.');
+            if(!Storage::disk('local')->put(self::FILE,json_encode($next,JSON_THROW_ON_ERROR|JSON_PRETTY_PRINT)))throw new \RuntimeException(__('Could not save Simplify settings.'));
             $settings->loaded=$next;
         });
     }

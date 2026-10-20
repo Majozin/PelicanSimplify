@@ -50,15 +50,15 @@ final class CloudflareDns
         try {
             $wanted=$this->wanted($uuid,$name,$port,$minecraft);
             foreach($wanted as $w)foreach($this->find(['name.exact'=>$w['name']]) as $other)
-                if(($other['comment']??'')!==self::comment($uuid))return 'A DNS record for '.$w['name'].' already exists and was not created by this panel.';
+                if(($other['comment']??'')!==self::comment($uuid))return __('A DNS record for :name already exists and was not created by this panel.', ['name' => $w['name']]);
             $base='/zones/'.rawurlencode($this->zoneId).'/dns_records';
             foreach(self::diff($wanted,$this->find(['comment.exact'=>self::comment($uuid)])) as [$op,$r]){
                 $body=array_diff_key($r,['id'=>true]);
                 $result=match($op){'create'=>($this->send)('POST',$base,$body),'update'=>($this->send)('PUT',$base.'/'.rawurlencode($r['id']),$body),'delete'=>($this->send)('DELETE',$base.'/'.rawurlencode($r['id']),null)};
-                if(!($result['success']??false))return 'Cloudflare refused to '.$op.' '.$r['name'].': '.self::error($result);
+                if(!($result['success']??false))return __(['create' => 'Cloudflare refused to create :name: :reason', 'update' => 'Cloudflare refused to update :name: :reason'][$op] ?? 'Cloudflare refused to delete :name: :reason', ['name' => $r['name'], 'reason' => self::error($result)]);
             }
             return null;
-        } catch(\Throwable $e) { return 'Cloudflare could not be reached: '.$e->getMessage(); }
+        } catch(\Throwable $e) { return __('Cloudflare could not be reached: :reason', ['reason' => $e->getMessage()]); }
     }
     public function remove(string $uuid): ?string { return $this->sync($uuid,'',0,false); }
     private function find(array $query): array
@@ -67,7 +67,7 @@ final class CloudflareDns
         if(!($result['success']??false))throw new \RuntimeException(self::error($result));
         return array_values(array_filter((array)($result['result']??[]),'is_array'));
     }
-    private static function error(array $result): string { return (string)($result['errors'][0]['message']??'unknown error'); }
+    private static function error(array $result): string { return (string)($result['errors'][0]['message']??__('unknown error')); }
     private static function same(array $w,array $h): bool
     {
         if($w['type']==='SRV')return array_intersect_key((array)($h['data']??[]),$w['data'])==$w['data'];

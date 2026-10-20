@@ -1,40 +1,41 @@
 # Roadmap
 
-Planned work after the 0.3 betas. Scope and order may change.
+Trabalho planejado depois das betas 0.3 do projeto original. Escopo e ordem podem mudar.
 
-## Easy server creator
-A separate add-on next to the **easy Minecraft server creator**.
-- Build a searchable index of games from Pelican's egg sources (the same GitHub index Pelican's *Import egg* dialog uses: Games Standalone, Games SteamCMD, Minecraft, …), so users can search "Valheim" instead of picking an egg.
-- Clicking a game downloads and installs the matching egg automatically for users with the *Install missing eggs* ability (Users & access), then continues with the same guided steps as the Minecraft creator.
-- Keep a small cache of the index; refresh it in the background.
+*Nota deste fork: este é o roadmap do projeto original, escrito na época das betas 0.3. Alguns itens já foram entregues desde então, como o criador fácil de servidor e o modo host. O roadmap mais recente está na seção "Próximos recursos" do [README](../README.md).*
 
-## Server installation overhaul
-- Show one clear state ("Egg initialising…", "Server initialising…") with progress until the server is ready, instead of the start/stop flicker during installation.
-- Accept the Minecraft EULA before the first start (write `eula.txt` as part of installation) so the server does not stop several times first.
+## Criador fácil de servidor
+Um complemento separado, ao lado do **criador fácil de servidor Minecraft**.
+- Montar um índice pesquisável de jogos a partir das fontes de eggs do Pelican (o mesmo índice do GitHub usado pelo diálogo *Importar egg* do Pelican: Games Standalone, Games SteamCMD, Minecraft, …), para que o usuário procure "Valheim" em vez de escolher um egg.
+- Clicar num jogo baixa e instala automaticamente o egg correspondente para usuários com a permissão *Instalar eggs ausentes* (Usuários e acesso) e depois segue com as mesmas etapas guiadas do criador de Minecraft.
+- Manter um cache pequeno do índice e atualizá-lo em segundo plano.
 
-## Simplify as the whole panel
-- Setup wizard option: Simplify replaces the panel. The native (legacy) panel stays reachable under `/legacy`.
-- Optional: switch the legacy panel off completely. Only offered when no other plugins are installed, because other plugins add their pages to Pelican's panels.
-- Depends on the Minecraft plugin installer and mod installers being finished first.
+## Reformulação da instalação de servidores
+- Mostrar um único estado claro ("Iniciando o egg…", "Iniciando o servidor…") com progresso até o servidor ficar pronto, em vez do liga e desliga durante a instalação.
+- Aceitar o EULA do Minecraft antes da primeira inicialização (gravando `eula.txt` durante a instalação), para que o servidor não pare várias vezes antes.
 
-## Host mode
-- Larger hosts (several nodes) can switch to host mode: servers in a compact list per node on the left, Pelican's admin pages as the main workspace.
+## O Simplify como painel inteiro
+- Opção no assistente de configuração: o Simplify substitui o painel. O painel nativo (legado) continua acessível em `/legacy`.
+- Opcional: desligar o painel legado por completo. Só é oferecido quando nenhum outro plugin está instalado, porque outros plugins adicionam páginas aos painéis do Pelican.
+- Depende de o instalador de plugins do Minecraft e os instaladores de mods estarem prontos antes.
 
-## Phone experience
-- Bottom tab bar (Servers, Create, Alerts, Account) and a top bar that collapses on scroll.
-- Full-screen sheets with a drag handle instead of centred popups; the save bar sits above the tab bar.
-- Server page on phones: a status header with large power buttons, swipeable sections (Console, Players, Files, Settings), and a console with a command bar above the keyboard plus quick-command chips.
-- Embedded Pelican pages (files, admin) restyled for narrow screens: one column and 44 px touch targets.
-- Host mode on phones: a node and server switcher instead of three columns.
-- Installable web app (manifest, icons, theme color) and safe-area support for notched phones.
-- Checked with automated phone screenshots (360, 390 and 430 px wide) in the browser tests.
+## Modo host
+- Hospedagens maiores (vários nodes) podem mudar para o modo host: servidores numa lista compacta por node à esquerda e as páginas de administração do Pelican como área de trabalho principal.
 
-## Server page
-- Sticky status bar: name, status, address, players, uptime and the power buttons always in view.
-- Layout per game: console first for modded servers, players first for busy servers; users can reorder or hide tiles.
-- Workspaces (files, backups, settings, players) open as tabs inside the page instead of popups, with a back button and deep links.
-- Console: filter by errors/warnings, search, pause scrolling, and highlighted player joins and crashes.
-- One "needs attention" card: pending restarts, failed backups, outdated software, crash on last start.
-- Activity timeline: recent starts, crashes, backups and changes in one list.
-- Resource graphs with a 1 h / 24 h choice and clear limits.
+## Experiência no celular
+- Barra de abas embaixo (Servidores, Criar, Alertas, Conta) e uma barra superior que se recolhe ao rolar.
+- Telas cheias com alça de arrastar em vez de janelas centralizadas; a barra de salvar fica acima da barra de abas.
+- Página do servidor no celular: um cabeçalho de status com botões de energia grandes, seções que se trocam deslizando (Console, Jogadores, Arquivos, Configurações) e um console com barra de comando acima do teclado e atalhos de comandos rápidos.
+- Páginas embutidas do Pelican (arquivos, administração) reestilizadas para telas estreitas: uma coluna e áreas de toque de 44 px.
+- Modo host no celular: um seletor de node e servidor em vez de três colunas.
+- App web instalável (manifest, ícones, cor do tema) e suporte a área segura para celulares com notch.
+- Verificado com capturas de tela automáticas de celular (360, 390 e 430 px de largura) nos testes de navegador.
 
+## Página do servidor
+- Barra de status fixa: nome, status, endereço, jogadores, tempo ligado e os botões de energia sempre à vista.
+- Layout por jogo: console primeiro para servidores com mods, jogadores primeiro para servidores movimentados; os usuários podem reordenar ou esconder blocos.
+- Áreas de trabalho (arquivos, backups, configurações, jogadores) abrem como abas dentro da página em vez de janelas, com botão de voltar e links diretos.
+- Console: filtrar por erros e avisos, pesquisar, pausar a rolagem, e destacar entradas de jogadores e travamentos.
+- Um único cartão de "precisa de atenção": reinícios pendentes, backups com falha, software desatualizado, travamento na última inicialização.
+- Linha do tempo de atividades: inicializações, travamentos, backups e mudanças recentes numa só lista.
+- Gráficos de recursos com escolha de 1 h / 24 h e limites claros.

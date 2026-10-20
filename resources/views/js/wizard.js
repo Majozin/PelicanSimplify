@@ -1,4 +1,12 @@
 /* Wizard helpers for the server creator (draft autosave) and the first Simplify setup (step navigation). */
+(() => {
+  /** Text in the panel language (core.js); the English text is the key and the fallback. */
+  const t = (text, replace = {}) => {
+    if (typeof window !== 'undefined' && window.Simplify?.t) return window.Simplify.t(text, replace);
+    let out = text;
+    for (const [key, value] of Object.entries(replace || {})) out = out.split(':' + key).join(String(value));
+    return out;
+  };
 
 /**
  * Calls `onChange` when the Filament wizard may have changed step. Livewire 4 can replace the wizard
@@ -20,12 +28,12 @@ window.sscWatchWizardStep = function (root, onChange, fallbackMs) {
 window.sscDraft = function (wire) {
   return {
     deleteConfirm: false, dirty: false, saving: false, editingText: false, switching: false, uploading: false, completed: false,
-    status: 'Draft ready', savedCount: 0, hasSaved: true, refreshCount: 0, revision: 0, savedRevision: 0,
+    status: t('Draft ready'), savedCount: 0, hasSaved: true, refreshCount: 0, revision: 0, savedRevision: 0,
     step: 1, furthestStep: 1, stopWatching: null, saveTimer: null, pending: null,
     init() {
       this.step = Number(wire.draftStep) || 1;
       this.furthestStep = Math.max(this.step, Number(wire.furthestStep) || 1);
-      this.status = wire.draftRestored ? 'Draft restored' : 'Draft ready';
+      this.status = wire.draftRestored ? t('Draft restored') : t('Draft ready');
       this.hasSaved = true;
       // The browser's own leave-page warning is the only dialog a page may not restyle.
       this.unload = (event) => {
@@ -77,7 +85,7 @@ window.sscDraft = function (wire) {
         this.changed();
         await this.flush();
       } catch {
-        this.status = 'Could not switch steps — try again';
+        this.status = t('Could not switch steps — try again');
       } finally {
         this.switching = false;
       }
@@ -118,7 +126,7 @@ window.sscDraft = function (wire) {
       if (this.completed) return;
       this.revision++;
       this.dirty = true;
-      this.status = 'Unsaved changes';
+      this.status = t('Unsaved changes');
     },
     /** Copies deferred (wire:model) field values into Livewire without sending a request on its own. */
     capture() {
@@ -134,7 +142,7 @@ window.sscDraft = function (wire) {
     async flush(force = true) {
       if (this.completed) return;
       if (this.uploading) {
-        this.status = 'Wait for the icon upload to finish';
+        this.status = t('Wait for the icon upload to finish');
         throw Error('Upload still in progress');
       }
       clearTimeout(this.saveTimer);
@@ -147,18 +155,18 @@ window.sscDraft = function (wire) {
       }
       const revision = this.revision;
       this.saving = true;
-      this.status = 'Saving draft…';
+      this.status = t('Saving draft…');
       this.pending = (async () => {
         try {
           await wire.saveDraft(this.currentStep(), Math.max(this.furthestStep, this.currentStep()));
           this.savedRevision = revision;
           this.dirty = this.revision !== revision;
-          this.status = this.dirty ? 'Unsaved changes' : 'Draft saved';
+          this.status = this.dirty ? t('Unsaved changes') : t('Draft saved');
           this.hasSaved = true;
           if (!this.dirty) this.savedCount++;
         } catch (error) {
           this.dirty = true;
-          this.status = 'Draft not saved — try again';
+          this.status = t('Draft not saved — try again');
           throw error;
         } finally {
           this.saving = false;
@@ -182,7 +190,7 @@ window.sscDraft = function (wire) {
           this.deleteConfirm = true;
           return;
         }
-        const ok = await window.Simplify.confirm({ title: 'Discard this draft?', message: 'Everything you filled in for this server is removed. This cannot be undone.', confirmLabel: 'Discard draft', tone: 'danger' });
+        const ok = await window.Simplify.confirm({ title: t('Discard this draft?'), message: t('Everything you filled in for this server is removed. This cannot be undone.'), confirmLabel: t('Discard draft'), tone: 'danger' });
         if (!ok) return;
         this.deleteConfirm = true;
       }
@@ -240,3 +248,4 @@ window.simplifySetupProgress = function () {
     },
   };
 };
+})();

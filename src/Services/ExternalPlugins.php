@@ -109,7 +109,7 @@ final class ExternalPlugins
     public static function catalog(): array
     {
         $list = [];
-        foreach (['admin' => 'Admin', 'server' => 'Server'] as $panelId => $where) {
+        foreach (['admin' => __('Admin'), 'server' => __('Server')] as $panelId => $where) {
             try {
                 $panel = \Filament\Facades\Filament::getPanel($panelId);
             } catch (\Throwable) {

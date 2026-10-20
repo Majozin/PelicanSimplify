@@ -55,7 +55,7 @@ final class PerformanceSettings
         foreach (self::FIELDS as $key => [, , , $min, $max]) $rules[$key] = 'required|integer|min:'.$min.'|max:'.$max;
         $next = self::normalize(validator($input, $rules)->validate());
         Cache::lock('simplify.performance', 10)->block(3, function () use ($next): void {
-            if (!Storage::disk('local')->put(self::FILE, json_encode($next, JSON_THROW_ON_ERROR | JSON_PRETTY_PRINT))) throw new \RuntimeException('Could not save performance settings.');
+            if (!Storage::disk('local')->put(self::FILE, json_encode($next, JSON_THROW_ON_ERROR | JSON_PRETTY_PRINT))) throw new \RuntimeException(__('Could not save performance settings.'));
             app(self::class)->loaded = $next;
         });
     }

@@ -41,7 +41,7 @@ final class ManagedResources
             }
             $node = Node::query()->whereKey($server->node_id)->lockForUpdate()->firstOrFail();
             if (!$node->isViable($payload['memory'] - $server->memory, $payload['disk'] - $server->disk, $payload['cpu'] - $server->cpu)) {
-                throw ValidationException::withMessages(['data.memory_gb' => 'The hosting machine has no room for these resources.']);
+                throw ValidationException::withMessages(['data.memory_gb' => __('The hosting machine has no room for these resources.')]);
             }
             app(BuildModificationService::class)->handle($server, $payload);
         });

@@ -3,9 +3,9 @@
     <div class="ps-alert is-warn ps-conflict-card" role="alert">
         <x-tabler-alert-triangle class="ps-ico" aria-hidden="true" />
         <div>
-            <strong>Simplify's dashboard is switched off: {{ collect($conflicts)->pluck('name')->join(', ', ' and ') }} {{ count($conflicts) === 1 ? 'is' : 'are' }} installed</strong>
+            <strong>{{ trans_choice('Simplify\'s dashboard is switched off: :plugins is installed|Simplify\'s dashboard is switched off: :plugins are installed', count($conflicts), ['plugins' => collect($conflicts)->pluck('name')->join(', ', ' '.__('and').' ')]) }}</strong>
             @foreach($conflicts as $conflict)<small>{{ $conflict['name'] }}: {{ $conflict['reason'] }}</small>@endforeach
-            <small>Everyone gets Pelican's own panel for now. Disable or remove {{ count($conflicts) === 1 ? 'that plugin' : 'those plugins' }} to turn Simplify back on; your Simplify settings are kept.</small>
+            <small>{{ trans_choice('Everyone gets Pelican\'s own panel for now. Disable or remove that plugin to turn Simplify back on; your Simplify settings are kept.|Everyone gets Pelican\'s own panel for now. Disable or remove those plugins to turn Simplify back on; your Simplify settings are kept.', count($conflicts)) }}</small>
         </div>
     </div>
 @endif

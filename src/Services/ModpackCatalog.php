@@ -298,7 +298,7 @@ final class ModpackCatalog
         $version = (string) ($state['modpack_version'] ?? '');
         $parts = self::split($key);
         if (!$parts || !self::pack($key) || !array_key_exists($version, self::versions($key))) {
-            throw ValidationException::withMessages(['data.modpack_project' => 'Choose a valid modpack and server version.']);
+            throw ValidationException::withMessages(['data.modpack_project' => __('Choose a valid modpack and server version.')]);
         }
         [$provider, $id] = $parts;
         $required = match ($provider) {
@@ -308,13 +308,13 @@ final class ModpackCatalog
         };
         foreach ($required as $variable) {
             if (!array_key_exists($variable, $env)) {
-                throw ValidationException::withMessages(['data.egg_id' => 'This pack requires a compatible ' . $provider . ' egg. Import the matching egg first.']);
+                throw ValidationException::withMessages(['data.egg_id' => __('This pack requires a compatible :provider egg. Import the matching egg first.', ['provider' => $provider])]);
             }
         }
         if ($provider === 'technic') {
             $expected = self::pack($key)['egg_name'];
             if (mb_strtolower($egg->name) !== mb_strtolower($expected)) {
-                throw ValidationException::withMessages(['data.egg_id' => 'Import and select the ' . $expected . ' egg for this serverpack.']);
+                throw ValidationException::withMessages(['data.egg_id' => __('Import and select the :egg egg for this serverpack.', ['egg' => $expected])]);
             }
             // Preserve the installed egg's server-build default exactly (including v prefixes).
             return $env;
@@ -328,7 +328,7 @@ final class ModpackCatalog
         }
         if ($provider === 'curseforge') {
             if (self::curseForgeKey() === '' || !array_key_exists('API_KEY', $env)) {
-                throw ValidationException::withMessages(['data.modpack_project' => 'Configure the CurseForge API key and import a compatible CurseForge Generic egg first.']);
+                throw ValidationException::withMessages(['data.modpack_project' => __('Configure the CurseForge API key and import a compatible CurseForge Generic egg first.')]);
             }
             $env['API_KEY'] = self::curseForgeKey();
         }

@@ -101,7 +101,7 @@ final class RoleAccess
         abort_unless(user()?->isRootAdmin(), 403);
         $next = self::normalize($input);
         Cache::lock('simplify.role-access', 10)->block(3, function () use ($next): void {
-            if (!Storage::disk('local')->put(self::FILE, json_encode($next, JSON_THROW_ON_ERROR | JSON_PRETTY_PRINT))) throw new \RuntimeException('Could not save role permissions.');
+            if (!Storage::disk('local')->put(self::FILE, json_encode($next, JSON_THROW_ON_ERROR | JSON_PRETTY_PRINT))) throw new \RuntimeException(__('Could not save role permissions.'));
         });
         app(self::class)->loaded = $next;
     }

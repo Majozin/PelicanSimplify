@@ -839,7 +839,7 @@ body:has(.ps.is-embedded) :is(.fi-main, .fi-page, .fi-main-ctn) { max-width: non
 .ps-server-workspace .ps-widget[aria-current="page"] { border-color: color-mix(in srgb, var(--ps-tone) 45%, transparent); background: color-mix(in srgb, var(--ps-tone) 12%, var(--ps-raised)); }
 .ps-server-workspace .ps-widget-icon { width: 30px; height: 30px; border-radius: 9px; background: color-mix(in srgb, var(--ps-tone, var(--ps-accent)) 18%, transparent); color: var(--ps-tone, var(--ps-accent)); font: 700 12px var(--ps-mono); }
 .ps-server-workspace .ps-widget-icon svg { width: 17px; height: 17px; }
-.ps-server-workspace .ps-widget strong { font-size: 14px; font-weight: 600; -webkit-line-clamp: 1; }
+.ps-server-workspace .ps-widget strong { font-size: 14px; font-weight: 600; -webkit-line-clamp: 2; }
 .ps-server-workspace .ps-widget small { display: none; }
 .ps-server-workspace .ps-console { grid-area: main; min-height: clamp(520px, 68dvh, 820px); view-transition-name: ps-console; }
 .ps-server-workspace .ps-dock { grid-area: main; display: none; min-width: 0; height: clamp(520px, 68dvh, 820px); view-transition-name: ps-dock; }
@@ -993,6 +993,7 @@ span.ps-card-background.ps-banner-color { width: 100%; opacity: .5; filter: none
 .ps-customize { display: grid; gap: 2px; }
 .ps-customize-row, .ps-customize-switch { display: flex; align-items: center; justify-content: space-between; gap: 14px; width: 100%; padding: 10px 0; border: 0; border-top: 1px solid var(--ps-line); background: none; color: var(--ps-ink); text-align: left; }
 .ps-customize-row > div:first-child, .ps-customize-switch > span:first-child { display: grid; gap: 2px; min-width: 0; }
+.ps-scale-select { flex: 0 0 190px; width: 190px; }
 .ps-customize strong { font-size: 13px; font-weight: 650; }
 .ps-customize small { color: var(--ps-muted); font-size: 11.5px; line-height: 1.35; }
 .ps-customize .ps-segmented { flex: none; padding: 3px; border-radius: 10px; }

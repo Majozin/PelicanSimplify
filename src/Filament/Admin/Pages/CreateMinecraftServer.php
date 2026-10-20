@@ -60,6 +60,8 @@ class CreateMinecraftServer extends Page implements HasForms
     protected static string|BackedEnum|null $navigationIcon = TablerIcon::Server2;
     protected static ?string $navigationLabel = 'Create server';
     protected static ?string $title = 'Create server';
+    public function getTitle(): string|\Illuminate\Contracts\Support\Htmlable { return __(static::$title); }
+    public static function getNavigationLabel(): string { return __(static::$navigationLabel); }
     protected static ?string $slug = 'simple-server-creator';
     protected static bool $shouldRegisterNavigation = false;
     protected string $view = 'pelican-simplify::filament.admin.create-server';
@@ -115,8 +117,8 @@ class CreateMinecraftServer extends Page implements HasForms
             $this->draftStep = max(1,min(count($this->wizardStepLabels()),$step));
             $this->furthestStep=max($this->furthestStep,$this->draftStep,min(count($this->wizardStepLabels()),$furthestStep));
             $json = json_encode(['state' => $clean($state), 'step' => $this->draftStep, 'advanced' => $this->editingAdvanced, 'icon' => $this->draftIcon, 'wizard_version'=>4,'wizard_steps'=>$this->wizardStepLabels(),'furthest_step'=>$this->furthestStep], JSON_THROW_ON_ERROR);
-            if (strlen($json) > 1048576) throw new \RuntimeException('Draft is too large to save.');
-            if (!$disk->put($this->draftPath(), \Illuminate\Support\Facades\Crypt::encryptString($json))) throw new \RuntimeException('Could not save draft.');
+            if (strlen($json) > 1048576) throw new \RuntimeException(__('Draft is too large to save.'));
+            if (!$disk->put($this->draftPath(), \Illuminate\Support\Facades\Crypt::encryptString($json))) throw new \RuntimeException(__('Could not save draft.'));
             return true;
         });
     }
@@ -140,7 +142,7 @@ class CreateMinecraftServer extends Page implements HasForms
     {
         $this->draftCompleted = true;
         \Illuminate\Support\Facades\Cache::lock('ssc-draft-' . user()->id, 10)->block(5, function (): void {
-            if (!Storage::disk('local')->put($this->draftPath(), \Illuminate\Support\Facades\Crypt::encryptString(json_encode(['completed_at' => microtime(true)], JSON_THROW_ON_ERROR)))) throw new \RuntimeException('Could not clear the saved draft.');
+            if (!Storage::disk('local')->put($this->draftPath(), \Illuminate\Support\Facades\Crypt::encryptString(json_encode(['completed_at' => microtime(true)], JSON_THROW_ON_ERROR)))) throw new \RuntimeException(__('Could not clear the saved draft.'));
         });
         $this->dispatch('ssc-draft-completed');
     }
@@ -161,7 +163,7 @@ class CreateMinecraftServer extends Page implements HasForms
             ? OtherGameCatalog::selected($this->data['game_egg_id'] ?? null)
             : EggInstaller::ensure($this->data ?? []);
         if (!$egg) {
-            throw ValidationException::withMessages(['data.game_egg_id' => 'Select an available game.']);
+            throw ValidationException::withMessages(['data.game_egg_id' => __('Select an available game.')]);
         }
         if ($select || empty($this->data['egg_id'])) {
             $this->data['egg_id'] = $egg->id;
@@ -309,7 +311,7 @@ class CreateMinecraftServer extends Page implements HasForms
             }
         } catch (Throwable $exception) {
             report($exception);
-            Notification::make()->title('Draft could not be restored')->warning()->send();
+            Notification::make()->title(__('Draft could not be restored'))->warning()->send();
         }
         if (empty($this->data['server_color'])) $this->data['server_color']=\Simplify\Panel\Services\ServerAppearance::defaultColor();
     }
@@ -375,7 +377,7 @@ class CreateMinecraftServer extends Page implements HasForms
             try {
                 $values[$name] = \Simplify\Panel\Services\SteamAccount::createTokenForGame(user(), (string) $egg->name, trim((string) ($state['name'] ?? '')) ?: (string) $egg->name);
             } catch (ValidationException $exception) {
-                throw ValidationException::withMessages(['data.game_variables.'.$name => 'No Steam token could be created: '.collect($exception->errors())->flatten()->first().' Paste a token yourself or try again.']);
+                throw ValidationException::withMessages(['data.game_variables.'.$name => __('No Steam token could be created: :reason Paste a token yourself or try again.', ['reason' => collect($exception->errors())->flatten()->first()])]);
             }
         }
         return $values;
@@ -418,7 +420,7 @@ class CreateMinecraftServer extends Page implements HasForms
     {
         if (($this->creationGame ?: ($this->data['game'] ?? '')) !== 'other') return;
         $egg = \Simplify\Panel\Services\GameCatalog::resolve($this->data['game_key'] ?? null);
-        if (!$egg) throw ValidationException::withMessages(['data.game_key' => 'Choose a game.']);
+        if (!$egg) throw ValidationException::withMessages(['data.game_key' => __('Choose a game.')]);
         $changed = (int) ($this->data['game_egg_id'] ?? 0) !== (int) $egg->id;
         $this->data['game_key'] = 'egg:'.$egg->id;
         $this->data['game_egg_id'] = $egg->id;
@@ -436,12 +438,12 @@ class CreateMinecraftServer extends Page implements HasForms
             ->components([
                 Hidden::make('game')->default(fn () => $this->creationGame ?: 'minecraft')->visible(fn () => $this->creationGame!=='')->required()->in(fn () => [$this->creationGame ?: 'minecraft']),
                 Wizard::make([
-                    ...($this->creationGame==='minecraft' ? [] : [Step::make('Game')->afterValidation(fn () => $this->installSelectedGame())->schema([
+                    ...($this->creationGame==='minecraft' ? [] : [Step::make('Game')->label(__('Game'))->afterValidation(fn () => $this->installSelectedGame())->schema([
                         Radio::make('game')->hiddenLabel()->extraAttributes(['class' => 'ssc-game-options'])->visible(fn () => $this->creationGame==='')
                             ->view('pelican-simplify::filament.admin.card-radio')
-                            ->options(fn () => $this->creationGame!=='' ? [$this->creationGame=>$this->creationGame==='minecraft'?'Minecraft':'Other game'] : (CreatorAccess::admin() || CreatorAccess::settings()['minecraft_enabled']
-                                ? ['minecraft' => 'Minecraft', 'other' => 'Other game'] : ['other' => 'Other game']))
-                            ->descriptions(['minecraft' => 'Vanilla, plugins or a modpack.', 'other' => 'Search the games available on this panel.'])
+                            ->options(fn () => $this->creationGame!=='' ? [$this->creationGame=>$this->creationGame==='minecraft'?'Minecraft':__('Other game')] : (CreatorAccess::admin() || CreatorAccess::settings()['minecraft_enabled']
+                                ? ['minecraft' => 'Minecraft', 'other' => __('Other game')] : ['other' => __('Other game')]))
+                            ->descriptions(['minecraft' => __('Vanilla, plugins or a modpack.'), 'other' => __('Search the games available on this panel.')])
                             ->required()->in(fn () => $this->creationGame!==''?[$this->creationGame]:['minecraft','other'])->live()->columns(2)
                             ->afterStateUpdated(function ($state, Set $set): void {
                                 $set('game_egg_id', null);
@@ -456,13 +458,13 @@ class CreateMinecraftServer extends Page implements HasForms
                                 $set('startup', '');
                             }),
                         // Installed games and the Pelican egg index in one searchable grid; an index game is installed on Next.
-                        \Filament\Forms\Components\ViewField::make('game_key')->label('Find a game')
+                        \Filament\Forms\Components\ViewField::make('game_key')->label(__('Find a game'))
                             ->view('pelican-simplify::filament.admin.game-picker')
                             ->viewData(fn () => ['cards' => ($this->creationGame ?: ($this->data['game'] ?? '')) === 'other' ? \Simplify\Panel\Services\GameCatalog::cards() : []])
                             ->live()
                             ->required(fn (Get $get) => ($this->creationGame ?: $get('game')) === 'other')
                             ->visible(fn (Get $get) => ($this->creationGame ?: $get('game')) === 'other')
-                            ->validationMessages(['required' => 'Choose a game.'])
+                            ->validationMessages(['required' => __('Choose a game.')])
                             ->afterStateUpdated(function ($state, Set $set): void {
                                 $id = is_string($state) && str_starts_with($state, 'egg:') ? (int) substr($state, 4) : null;
                                 $set('game_egg_id', $id);
@@ -473,21 +475,21 @@ class CreateMinecraftServer extends Page implements HasForms
                             }),
                         Hidden::make('game_egg_id'),
                     ])]),
-                    Step::make('Type')
-                        ->label(fn () => $this->creationGame === 'other' ? 'Server' : 'Server Type')
+                    Step::make('Type')->label(__('Type'))
+                        ->label(fn () => $this->creationGame === 'other' ? __('Server') : __('Server Type'))
                         ->schema([
                             Radio::make('server_type')
-                                ->label('Server type')->hiddenLabel()->visible(fn (Get $get) => ($this->creationGame ?: $get('game')) === 'minecraft')
+                                ->label(__('Server type'))->hiddenLabel()->visible(fn (Get $get) => ($this->creationGame ?: $get('game')) === 'minecraft')
                                 ->view('pelican-simplify::filament.admin.card-radio')
                                 ->options([
                                     'vanilla' => 'Vanilla',
                                     'plus' => 'Vanilla+',
-                                    'modded' => 'Modded',
+                                    'modded' => __('Modded'),
                                 ])
                                 ->descriptions([
-                                    'vanilla' => 'Classic Minecraft. No mods or plugins.',
-                                    'plus' => 'Paper server with plugin support.',
-                                    'modded' => 'Install a complete Minecraft modpack.',
+                                    'vanilla' => __('Classic Minecraft. No mods or plugins.'),
+                                    'plus' => __('Paper server with plugin support.'),
+                                    'modded' => __('Install a complete Minecraft modpack.'),
                                 ])
                                 ->columns(['default' => 1, 'md' => 3])
                                 ->extraAttributes(['class' => 'ssc-card-options ssc-type-options'])
@@ -509,15 +511,15 @@ class CreateMinecraftServer extends Page implements HasForms
                                     $set('disk_mb', $disk); $set('disk_choice', (string) $disk);
                                 }),
                             TextInput::make('name')
-                                ->label('Server name')
+                                ->label(__('Server name'))
                                 ->required()->maxLength(255)
                                 ->live(onBlur: true, condition: fn () => \Simplify\Panel\Services\Subdomains::active())
                                 ->afterStateUpdated(fn ($state, $old, Set $set, Get $get) => $this->suggestSubdomain((string) $state, (string) $old, $set, $get))
                                 ->placeholder(fn()=>$this->nameExample)
-                                ->helperText('This name is used by the server and dashboard.')
+                                ->helperText(__('This name is used by the server and dashboard.'))
                                 ->suffixAction(
                                     Action::make('random_name')
-                                        ->tooltip('Generate a random server name')
+                                        ->tooltip(__('Generate a random server name'))
                                         ->extraAttributes(['x-on:click' => 'refreshCount++'])
                                         ->icon('tabler-dice-5')
                                         ->action(function (Set $set, Get $get): void {
@@ -526,7 +528,7 @@ class CreateMinecraftServer extends Page implements HasForms
                                             $this->suggestSubdomain($name, $old, $set, $get);
                                         })
                                 ),
-                            TextInput::make('requested_subdomain')->label('Subdomain (optional)')
+                            TextInput::make('requested_subdomain')->label(__('Subdomain (optional)'))
                                 ->visible(fn () => \Simplify\Panel\Services\Subdomains::active())
                                 ->suffix(fn () => '.'.\Simplify\Panel\Services\Subdomains::settings()['domain'])
                                 ->maxLength(63)->placeholder(fn () => strtolower(preg_replace('/[^a-z0-9-]+/i', '', (string) $this->nameExample)) ?: 'oak')
@@ -534,28 +536,28 @@ class CreateMinecraftServer extends Page implements HasForms
                                 ->rules([fn (): \Closure => function (string $attribute, $value, \Closure $fail): void {
                                     if ($error = \Simplify\Panel\Services\Subdomains::check(strtolower(trim((string) $value)))) $fail($error);
                                 }])
-                                ->helperText('Players join with this address. It follows the server name until you change it; leave empty to use the port address.'),
+                                ->helperText(__('Players join with this address. It follows the server name until you change it; leave empty to use the port address.')),
                             View::make('pelican-simplify::filament.admin.server-colors'),
                             Hidden::make('server_color')->nullable()->rule('regex:/^#[0-9a-fA-F]{6}$/'),
                             // Steam banner and icon for other games, when the store has a match (looked up once, cached).
-                            \Filament\Forms\Components\Toggle::make('steam_art')->label('Use the Steam banner and icon')->default(true)
-                                ->helperText(fn () => ($art = $this->steamArt()) ? 'Found on Steam: '.$art['name'].'. Copied once to this panel; you can change it later in the server settings.' : null)
+                            \Filament\Forms\Components\Toggle::make('steam_art')->label(__('Use the Steam banner and icon'))->default(true)
+                                ->helperText(fn () => ($art = $this->steamArt()) ? __('Found on Steam: :name. Copied once to this panel; you can change it later in the server settings.', ['name' => $art['name']]) : null)
                                 ->visible(fn () => $this->creationGame === 'other' && $this->steamArt() !== null),
                             View::make('pelican-simplify::filament.admin.steam-art-preview')
                                 ->viewData(fn () => ['art' => $this->steamArt()])
                                 ->visible(fn (Get $get) => $this->creationGame === 'other' && $get('steam_art') && $this->steamArt() !== null),
-                            TextInput::make('server_alias')->label('Server alias (optional)')
-                                ->maxLength(100)->placeholder('Optional internal reference')
-                                ->helperText('Internal reference only. The dashboard uses Server name.'),
+                            TextInput::make('server_alias')->label(__('Server alias (optional)'))
+                                ->maxLength(100)->placeholder(__('Optional internal reference'))
+                                ->helperText(__('Internal reference only. The dashboard uses Server name.')),
                             Select::make('node_id')
-                                ->label('Node')->required()->searchable()->live()->dehydratedWhenHidden()
+                                ->label(__('Node'))->required()->searchable()->live()->dehydratedWhenHidden()
                                 ->options(fn () => $this->memo('node-options', fn () => CreatorAccess::nodes()->pluck('name', 'id')->all()))
                                 ->visible(fn () => $this->multipleNodes())
                                 ->afterStateUpdated(function ($state, Set $set): void {
                                     $set('allocation_id', Node::find($state)?->allocations()->whereNull('server_id')->orderBy('id')->value('id'));
                                 }),
                             Select::make('allocation_id')
-                                ->dehydratedWhenHidden()->label('Port / allocation')->visible(fn () => $this->multipleNodes())
+                                ->dehydratedWhenHidden()->label(__('Port / allocation'))->visible(fn () => $this->multipleNodes())
                                 ->required()->searchable()
                                 // Also built when hidden (single node): Select validates the auto-picked allocation against these options.
                                 ->options(fn (Get $get) => $this->memo('allocations-'.$get('node_id'), fn () => Allocation::query()
@@ -564,7 +566,7 @@ class CreateMinecraftServer extends Page implements HasForms
                                     ->get()->mapWithKeys(fn (Allocation $allocation) => [
                                         $allocation->id => $allocation->address ?? ($allocation->ip . ':' . $allocation->port),
                                     ])->all()))
-                                ->helperText('Only free allocations are shown. Create an allocation under Nodes if this is empty.'),
+                                ->helperText(__('Only free allocations are shown. Create an allocation under Nodes if this is empty.')),
                             Hidden::make('owner_id'),
                         ])->columns(1)
                         ->afterValidation(function (): void {
@@ -572,19 +574,19 @@ class CreateMinecraftServer extends Page implements HasForms
                                 $this->prepareEgg();
                             }
                         }),
-                    Step::make('Content')
-                        ->label(fn () => $this->creationGame === 'other' ? 'Game settings' : 'Version & Content')
+                    Step::make('Content')->label(__('Content'))
+                        ->label(fn () => $this->creationGame === 'other' ? __('Game settings') : __('Version & Content'))
                         ->schema([
-                            Section::make('Minecraft content')->visible(fn (Get $get) => ($this->creationGame ?: $get('game')) === 'minecraft')->schema([
+                            Section::make(__('Minecraft content'))->visible(fn (Get $get) => ($this->creationGame ?: $get('game')) === 'minecraft')->schema([
                             Select::make('minecraft_version')
-                                ->label('Minecraft version')
+                                ->label(__('Minecraft version'))
                                 ->searchable()->required(fn (Get $get) => $get('server_type') !== 'modded')
                                 ->options(fn () => $this->memo('minecraft-versions', fn () => MinecraftCatalog::versions()))
                                 ->visible(fn (Get $get) => $get('server_type') !== 'modded')
-                                ->helperText('Your chosen egg downloads this Minecraft version during installation.'),
+                                ->helperText(__('Your chosen egg downloads this Minecraft version during installation.')),
                             Hidden::make('modpack_search')->dehydrated(false),
                             Radio::make('modpack_project')
-                                ->label('Find a modpack')
+                                ->label(__('Find a modpack'))
                                 ->view('pelican-simplify::filament.admin.modpack-picker')
                                 ->options(fn (Get $get) => collect(ModpackCatalog::results($get('modpack_search'), $get('modpack_project')))->pluck('title', 'key')->all())
                                 ->live()->required(fn (Get $get) => $get('server_type') === 'modded')
@@ -593,105 +595,105 @@ class CreateMinecraftServer extends Page implements HasForms
                                     $set('modpack_version', null);
                                     $set('egg_id', ModpackCatalog::egg($state)?->id);
                                 })
-                                ->helperText('Modrinth, FTB and supported Technic serverpacks in one list. CurseForge appears when an API key is configured.'),
+                                ->helperText(__('Modrinth, FTB and supported Technic serverpacks in one list. CurseForge appears when an API key is configured.')),
                             Select::make('modpack_version')
-                                ->label('Modpack version')
-                                ->options(fn (Get $get) => ModpackCatalog::versions($get('modpack_project')))
+                                ->label(__('Modpack version'))
+                                ->options(fn (Get $get) => array_map(fn ($label) => __($label), ModpackCatalog::versions($get('modpack_project'))))
                                 ->searchable()->required(fn (Get $get) => $get('server_type') === 'modded')
                                 ->visible(fn (Get $get) => $get('server_type') === 'modded')
-                                ->helperText('The pack determines the Minecraft and modloader versions.'),
-                            Section::make('Vanilla+ / Paper')
-                                ->description('SSC will install Paper using your selected Minecraft version. Automatic browsing and installation of individual plugins is not included in this first test version.')
+                                ->helperText(__('The pack determines the Minecraft and modloader versions.')),
+                            Section::make(__('Vanilla+ / Paper'))
+                                ->description(__('SSC will install Paper using your selected Minecraft version. Automatic browsing and installation of individual plugins is not included in this first test version.'))
                                 ->visible(fn (Get $get) => $get('server_type') === 'plus'),
                             ]),
-                            Section::make('Game settings')->visible(fn (Get $get) => ($this->creationGame ?: $get('game')) === 'other')
-                                ->description(fn (Get $get) => OtherGameCatalog::selected($get('game_egg_id'))?->description ?? 'Choose a game first.')
+                            Section::make(__('Game settings'))->visible(fn (Get $get) => ($this->creationGame ?: $get('game')) === 'other')
+                                ->description(fn (Get $get) => OtherGameCatalog::selected($get('game_egg_id'))?->description ?? __('Choose a game first.'))
                                 ->schema(function (Get $get): array {
                                     $egg = OtherGameCatalog::selected($get('game_egg_id'));
                                     if (!$egg) return [];
                                     [$main, $advanced] = OtherGameCatalog::fields($egg);
                                     return [
                                         \Filament\Schemas\Components\Grid::make(2)->schema($main),
-                                        ...($advanced ? [Section::make('Advanced')->description('Install and Steam options; the defaults work for most servers.')->collapsible()->collapsed()->schema([\Filament\Schemas\Components\Grid::make(2)->schema($advanced)])] : []),
+                                        ...($advanced ? [Section::make(__('Advanced'))->description(__('Install and Steam options; the defaults work for most servers.'))->collapsible()->collapsed()->schema([\Filament\Schemas\Components\Grid::make(2)->schema($advanced)])] : []),
                                     ];
                                 }),
-                            Section::make('Resources')->description('Starting values follow your server type. Choose a preset or enter your own allocation.')->schema([
+                            Section::make(__('Resources'))->description(__('Starting values follow your server type. Choose a preset or enter your own allocation.'))->schema([
                             self::liveForVisibility(Radio::make('ram_gb')
                                 ->view('pelican-simplify::filament.admin.card-radio')
                                 ->label('RAM')
-                                ->options(['2' => '2 GB', '4' => '4 GB', '8' => '8 GB', '12' => '12 GB', 'custom' => 'Custom'])
-                                ->descriptions(['2' => 'Small worlds', '4' => 'Everyday play', '8' => 'More headroom', '12' => 'Larger modpacks', 'custom' => 'Choose your own'])
+                                ->options(['2' => '2 GB', '4' => '4 GB', '8' => '8 GB', '12' => '12 GB', 'custom' => __('Custom')])
+                                ->descriptions(['2' => __('Small worlds'), '4' => __('Everyday play'), '8' => __('More headroom'), '12' => __('Larger modpacks'), 'custom' => __('Choose your own')])
                                 ->extraAttributes(['class' => 'ssc-ram-options'])
                                 ->required()),
                             self::showWhen(TextInput::make('ram_custom_gb')
-                                ->label('Custom RAM in GB')
+                                ->label(__('Custom RAM in GB'))
                                 ->numeric()->minValue(1)->maxValue(fn () => CreatorAccess::admin() ? 128 : max(1, (int) floor(CreatorAccess::settings()['max_memory_mb'] / 1024)))->step(1)
                                 ->required(fn (Get $get) => $get('ram_gb') === 'custom'),
                                 "\$get('ram_gb') === 'custom'", fn (Get $get) => $get('ram_gb') === 'custom'),
                             // Presets fill the custom fields on every request (see syncResourceChoices); no round trip per click.
-                            self::liveForVisibility(Radio::make('cpu_choice')->label('CPU allocation')
+                            self::liveForVisibility(Radio::make('cpu_choice')->label(__('CPU allocation'))
                                 ->view('pelican-simplify::filament.admin.card-radio')->extraAttributes(['class'=>'ssc-ram-options'])
                                 ->options(fn (Get $get) => $this->resourceOptions('cpu', $get('server_type')))
                                 ->default(fn (Get $get) => (string) $get('cpu'))->required()),
-                            self::showWhen(TextInput::make('cpu')->label('Custom CPU (%)')->integer()->minValue(CreatorAccess::admin() ? 0 : 1)
+                            self::showWhen(TextInput::make('cpu')->label(__('Custom CPU (%)'))->integer()->minValue(CreatorAccess::admin() ? 0 : 1)
                                 ->maxValue(fn () => CreatorAccess::admin() ? 1600 : (int) CreatorAccess::settings()['max_cpu'])
                                 ->required()->dehydratedWhenHidden()
-                                ->helperText('100% = one CPU core; administrators may use 0 for unlimited.'),
+                                ->helperText(__('100% = one CPU core; administrators may use 0 for unlimited.')),
                                 "\$get('cpu_choice') === 'custom'", fn (Get $get) => $get('cpu_choice') === 'custom', true),
-                            self::liveForVisibility(Radio::make('disk_choice')->label('Disk allocation')
+                            self::liveForVisibility(Radio::make('disk_choice')->label(__('Disk allocation'))
                                 ->view('pelican-simplify::filament.admin.card-radio')->extraAttributes(['class'=>'ssc-ram-options'])
                                 ->options(fn (Get $get) => $this->resourceOptions('disk_mb', $get('server_type')))
                                 ->default(fn (Get $get) => (string) $get('disk_mb'))->required()),
-                            self::showWhen(TextInput::make('disk_mb')->label('Custom disk (MB)')->integer()->minValue(1024)
+                            self::showWhen(TextInput::make('disk_mb')->label(__('Custom disk (MB)'))->integer()->minValue(1024)
                                 ->maxValue(fn () => CreatorAccess::admin() ? 10485760 : (int) CreatorAccess::settings()['max_disk_mb'])
                                 ->required()->dehydratedWhenHidden(),
                                 "\$get('disk_choice') === 'custom'", fn (Get $get) => $get('disk_choice') === 'custom', true),
                             ]),
                         ])
                         ->afterValidation(fn () => $this->prepareEgg()),
-                    Step::make('Server properties')->visible(fn () => $this->creationGame !== 'other')
+                    Step::make('Server properties')->label(__('Server properties'))->visible(fn () => $this->creationGame !== 'other')
                         ->schema([
-                            Section::make('Server properties')->visible(fn (Get $get) => ($this->creationGame ?: $get('game')) === 'minecraft')
-                                ->description('Set common Minecraft options before creation. Applied after installation; other installer settings are preserved.')
+                            Section::make(__('Server properties'))->visible(fn (Get $get) => ($this->creationGame ?: $get('game')) === 'minecraft')
+                                ->description(__('Set common Minecraft options before creation. Applied after installation; other installer settings are preserved.'))
                                 ->schema([
-                                    Toggle::make('properties_enabled')->label('Apply these settings')->columnSpanFull(),
-                                    TextInput::make('max_players')->label('Maximum players')->integer()->minValue(1)->maxValue(1000)->required(),
+                                    Toggle::make('properties_enabled')->label(__('Apply these settings'))->columnSpanFull(),
+                                    TextInput::make('max_players')->label(__('Maximum players'))->integer()->minValue(1)->maxValue(1000)->required(),
                                     \Filament\Forms\Components\ViewField::make('motd')->label('MOTD')->view('pelican-simplify::filament.admin.motd-field')->required()->rules(['string', 'max:512'])->columnSpanFull(),
-                                    Select::make('difficulty')->options(['peaceful' => 'Peaceful', 'easy' => 'Easy', 'normal' => 'Normal', 'hard' => 'Hard'])->required(),
-                                    Select::make('gamemode')->options(['survival' => 'Survival', 'creative' => 'Creative', 'adventure' => 'Adventure', 'spectator' => 'Spectator'])->required(),
-                                    TextInput::make('view_distance')->label('View distance (chunks)')->integer()->minValue(2)->maxValue(32)->required(),
-                                    TextInput::make('spawn_protection')->label('Spawn protection (blocks)')->integer()->minValue(0)->maxValue(1000)->required(),
+                                    Select::make('difficulty')->label(__('Difficulty'))->options(['peaceful' => __('Peaceful'), 'easy' => __('Easy'), 'normal' => __('Normal'), 'hard' => __('Hard')])->required(),
+                                    Select::make('gamemode')->label(__('Game mode'))->options(['survival' => __('Survival'), 'creative' => __('Creative'), 'adventure' => __('Adventure'), 'spectator' => __('Spectator')])->required(),
+                                    TextInput::make('view_distance')->label(__('View distance (chunks)'))->integer()->minValue(2)->maxValue(32)->required(),
+                                    TextInput::make('spawn_protection')->label(__('Spawn protection (blocks)'))->integer()->minValue(0)->maxValue(1000)->required(),
                                     Toggle::make('pvp')->label('PvP'),
-                                    Toggle::make('white_list')->label('Whitelist')->helperText('Players must be added to the whitelist after creation.'),
-                                    Toggle::make('allow_flight')->label('Allow flight'),
+                                    Toggle::make('white_list')->label(__('Whitelist'))->helperText(__('Players must be added to the whitelist after creation.')),
+                                    Toggle::make('allow_flight')->label(__('Allow flight')),
                                 ])->columns(2),
-                            Radio::make('icon_source')->label('Server icon')
-                                ->options(['modpack' => 'Modpack icon', 'upload' => 'Upload your own'])
-                                ->descriptions(['modpack' => 'Shown in the multiplayer list.', 'upload' => 'A 64 × 64 PNG of your choice.'])
+                            Radio::make('icon_source')->label(__('Server icon'))
+                                ->options(['modpack' => __('Modpack icon'), 'upload' => __('Upload your own')])
+                                ->descriptions(['modpack' => __('Shown in the multiplayer list.'), 'upload' => __('A 64 × 64 PNG of your choice.')])
                                 ->default('modpack')->live()
                                 ->view('pelican-simplify::filament.admin.card-radio')
                                 ->visible(fn (Get $get) => $this->usesModpackIcon($get, true)),
-                            FileUpload::make('server_icon')->label(fn (Get $get) => $this->usesModpackIcon($get, true) ? 'Your server icon' : 'Server icon (optional)')
+                            FileUpload::make('server_icon')->label(fn (Get $get) => $this->usesModpackIcon($get, true) ? __('Your server icon') : __('Server icon (optional)'))
                                 ->visible(fn (Get $get) => ($this->creationGame ?: $get('game')) === 'minecraft' && !$this->usesModpackIcon($get))
                                 ->image()->acceptedFileTypes(['image/png'])->maxSize(100)
                                 ->imageResizeMode('cover')->imageResizeTargetWidth('64')->imageResizeTargetHeight('64')
                                 ->imageEditor()->imageEditorAspectRatios(['1:1'])->storeFiles(false)
-                                ->helperText('PNG, 64 × 64 pixels, up to 100 KB. Uploaded as server-icon.png after installation.'),
+                                ->helperText(__('PNG, 64 × 64 pixels, up to 100 KB. Uploaded as server-icon.png after installation.')),
                         ]),
                     ... (\Simplify\Panel\Services\Extensions::webAdapter()?->creatorSteps($this) ?? []),
-                    Step::make('Backups')->visible(fn()=>\Simplify\Panel\Services\FeatureSettings::enabled('backups'))->schema([
+                    Step::make('Backups')->label(__('Backups'))->visible(fn()=>\Simplify\Panel\Services\FeatureSettings::enabled('backups'))->schema([
                         View::make('pelican-simplify::filament.admin.backup-defaults')->columnSpanFull(),
-                        self::liveForVisibility(Toggle::make('change_backup_schedule')->label('Change backup schedule')->default(false)
+                        self::liveForVisibility(Toggle::make('change_backup_schedule')->label(__('Change backup schedule'))->default(false)
                             ->visible(fn () => user()?->isRootAdmin())),
-                        self::showWhen(TextInput::make('backup_interval_minutes')->label('Interval (minutes)')->integer()->minValue(30)->maxValue(10080)->required(),
+                        self::showWhen(TextInput::make('backup_interval_minutes')->label(__('Interval (minutes)'))->integer()->minValue(30)->maxValue(10080)->required(),
                             "\$get('change_backup_schedule')", fn (Get $get) => $get('change_backup_schedule')),
-                        self::showWhen(TextInput::make('backup_retention')->label('Recovery points')->integer()->minValue(1)->maxValue(100)->required(),
+                        self::showWhen(TextInput::make('backup_retention')->label(__('Recovery points'))->integer()->minValue(1)->maxValue(100)->required(),
                             "\$get('change_backup_schedule')", fn (Get $get) => $get('change_backup_schedule')),
                     ]),
-                    Step::make('Review')
+                    Step::make('Review')->label(__('Review'))
                         ->schema([
                             View::make('pelican-simplify::filament.admin.overview')->columnSpanFull(),
-                            Checkbox::make('accept_eula')->label('I accept the Minecraft EULA')->default(false)
+                            Checkbox::make('accept_eula')->label(__('I accept the Minecraft EULA'))->default(false)
                                 ->visible(fn (Get $get) => ($this->creationGame ?: $get('game'))==='minecraft')
                                 ->accepted(fn (Get $get) => ($this->creationGame ?: $get('game'))==='minecraft')
                                 ->helperText(new HtmlString('<a href="https://www.minecraft.net/en-us/eula" target="_blank" rel="noopener noreferrer">Read the Minecraft EULA</a>'))
@@ -700,34 +702,34 @@ class CreateMinecraftServer extends Page implements HasForms
                                 ->columnSpanFull()
                                 ->schema([
                                     Select::make('egg_id')
-                                        ->dehydratedWhenHidden()->label('Egg')->visible(fn () => CreatorAccess::admin())
+                                        ->dehydratedWhenHidden()->label(__('Egg'))->visible(fn () => CreatorAccess::admin())
                                         ->options(fn () => $this->memo('eggs', fn () => Egg::query()->orderBy('name')->pluck('name', 'id')->all()))
                                         ->searchable()->required()
-                                        ->helperText('Automatically chosen and imported if missing. Existing eggs are kept. Only change if you know what you are doing.'),
+                                        ->helperText(__('Automatically chosen and imported if missing. Existing eggs are kept. Only change if you know what you are doing.')),
                                     Select::make('java_version')->visible(fn (Get $get) => CreatorAccess::admin() && ($this->creationGame ?: $get('game')) === 'minecraft')->dehydratedWhenHidden()
-                                        ->label('Java version')
+                                        ->label(__('Java version'))
                                         ->options(['auto' => 'Automatic (recommended)', '8' => 'Java 8', '11' => 'Java 11', '16' => 'Java 16', '17' => 'Java 17', '21' => 'Java 21', '25' => 'Java 25'])
                                         ->required()
-                                        ->helperText('Chosen automatically from Minecraft / the selected modpack. Override for packs with special requirements.'),
+                                        ->helperText(__('Chosen automatically from Minecraft / the selected modpack. Override for packs with special requirements.')),
                                     TextInput::make('image')->visible(fn () => CreatorAccess::admin())
-                                        ->label('Docker image override')
-                                        ->placeholder('Empty = automatic Java image')
-                                        ->helperText('Optional. A custom image takes priority over the Java selector.'),
+                                        ->label(__('Docker image override'))
+                                        ->placeholder(__('Empty = automatic Java image'))
+                                        ->helperText(__('Optional. A custom image takes priority over the Java selector.')),
                                     Textarea::make('startup')->visible(fn () => CreatorAccess::admin())
-                                        ->label('Startup command override')
-                                        ->placeholder('Empty = default startup from egg'),
+                                        ->label(__('Startup command override'))
+                                        ->placeholder(__('Empty = default startup from egg')),
                                     KeyValue::make('environment_overrides')->visible(fn () => CreatorAccess::admin())
-                                        ->label('Egg variable overrides')
-                                        ->keyLabel('Environment variable')
-                                        ->valueLabel('Value')
-                                        ->helperText('Optional. Names must match the variables configured in your egg first.'),
+                                        ->label(__('Egg variable overrides'))
+                                        ->keyLabel(__('Environment variable'))
+                                        ->valueLabel(__('Value'))
+                                        ->helperText(__('Optional. Names must match the variables configured in your egg first.')),
                                     Toggle::make('skip_scripts')->visible(fn () => CreatorAccess::admin())
-                                        ->label('Skip egg installation scripts')->default(false),
+                                        ->label(__('Skip egg installation scripts'))->default(false),
                                 ])->columns(2),
                         ]),
                 ])
-                    ->nextAction(fn (Action $action) => $action->label('Next')->color('gray')->extraAttributes(['class'=>'ssc-next-button']))
-                    ->previousAction(fn (Action $action) => $action->label('Back')->color('gray')->extraAttributes(['class'=>'ssc-back-button']))
+                    ->nextAction(fn (Action $action) => $action->label(__('Next'))->color('gray')->extraAttributes(['class'=>'ssc-next-button']))
+                    ->previousAction(fn (Action $action) => $action->label(__('Back'))->color('gray')->extraAttributes(['class'=>'ssc-back-button']))
                     ->startOnStep(fn () => $this->draftStep)
                     ->columnSpanFull()
                     ->submitAction(new HtmlString(view('pelican-simplify::filament.admin.create-action')->render())),
@@ -742,7 +744,7 @@ class CreateMinecraftServer extends Page implements HasForms
         $values = array_unique([...($resource === 'cpu' ? [100,150,200,400] : [5120,10240,20480,40960]), $default]);
         sort($values); $options = [];
         foreach ($values as $value) if ($value <= $limit) $options[(string) $value] = $resource === 'cpu' ? $value.'%' : round($value / 1024, 2).' GB';
-        return $options + ['custom' => 'Custom'];
+        return $options + ['custom' => __('Custom')];
     }
 
     /** The subdomain follows the server name until someone types their own. */
@@ -778,7 +780,7 @@ class CreateMinecraftServer extends Page implements HasForms
             }
             CreatorAccess::assertState($state);
             if ($this->creationGame!=='' && ($state['game']??'minecraft')!==$this->creationGame) {
-                throw ValidationException::withMessages(['data.game'=>'Open the creator for the selected game.']);
+                throw ValidationException::withMessages(['data.game'=>__('Open the creator for the selected game.')]);
             }
             if (($state['game']??'minecraft')==='minecraft') {
                 validator(['accept_eula'=>$state['accept_eula']??false],['accept_eula'=>'accepted'])->validate();
@@ -807,12 +809,12 @@ class CreateMinecraftServer extends Page implements HasForms
             $websitePack = ($state['game'] ?? 'minecraft') === 'minecraft' ? \Simplify\Panel\Services\ModpackSnapshot::fromState($state, $payload['environment']) : null;
             $server = CreationGuard::create($service, $payload, $state);
             try {
-                if (!empty($state['server_color']) && !Storage::disk('local')->put('simplify/appearance/'.$server->uuid.'.json',json_encode(['color'=>strtolower($state['server_color'])],JSON_THROW_ON_ERROR))) throw new \RuntimeException('Could not save server color.');
+                if (!empty($state['server_color']) && !Storage::disk('local')->put('simplify/appearance/'.$server->uuid.'.json',json_encode(['color'=>strtolower($state['server_color'])],JSON_THROW_ON_ERROR))) throw new \RuntimeException(__('Could not save server color.'));
                 if (\Simplify\Panel\Services\FeatureSettings::enabled('automatic_backups') && ($state['change_backup_schedule']??false)) \Simplify\Panel\Services\AutomaticBackups::save($server,['enabled'=>true,'interval_minutes'=>$state['backup_interval_minutes'],'retention'=>$state['backup_retention']]);
             } catch (Throwable $exception) {
-                report($exception);Notification::make()->title('Server created; appearance or backup options could not be saved')->warning()->send();
+                report($exception);Notification::make()->title(__('Server created; appearance or backup options could not be saved'))->warning()->send();
             }
-            try { $this->finishDraft(); } catch (Throwable $exception) { $this->draftCompleted = true; report($exception); $this->dispatch('ssc-draft-completed'); Notification::make()->title('Server created; draft cleanup failed')->body('Do not submit the saved draft again. Discard it before creating another server.')->warning()->send(); }
+            try { $this->finishDraft(); } catch (Throwable $exception) { $this->draftCompleted = true; report($exception); $this->dispatch('ssc-draft-completed'); Notification::make()->title(__('Server created; draft cleanup failed'))->body(__('Do not submit the saved draft again. Discard it before creating another server.'))->warning()->send(); }
             try {
                 \Simplify\Panel\Services\ServerMetadata::save($server,[
                     'server_alias'=>trim((string)($state['server_alias']??'')),
@@ -820,11 +822,11 @@ class CreateMinecraftServer extends Page implements HasForms
                 ]);
                 \Simplify\Panel\Services\Extensions::webAdapter()?->saveCreated($server,$state);
             } catch(Throwable $exception) {
-                report($exception);Notification::make()->title('Server created; metadata could not be saved')->body('Do not submit the server again.')->warning()->send();
+                report($exception);Notification::make()->title(__('Server created; metadata could not be saved'))->body(__('Do not submit the server again.'))->warning()->send();
             }
             if ($subdomain !== '') {
                 try { \Simplify\Panel\Services\Subdomains::request($server, $subdomain); }
-                catch (Throwable $exception) { report($exception);Notification::make()->title('Server created; the subdomain could not be saved')->body('Choose it again in the server\'s Network section.')->warning()->send(); }
+                catch (Throwable $exception) { report($exception);Notification::make()->title(__('Server created; the subdomain could not be saved'))->body(__('Choose it again in the server\'s Network section.'))->warning()->send(); }
             }
             if (($state['game'] ?? '') === 'other' && !empty($state['steam_art']) && ($art = $this->steamArt())) {
                 // Downloaded after the response, so creating the server is not slowed down by Steam.
@@ -846,10 +848,10 @@ class CreateMinecraftServer extends Page implements HasForms
                 }
             }
             if ($warnings) {
-                Notification::make()->title('Server created; setup needs attention')->body(implode(' ', $warnings))->warning()->send();
+                Notification::make()->title(__('Server created; setup needs attention'))->body(implode(' ', $warnings))->warning()->send();
             }
-            Notification::make()->title('Server created')
-                ->body(($state['game']??'minecraft')==='minecraft' ? 'Installation has started. Your EULA acceptance and settings will be applied before you start the server. The server remains stopped.' : 'Installation has started. Check the server for progress.')
+            Notification::make()->title(__('Server created'))
+                ->body(($state['game']??'minecraft')==='minecraft' ? __('Installation has started. Your EULA acceptance and settings will be applied before you start the server. The server remains stopped.') : __('Installation has started. Check the server for progress.'))
                 ->success()->send();
             $this->redirect(\Simplify\Panel\Services\FeatureSettings::enabled('dashboard') ? \Simplify\Panel\Filament\App\Pages\Dashboard::getUrl(['server'=>$server->uuid],panel:'app') : Console::getUrl(panel: 'server', tenant: $server));
         } catch (ValidationException $exception) {
@@ -857,7 +859,7 @@ class CreateMinecraftServer extends Page implements HasForms
             throw $exception;
         } catch (Throwable $exception) {
             report($exception);
-            Notification::make()->title('Could not create server')
+            Notification::make()->title(__('Could not create server'))
                 ->body($exception->getMessage())->danger()->send();
         }
     }
@@ -873,19 +875,19 @@ class CreateMinecraftServer extends Page implements HasForms
         }
         $type = (string) ($state['server_type'] ?? '');
         if (!in_array($type, ['vanilla', 'plus', 'modded'], true)) {
-            throw ValidationException::withMessages(['data.server_type' => 'Choose a server type.']);
+            throw ValidationException::withMessages(['data.server_type' => __('Choose a server type.')]);
         }
 
         $ram = ($state['ram_gb'] ?? null) === 'custom'
             ? (int) ($state['ram_custom_gb'] ?? 0)
             : (int) ($state['ram_gb'] ?? 0);
         if ($ram < 1 || $ram > 128) {
-            throw ValidationException::withMessages(['data.ram_gb' => 'RAM must be between 1 and 128 GB.']);
+            throw ValidationException::withMessages(['data.ram_gb' => __('RAM must be between 1 and 128 GB.')]);
         }
 
         $nodeId = (int) ($state['node_id'] ?? 0);
         if (!CreatorAccess::nodes()->where('id', $nodeId)->exists()) {
-            throw ValidationException::withMessages(['data.node_id' => 'You do not have access to this node.']);
+            throw ValidationException::withMessages(['data.node_id' => __('You do not have access to this node.')]);
         }
 
         $allocation = Allocation::query()
@@ -893,12 +895,12 @@ class CreateMinecraftServer extends Page implements HasForms
             ->whereNull('server_id')
             ->find((int) ($state['allocation_id'] ?? 0));
         if (!$allocation) {
-            throw ValidationException::withMessages(['data.allocation_id' => 'This port is no longer available.']);
+            throw ValidationException::withMessages(['data.allocation_id' => __('This port is no longer available.')]);
         }
 
         $egg = Egg::query()->find((int) ($state['egg_id'] ?? 0));
         if (!$egg) {
-            throw ValidationException::withMessages(['data.egg_id' => 'The required egg is missing. Import it into Pelican first.']);
+            throw ValidationException::withMessages(['data.egg_id' => __('The required egg is missing. Import it into Pelican first.')]);
         }
 
         // Prevent selecting an incompatible egg accidentally in the normal workflow.
@@ -906,14 +908,14 @@ class CreateMinecraftServer extends Page implements HasForms
         $versionId = (string) ($state['modpack_version'] ?? '');
         $originalEgg = $type === 'modded' ? ModpackCatalog::egg($projectId) : MinecraftCatalog::eggForType($type);
         if (!$originalEgg) {
-            throw ValidationException::withMessages(['data.egg_id' => 'The required egg is unavailable. Continue Version & Content again to import it automatically.']);
+            throw ValidationException::withMessages(['data.egg_id' => __('The required egg is unavailable. Continue Version & Content again to import it automatically.')]);
         }
         if (!CreatorAccess::admin() && (int) $egg->id !== (int) $originalEgg->id) {
-            throw ValidationException::withMessages(['data.egg_id' => 'Use the egg selected by SSC.']);
+            throw ValidationException::withMessages(['data.egg_id' => __('Use the egg selected by SSC.')]);
         }
         $minecraftVersion = (string) ($state['minecraft_version'] ?? '');
         if ($type !== 'modded' && !preg_match('/^\d+\.\d+(?:\.\d+)?$/', $minecraftVersion)) {
-            throw ValidationException::withMessages(['data.minecraft_version' => 'Select a valid Minecraft version.']);
+            throw ValidationException::withMessages(['data.minecraft_version' => __('Select a valid Minecraft version.')]);
         }
 
         $env = MinecraftCatalog::eggVariables($egg, $type, $minecraftVersion, $projectId, $versionId);
@@ -922,12 +924,12 @@ class CreateMinecraftServer extends Page implements HasForms
         }
         $overrides = $state['environment_overrides'] ?? [];
         if (!is_array($overrides)) {
-            throw ValidationException::withMessages(['data.environment_overrides' => 'Invalid egg variable overrides.']);
+            throw ValidationException::withMessages(['data.environment_overrides' => __('Invalid egg variable overrides.')]);
         }
         if (is_array($overrides)) {
             foreach ($overrides as $key => $value) {
                 if (!array_key_exists((string) $key, $env)) {
-                    throw ValidationException::withMessages(['data.environment_overrides' => 'Unknown egg variable: ' . (string) $key]);
+                    throw ValidationException::withMessages(['data.environment_overrides' => __('Unknown egg variable: :name', ['name' => (string) $key])]);
                 }
                 $env[(string) $key] = (string) $value;
             }
@@ -935,13 +937,13 @@ class CreateMinecraftServer extends Page implements HasForms
 
         $name = trim((string) ($state['name'] ?? ''));
         if ($name === '' || mb_strlen($name) > 255) {
-            throw ValidationException::withMessages(['data.name' => 'Enter a server name.']);
+            throw ValidationException::withMessages(['data.name' => __('Enter a server name.')]);
         }
 
         $cpu = (int) ($state['cpu'] ?? 0);
         $disk = (int) ($state['disk_mb'] ?? 0);
         if ($cpu < 0 || $cpu > 1600 || $disk < 1024) {
-            throw ValidationException::withMessages(['data.cpu' => 'Invalid CPU or disk limit.']);
+            throw ValidationException::withMessages(['data.cpu' => __('Invalid CPU or disk limit.')]);
         }
 
         $java = JavaRuntime::major($state);
@@ -979,28 +981,28 @@ class CreateMinecraftServer extends Page implements HasForms
     {
         $egg = OtherGameCatalog::selected($state['game_egg_id'] ?? null);
         if (!$egg) {
-            throw ValidationException::withMessages(['data.game_egg_id' => 'Choose an approved game.']);
+            throw ValidationException::withMessages(['data.game_egg_id' => __('Choose an approved game.')]);
         }
         $name = trim((string) ($state['name'] ?? ''));
         $ram = ($state['ram_gb'] ?? '') === 'custom' ? (int) ($state['ram_custom_gb'] ?? 0) : (int) ($state['ram_gb'] ?? 0);
         $cpu = (int) ($state['cpu'] ?? 100);
         $disk = (int) ($state['disk_mb'] ?? 10240);
         if ($name === '' || mb_strlen($name) > 255 || $ram < 1 || $ram > 128 || $cpu < 0 || $cpu > 1600 || $disk < 1024) {
-            throw ValidationException::withMessages(['data.name' => 'Enter a name and valid resource limits.']);
+            throw ValidationException::withMessages(['data.name' => __('Enter a name and valid resource limits.')]);
         }
         $nodeId = (int) ($state['node_id'] ?? 0);
         if (!CreatorAccess::nodes()->whereKey($nodeId)->exists()) {
-            throw ValidationException::withMessages(['data.node_id' => 'You do not have access to this node.']);
+            throw ValidationException::withMessages(['data.node_id' => __('You do not have access to this node.')]);
         }
         $allocation = Allocation::query()->where('node_id', $nodeId)->whereNull('server_id')->find((int) ($state['allocation_id'] ?? 0));
         if (!$allocation) {
-            throw ValidationException::withMessages(['data.allocation_id' => 'This port is no longer available.']);
+            throw ValidationException::withMessages(['data.allocation_id' => __('This port is no longer available.')]);
         }
         $env = OtherGameCatalog::environment($egg, $state['game_variables'] ?? []);
         if (CreatorAccess::admin()) {
             foreach (($state['environment_overrides'] ?? []) as $key => $value) {
                 if (!array_key_exists($key, $env)) {
-                    throw ValidationException::withMessages(['data.environment_overrides' => 'Unknown egg variable.']);
+                    throw ValidationException::withMessages(['data.environment_overrides' => __('Unknown egg variable.')]);
                 }
                 $env[$key] = (string) $value;
             }

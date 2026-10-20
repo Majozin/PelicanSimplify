@@ -33,9 +33,9 @@ final class Subdomains
             'domain'=>['nullable','string','max:200','regex:/^(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z]{2,}$/'],
             'target'=>['nullable','string','max:253','regex:/^(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z]{2,}$/'],
             'port_min'=>'required|integer|min:1|max:65535','port_max'=>'required|integer|min:1|max:65535|gte:port_min',
-        ],[],['domain'=>'domain','target'=>'game address','port_min'=>'first port','port_max'=>'last port'])->validate();
+        ],[],['domain'=>__('domain'),'target'=>__('game address'),'port_min'=>__('first port'),'port_max'=>__('last port')])->validate();
         $next=['domain'=>strtolower((string)($values['domain']??'')),'target'=>strtolower((string)($values['target']??'')),'port_min'=>(int)$values['port_min'],'port_max'=>(int)$values['port_max']];
-        if(!Storage::disk('local')->put(self::FILE,json_encode($next,JSON_THROW_ON_ERROR|JSON_PRETTY_PRINT)))throw new \RuntimeException('Could not save subdomain settings.');
+        if(!Storage::disk('local')->put(self::FILE,json_encode($next,JSON_THROW_ON_ERROR|JSON_PRETTY_PRINT)))throw new \RuntimeException(__('Could not save subdomain settings.'));
         self::$settings=$next;
     }
     /** [token, zone ID] from the environment, or from .env when the configuration is cached. */
@@ -54,7 +54,7 @@ final class Subdomains
     public static function missing(): array
     {
         $s=self::settings();[$token,$zone]=self::credentials();
-        return array_keys(array_filter(['domain'=>$s['domain']==='','game address'=>$s['target']==='','CLOUDFLARE_API_TOKEN in .env'=>$token==='','CLOUDFLARE_ZONE_ID in .env'=>$zone==='']));
+        return array_keys(array_filter([__('domain')=>$s['domain']==='',__('game address')=>$s['target']==='',__('CLOUDFLARE_API_TOKEN in .env')=>$token==='',__('CLOUDFLARE_ZONE_ID in .env')=>$zone==='']));
     }
     public static function active(): bool { return FeatureSettings::enabled('subdomains')&&self::missing()===[]; }
 
@@ -71,10 +71,10 @@ final class Subdomains
     public static function check(string $name,?string $uuid=null): ?string
     {
         if($name==='')return null;
-        if(strlen($name)>63||!preg_match('/^[a-z0-9](?:[a-z0-9-]*[a-z0-9])?$/',$name))return 'Use lowercase letters, numbers and hyphens (up to 63).';
+        if(strlen($name)>63||!preg_match('/^[a-z0-9](?:[a-z0-9-]*[a-z0-9])?$/',$name))return __('Use lowercase letters, numbers and hyphens (up to 63).');
         $s=self::settings();
         $own=str_ends_with($s['target'],'.'.$s['domain'])?substr($s['target'],0,-strlen($s['domain'])-1):'';
-        if(in_array($name,self::RESERVED,true)||$name===$own)return 'This name is reserved.';
+        if(in_array($name,self::RESERVED,true)||$name===$own)return __('This name is reserved.');
         foreach(Storage::disk('local')->files(self::STATES) as $path){
             $other=pathinfo($path,PATHINFO_FILENAME);
             if($other!==$uuid&&(self::read($other)['name']??'')===$name)return 'Another server already uses this name.';
@@ -119,11 +119,11 @@ final class Subdomains
     public static function sync(Server $server): string
     {
         $state=self::read($server->uuid);$name=(string)($state['name']??'');$port=(int)($server->allocation?->port??0);
-        if(!self::active())return self::write($server->uuid,['name'=>$name,'status'=>'error','message'=>'Subdomains are not set up yet.']);
+        if(!self::active())return self::write($server->uuid,['name'=>$name,'status'=>'error','message'=>__('Subdomains are not set up yet.')]);
         $dns=self::client();
         if($name!==''&&!self::forwarded($port)){
             $s=self::settings();$dns->remove($server->uuid);
-            return self::write($server->uuid,['name'=>$name,'status'=>'error','message'=>'Port '.$port.' is not forwarded ('.$s['port_min'].'-'.$s['port_max'].'). Ask an administrator for a port in that range.']);
+            return self::write($server->uuid,['name'=>$name,'status'=>'error','message'=>__('Port :port is not forwarded (:min-:max). Ask an administrator for a port in that range.', ['port' => $port, 'min' => $s['port_min'], 'max' => $s['port_max']])]);
         }
         $error=$dns->sync($server->uuid,$name,$port,ManagedSettings::minecraft($server));
         if($name===''&&$error===null){Storage::disk('local')->delete(self::STATES.'/'.$server->uuid.'.json');return 'removed';}
@@ -170,7 +170,7 @@ final class Subdomains
     }
     private static function write(string $uuid,array $state): string
     {
-        if(!Storage::disk('local')->put(self::STATES.'/'.$uuid.'.json',json_encode($state+['updated_at'=>time()],JSON_THROW_ON_ERROR)))throw new \RuntimeException('Could not save the subdomain.');
+        if(!Storage::disk('local')->put(self::STATES.'/'.$uuid.'.json',json_encode($state+['updated_at'=>time()],JSON_THROW_ON_ERROR)))throw new \RuntimeException(__('Could not save the subdomain.'));
         return (string)$state['status'];
     }
 }
