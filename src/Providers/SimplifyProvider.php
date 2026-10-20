@@ -6,6 +6,8 @@ final class SimplifyProvider extends ServiceProvider
 {
     public function register(): void
     {
+        // lang/<locale>.json, keyed by the English text (see Services\Translations).
+        $this->callAfterResolving('translator', fn ($translator) => $translator->addJsonPath(plugin_path('pelican-simplify', 'lang')));
         $path=plugin_path('pelican-simplify','config/compatibility.json');
         $legacy=is_file($path)?json_decode(file_get_contents($path),true):[];
         foreach(is_array($legacy)?$legacy:[] as $namespace){

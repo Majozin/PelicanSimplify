@@ -693,7 +693,8 @@
       fitCardTitle(row, name) {
         const title = row.querySelector('h3');
         if (!title) return;
-        const base = this.overviewView === 'list' ? 21 : 23;
+        const scale = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--ps-scale')) || 1;
+        const base = (this.overviewView === 'list' ? 21 : 23) * scale;
         title.style.fontSize = base + 'px';
         const original = row.querySelector('.ps-card-real-name');
         const reserve = this.overviewView === 'list' && typeof innerWidth !== 'undefined' && innerWidth > 700 && original && !original.classList.contains('no-alias') ? original.getBoundingClientRect().width + 8 : 0;

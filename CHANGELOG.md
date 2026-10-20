@@ -1,5 +1,11 @@
 # Changes
 
+## 0.4.2-beta.7-ptbr.1 (fork Majozin/PelicanSimplify, beta channel)
+- Portuguese (Brazil): Simplify follows the language set in each user's Pelican profile. This release translates the Simplify settings page (all tabs and the setup wizard pages), the system checks, the banner library, the save bar and confirmation dialogs. Other pages follow in later releases; untranslated text stays in English. Translations live in `lang/pt_BR.json`, keyed by the English text, and `tests/translations.php` fails when a translatable text has no translation.
+- New Appearance setting "Interface size" (100, 110, 125 or 150%) makes text larger for everyone, in Simplify and in Pelican's own pages. Simplify's text sizes are scaled when its CSS is served; layouts that fill the window keep fitting.
+- Long names in the server page's section menu wrap to a second line instead of being cut off.
+- Plugin updates are read from this fork (`update_url`), so an upstream release can no longer replace the translated build automatically.
+
 ## 0.4.2-beta.7 (beta channel)
 - New MOTD editor, on the server's settings page and in the creator's Server properties step. You type the two MOTD lines straight into a Minecraft server-list row, in their real colours: select text and pick a colour or bold, italic, underline, strikethrough or obfuscated (the buttons show what the selection already has and switch it on or off); without a selection the choice applies to what you type next. "Show codes" shows and edits the exact text with § codes (& works too).
 - Fixed: the MOTD editor wrote a reset (§r) after every coloured selection, which wiped the colour of the rest of the line; a colour picked after bold removed the bold (in Minecraft a colour code clears formatting); and repeated clicks stacked codes, giving double colours. The codes are now generated from the text and its styles, so they are always minimal and in the right order. An MOTD you do not edit is left exactly as it is.

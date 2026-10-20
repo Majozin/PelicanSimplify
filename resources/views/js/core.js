@@ -8,6 +8,13 @@
     return;
   }
   const root = document.documentElement;
+  // Text in the panel language (window.simplifyI18n from shared-assets.blade.php). The English text is
+  // the key and the fallback; ":name" placeholders are replaced from the second argument.
+  const t = (text, replace = {}) => {
+    let out = (window.simplifyI18n || {})[text] || text;
+    for (const [key, value] of Object.entries(replace)) out = out.split(':' + key).join(String(value));
+    return out;
+  };
   const KEY = 'pelicanSimplify.theme';
   const CHOICES = ['light', 'dark', 'system'];
   const media = matchMedia('(prefers-color-scheme: dark)');
@@ -252,20 +259,20 @@
         '<div class="ps-modal-body"><p class="ps-help" data-message></p></div>' +
         '<footer class="ps-modal-foot"><button type="button" class="ps-btn" data-cancel></button><button type="button" class="ps-btn" data-confirm></button></footer>' +
         '</section>';
-      wrap.querySelector('h2').textContent = opts.title || 'Are you sure?';
+      wrap.querySelector('h2').textContent = opts.title || t('Are you sure?');
       const message = wrap.querySelector('[data-message]');
       if (opts.message) message.textContent = opts.message;
       else message.remove();
       const cancel = wrap.querySelector('[data-cancel]');
       const confirm = wrap.querySelector('[data-confirm]');
-      cancel.textContent = opts.cancelLabel || 'Cancel';
-      confirm.textContent = opts.confirmLabel || 'Confirm';
+      cancel.textContent = opts.cancelLabel || t('Cancel');
+      confirm.textContent = opts.confirmLabel || t('Confirm');
       confirm.classList.add(opts.tone === 'danger' ? 'is-danger' : 'is-primary');
       let field = null;
       if (opts.input || opts.requireText) {
         const label = document.createElement('label');
         label.className = 'ps-field';
-        label.textContent = opts.inputLabel || (opts.requireText ? 'Type “' + opts.requireText + '” to confirm' : '');
+        label.textContent = opts.inputLabel || (opts.requireText ? t('Type “:text” to confirm', { text: opts.requireText }) : '');
         field = document.createElement('input');
         field.placeholder = opts.placeholder || opts.requireText || '';
         field.autocomplete = 'off';
@@ -312,6 +319,7 @@
     prompt: (opts) => dialog({ ...opts, input: true }),
     history: () => ui.history.slice(),
     hideTooltip: hideTip,
+    t,
   };
 
   // Embedded pages hand Filament's flash notifications ("File saved", errors) to the dashboard toast.
@@ -356,18 +364,20 @@
     });
   };
   document.addEventListener('livewire:init', hookLivewire);
-  const saveBar = ({ mount, scope = mount, within = null, fixed = false, label = 'Save changes', onSave, onDiscard = null, discardMessage = 'Your changes since the last save are lost.' }) => {
+  const saveBar = ({ mount, scope = mount, within = null, fixed = false, label = t('Save changes'), onSave, onDiscard = null, discardMessage = t('Your changes since the last save are lost.') }) => {
     hookLivewire();
     const bar = document.createElement('div');
     bar.className = 'ps-savebar' + (fixed ? ' is-fixed' : '');
     bar.setAttribute('role', 'region');
-    bar.setAttribute('aria-label', 'Save changes');
-    bar.innerHTML = '<span class="ps-savebar-status" role="status"><i aria-hidden="true"></i><span class="ps-savebar-text">Unsaved changes</span></span>'
-      + (onDiscard ? '<button type="button" class="ps-savebar-discard">Discard</button>' : '')
+    bar.setAttribute('aria-label', t('Save changes'));
+    bar.innerHTML = '<span class="ps-savebar-status" role="status"><i aria-hidden="true"></i><span class="ps-savebar-text"></span></span>'
+      + (onDiscard ? '<button type="button" class="ps-savebar-discard"></button>' : '')
       + '<button type="button" class="ps-savebar-save"><svg class="ps-savebar-check" viewBox="0 0 24 24" aria-hidden="true"><path d="m5 12 4.5 4.5L19 7"/></svg><span class="ps-savebar-label"></span></button>';
     const text = bar.querySelector('.ps-savebar-text');
     const button = bar.querySelector('.ps-savebar-save');
     bar.querySelector('.ps-savebar-label').textContent = label;
+    text.textContent = t('Unsaved changes');
+    if (onDiscard) bar.querySelector('.ps-savebar-discard').textContent = t('Discard');
     let timer = 0;
     const api = {
       el: bar,
@@ -378,7 +388,7 @@
         bar.classList.toggle('is-dirty', on);
         button.disabled = !on;
         button.removeAttribute('aria-disabled');
-        text.textContent = 'Unsaved changes';
+        text.textContent = t('Unsaved changes');
       },
       saving() {
         bar.classList.add('is-saving');
@@ -391,14 +401,14 @@
         // Nothing left to save: the check is a status, not a button.
         button.disabled = true;
         button.setAttribute('aria-disabled', 'true');
-        text.textContent = 'All changes saved';
+        text.textContent = t('All changes saved');
         clearTimeout(timer);
         timer = setTimeout(() => bar.classList.remove('is-saved'), 1600);
       },
       failed() {
         bar.classList.remove('is-saving');
         button.disabled = false;
-        text.textContent = 'Not saved — check the highlighted fields';
+        text.textContent = t('Not saved — check the highlighted fields');
       },
       // Waits for the Livewire request that saving starts.
       expectSave() {
@@ -411,7 +421,7 @@
       onSave(api);
     });
     bar.querySelector('.ps-savebar-discard')?.addEventListener('click', () => {
-      dialog({ title: 'Discard changes?', message: discardMessage, confirmLabel: 'Discard', tone: 'danger' }).then((ok) => ok && onDiscard(api));
+      dialog({ title: t('Discard changes?'), message: discardMessage, confirmLabel: t('Discard'), tone: 'danger' }).then((ok) => ok && onDiscard(api));
     });
     // Changed means: the values differ from the last saved state. Switching tabs, focusing or clicking
     // around never counts, and putting a value back hides the bar again.

@@ -839,7 +839,7 @@ body:has(.ps.is-embedded) :is(.fi-main, .fi-page, .fi-main-ctn) { max-width: non
 .ps-server-workspace .ps-widget[aria-current="page"] { border-color: color-mix(in srgb, var(--ps-tone) 45%, transparent); background: color-mix(in srgb, var(--ps-tone) 12%, var(--ps-raised)); }
 .ps-server-workspace .ps-widget-icon { width: 30px; height: 30px; border-radius: 9px; background: color-mix(in srgb, var(--ps-tone, var(--ps-accent)) 18%, transparent); color: var(--ps-tone, var(--ps-accent)); font: 700 12px var(--ps-mono); }
 .ps-server-workspace .ps-widget-icon svg { width: 17px; height: 17px; }
-.ps-server-workspace .ps-widget strong { font-size: 14px; font-weight: 600; -webkit-line-clamp: 1; }
+.ps-server-workspace .ps-widget strong { font-size: 14px; font-weight: 600; -webkit-line-clamp: 2; }
 .ps-server-workspace .ps-widget small { display: none; }
 .ps-server-workspace .ps-console { grid-area: main; min-height: clamp(520px, 68dvh, 820px); view-transition-name: ps-console; }
 .ps-server-workspace .ps-dock { grid-area: main; display: none; min-width: 0; height: clamp(520px, 68dvh, 820px); view-transition-name: ps-dock; }
