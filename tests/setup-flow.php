@@ -17,7 +17,6 @@ namespace Simplify\Panel\Services {
 namespace {
  function request(){return new class{function boolean($key){return false;}function query($key){return $GLOBALS['requestedSection']??null;}};}
  require __DIR__.'/../src/Filament/Admin/Pages/SimplifySettings.php';
- function __($text,$replace=[]){return $text;}
  function user(){return new class {function isRootAdmin(){return true;}};}
  function abort_unless($ok,$code){if(!$ok)throw new \RuntimeException((string)$code);}
  function base_path(){return '/panel';}function plugin_path($id){return '/panel/plugins/'.$id;}

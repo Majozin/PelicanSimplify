@@ -11,7 +11,6 @@ namespace {
  require __DIR__.'/../src/Services/UploadLimits.php';
  require __DIR__.'/../src/Services/DependencyCheck.php';
  require __DIR__.'/../src/Filament/Admin/Pages/SimplifySettings.php';
- function __($text,$replace=[]){return $text;}
  function user(){return new class{function isRootAdmin(){return true;}};}
  function abort_unless($ok,$code){if(!$ok)throw new \RuntimeException((string)$code);}
  function base_path(){return sys_get_temp_dir().'/simplify-nonexistent-panel';}

@@ -22,7 +22,6 @@ namespace {
 require __DIR__.'/../src/Services/BrandSettings.php';
 require __DIR__.'/../src/Services/InterfaceScale.php';
  require __DIR__.'/../src/Filament/Admin/Pages/SimplifySettings.php';
- function __($text,$replace=[]){return $text;}
  function view($name){return new class{function render(){return '<button>Finish setup</button>';}};}
  $page=new \Simplify\Panel\Filament\Admin\Pages\SimplifySettings;
  $schema=$page->form(new \Filament\Schemas\Schema);$wizard=$schema->options['components'][0][0];$steps=$wizard->options['steps'];

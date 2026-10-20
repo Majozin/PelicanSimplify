@@ -27,6 +27,7 @@ final class Dashboard extends Page
     use WithFileUploads;
     protected static ?string $slug='simplify';
     protected static ?string $title='Pelican - Enhanced by Simplify';
+    public function getTitle(): string|\Illuminate\Contracts\Support\Htmlable { return 'Pelican - '.__('Enhanced by').' Simplify'; }
     protected static bool $shouldRegisterNavigation=false;
     protected string $view='pelican-simplify::dashboard';
     #[Locked] public ?string $serverUuid=null;
@@ -69,7 +70,7 @@ final class Dashboard extends Page
         $base['background_choices']=array_map(fn($id)=>['id'=>$id,'name'=>ucfirst($id),'url'=>ServerArtwork::backgroundUrl($id)],array_keys(ServerArtwork::BACKGROUNDS));
         $base['uploaded_backgrounds']=\Simplify\Panel\Services\ServerBanners::entries($s);
         $base['server']=['external_pages'=>\Simplify\Panel\Services\ExternalPlugins::serverPages($s),'background_id'=>ServerArtwork::selection($s) ?? ($artworkMeta['background_id'] ?? 'auto'),'color'=>ServerAppearance::color($s),'uuid'=>$s->uuid,'short'=>$s->uuid_short,'name'=>$s->name,'address'=>\Simplify\Panel\Services\Subdomains::address($s) ?? $s->allocation?->display_address ?? $s->allocation?->address,
-            'memory'=>$s->memory,'disk'=>$s->disk,'cpu'=>$s->cpu,'software'=>$s->egg?->name,'image'=>user()->can(P::StartupRead,$s)?$s->image:'Restricted','startup'=>user()->can(P::StartupRead,$s)?$s->startup:'Restricted',
+            'memory'=>$s->memory,'disk'=>$s->disk,'cpu'=>$s->cpu,'software'=>$s->egg?->name,'image'=>user()->can(P::StartupRead,$s)?$s->image:__('Restricted'),'startup'=>user()->can(P::StartupRead,$s)?$s->startup:__('Restricted'),
             'alias'=>\Simplify\Panel\Services\ServerMetadata::read($s)['server_alias']??'','sftp'=>\Simplify\Panel\Services\SftpDetails::forServer($s),'package_kind'=>Packages::capability($s),'native_sections'=>$this->nativeSections($s),
             'owner'=>user()->isRootAdmin() || (int)$s->owner_id===(int)user()->id,'minecraft'=>ManagedSettings::minecraft($s),'can_resources'=>ManagedResources::canEdit($s),'resources_admin'=>\Simplify\Panel\Services\CreatorAccess::admin(),'permissions'=>$permissions,
             'properties'=>array_intersect_key($properties,array_flip(['motd','max-players','difficulty','gamemode','pvp','white-list','allow-flight','view-distance','spawn-protection'])),
@@ -121,7 +122,7 @@ final class Dashboard extends Page
             $linked=user()->isAdmin()||(int)$s->owner_id===(int)user()->id||(bool)$s->simplify_assigned;$m=Extensions::web()?Extensions::webAdapter()->metadata($s):[];
             $status=$s->retrieveStatus()->value;$mc=$status==='offline'?['players'=>0]:MinecraftStatus::get($s);
             $metadata=\Simplify\Panel\Services\ServerMetadata::read($s);$minecraft=ManagedSettings::minecraft($s);$serverIcon=ServerArtwork::serverIcon($s);
-            $list[]=['background_id'=>ServerArtwork::selection($s),'alias'=>$metadata['server_alias']??'','color'=>ServerAppearance::color($s),'uuid'=>$s->uuid,'name'=>$s->name,'software'=>$s->egg?->name,'game'=>$minecraft?'minecraft':'other','game_label'=>$minecraft?'Minecraft':($s->egg?->name ?: 'Other game'),'status'=>$status,'linked'=>$linked,
+            $list[]=['background_id'=>ServerArtwork::selection($s),'alias'=>$metadata['server_alias']??'','color'=>ServerAppearance::color($s),'uuid'=>$s->uuid,'name'=>$s->name,'software'=>$s->egg?->name,'game'=>$minecraft?'minecraft':'other','game_label'=>$minecraft?'Minecraft':($s->egg?->name ?: __('Other game')),'status'=>$status,'linked'=>$linked,
                 'node_id'=>(int)$s->node_id,'node_name'=>(string)($s->node?->name??''),'permissions'=>array_combine(['control.start','control.stop','control.restart'],array_map(fn($permission)=>$linked&&user()->can($permission,$s),[P::ControlStart,P::ControlStop,P::ControlRestart])),
                 'url'=>$linked?self::getUrl(['server'=>$s->uuid],panel:'app'):null,
                 'server_icon'=>$serverIcon,'software_icon'=>ServerArtwork::softwareIcon($s,$m),'egg_icon'=>$s->egg?->icon,
@@ -156,7 +157,7 @@ final class Dashboard extends Page
         $p=match($action){'start'=>P::ControlStart,'stop','kill'=>P::ControlStop,'restart'=>P::ControlRestart,default=>null};abort_unless($p,422);Access::permission($s,$p);
         if($action==='stop' && PendingChanges::read($s)){PendingChanges::requestStop($s);return;}
         if($action==='restart' && PendingChanges::read($s)){PendingChanges::requestRestart($s,0);return;}
-        abort_if($s->isInConflictState(),409,'Wait until the current installation or recovery is complete.');
+        abort_if($s->isInConflictState(),409,__('Wait until the current installation or recovery is complete.'));
         app(DaemonServerRepository::class)->setServer($s)->power($action)->throw();
     }
     /** Accept the Minecraft EULA for a server that stopped on the EULA prompt, then start it. */
@@ -164,7 +165,7 @@ final class Dashboard extends Page
     public function acceptEula(): void
     {
         $s=$this->server();Access::permission($s,P::FileUpdate);Access::permission($s,P::ControlStart);
-        abort_if($s->isInConflictState(),409,'Wait until the current installation or recovery is complete.');
+        abort_if($s->isInConflictState(),409,__('Wait until the current installation or recovery is complete.'));
         app(DaemonFileRepository::class)->setServer($s)->putContent('/eula.txt',"# Accepted in Simplify by ".user()->username.".\neula=true\n")->throw();
         app(DaemonServerRepository::class)->setServer($s)->power('start')->throw();
     }
@@ -175,8 +176,8 @@ final class Dashboard extends Page
         abort_unless(strlen($path)<=4096 && !str_contains($path,"\0") && !in_array('..',explode('/',$path),true),422);
         $limit=(int)config('panel.files.max_edit_size',1048576);
         try { $content=app(DaemonFileRepository::class)->setServer($s)->getContent($path,$limit); }
-        catch (\Illuminate\Http\Client\ConnectionException) { abort(503,'The node is not reachable.'); }
-        abort_if($limit>0 && strlen($content)>$limit,413,'This file is too large to edit.');
+        catch (\Illuminate\Http\Client\ConnectionException) { abort(503,__('The node is not reachable.')); }
+        abort_if($limit>0 && strlen($content)>$limit,413,__('This file is too large to edit.'));
         return hash('sha256',$content);
     }
     #[Renderless]
@@ -194,7 +195,7 @@ final class Dashboard extends Page
     {abort_unless(Access::feature('resources'),404);
         $s=$this->server();Access::owner($s);abort_unless(ManagedResources::canEdit($s),403);
         $state=array_intersect_key($state,array_flip(['memory_gb','cpu','disk_mb']));
-        abort_unless(isset($state['memory_gb'],$state['cpu'],$state['disk_mb']),422,'Provide all three resource limits.');
+        abort_unless(isset($state['memory_gb'],$state['cpu'],$state['disk_mb']),422,__('Provide all three resource limits.'));
         return PendingChanges::stage($s,$state,null,true);
     }
     #[Renderless]
@@ -304,7 +305,7 @@ final class Dashboard extends Page
     #[Renderless]
     public function deleteServer(string $confirmation): void
     {
-        $s=$this->server();abort_unless(Access::feature('advanced'),404);Access::owner($s);Access::offline($s);abort_unless(hash_equals($s->name,$confirmation),422,'Enter the exact server name.');
+        $s=$this->server();abort_unless(Access::feature('advanced'),404);Access::owner($s);Access::offline($s);abort_unless(hash_equals($s->name,$confirmation),422,__('Enter the exact server name.'));
         app(\App\Services\Servers\ServerDeletionService::class)->handle($s);
         $this->serverUuid=null;
         $this->redirect(self::getUrl(panel:'app'));
@@ -329,7 +330,7 @@ final class Dashboard extends Page
     #[Renderless]
     public function restoreBackup(string $uuid,string $confirm): void
     {abort_unless(Access::feature('backups'),404);
-        $s=$this->server();Access::permission($s,P::BackupRestore);Access::offline($s);abort_unless(hash_equals($s->name,$confirm),422,'Enter the server name.');
+        $s=$this->server();Access::permission($s,P::BackupRestore);Access::offline($s);abort_unless(hash_equals($s->name,$confirm),422,__('Enter the server name.'));
         $b=$s->backups()->where('uuid',$uuid)->firstOrFail();abort_unless($b->is_successful && $b->completed_at,409);
         $url=app(\App\Services\Backups\DownloadLinkService::class)->handle($b,user());
         $s->update(['status'=>\App\Enums\ServerState::RestoringBackup]);

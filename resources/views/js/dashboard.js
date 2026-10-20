@@ -1,12 +1,19 @@
 /* Simplify dashboard (Alpine component). Server data arrives through Livewire ($wire) calls;
    everything else is local UI state. Dialogs, toasts and tooltips come from core.js (window.Simplify). */
 (() => {
+  /** Text in the panel language (core.js loads first); the English text is the key and the fallback. */
+  const t = (text, replace = {}) => {
+    if (typeof window !== 'undefined' && window.Simplify?.t) return window.Simplify.t(text, replace);
+    let out = text;
+    for (const [key, value] of Object.entries(replace || {})) out = out.split(':' + key).join(String(value));
+    return out;
+  };
   /** Returned by run() when an action was skipped (busy) or failed (already reported). */
   const SKIPPED = Symbol('skipped');
   const MINECRAFT_VERSION = /(?:^|[^0-9])((?:1\.[0-9]+(?:\.[0-9]+)?|2[6-9]\.[0-9]+(?:\.[0-9]+)?))(?![0-9])/;
   const OVERVIEW_DEFAULTS = { showMotd: false, largeIcon: 'server', largeName: 'alias', groupByNode: 'auto', showCpu: true, showRam: true, showQuickActions: true, minecraftAlwaysGreen: true };
   const OVERVIEW_SWITCHES = ['showMotd', 'showCpu', 'showRam', 'showQuickActions', 'minecraftAlwaysGreen'];
-  const POWER_LABELS = { start: 'Start', stop: 'Stop', restart: 'Restart', kill: 'Force stop' };
+  const POWER_LABELS = { start: t('Start'), stop: t('Stop'), restart: t('Restart'), kill: t('Force stop') };
   const accentInk = (color) => {
     if (window.SimplifyTheme?.accentInk) return window.SimplifyTheme.accentInk(color);
     const [r, g, b] = color.slice(1).match(/../g).map((v) => {
@@ -20,6 +27,7 @@
   window.pelicanSimplify = function (wire, boot) {
     const performance = boot.performance || {};
     return {
+      t,
       boot,
       wire,
       server: boot.server,
@@ -54,8 +62,8 @@
       hostMetrics: [
         { key: 'cpu', label: 'CPU', icon: 'cpu' },
         { key: 'memory', label: 'RAM', icon: 'ram' },
-        { key: 'disk', label: 'Storage', icon: 'disk' },
-        { key: 'network', label: 'Network', icon: 'traffic' },
+        { key: 'disk', label: t('Storage'), icon: 'disk' },
+        { key: 'network', label: t('Network'), icon: 'traffic' },
       ],
       overviewPowerBusy: null,
       overviewNetwork: {},
@@ -115,25 +123,25 @@
       stats: { cpu_absolute: null, memory_bytes: null, disk_bytes: null },
       series: { cpu: [], ram: [], disk: [], network: [] },
       metrics: [
-        { key: 'cpu', label: 'CPU load', icon: 'cpu' },
-        { key: 'ram', label: 'Memory', icon: 'ram' },
-        { key: 'disk', label: 'Storage', icon: 'disk' },
-        { key: 'network', label: 'Network usage', icon: 'traffic' },
+        { key: 'cpu', label: t('CPU load'), icon: 'cpu' },
+        { key: 'ram', label: t('Memory'), icon: 'ram' },
+        { key: 'disk', label: t('Storage'), icon: 'disk' },
+        { key: 'network', label: t('Network usage'), icon: 'traffic' },
       ],
       widgets: [
-        { key: 'settings', title: 'Game settings', description: 'Gameplay, MOTD & server appearance', icon: 'settings' },
-        { key: 'players', title: 'Player management', description: 'Whitelist, operators & moderation', icon: 'players' },
-        { key: 'plugins', title: 'Plugins', description: 'Install and manage server plugins', icon: 'plugins' },
-        { key: 'mods', title: 'Mods', description: 'Install and manage server mods', icon: 'mods' },
-        { key: 'files', title: 'Files', description: 'Browse, upload & connect with SFTP', icon: 'files' },
-        { key: 'backups', title: 'Backups', description: 'Recovery points & automatic backups', icon: 'backups' },
-        { key: 'schedules', title: 'Scheduled tasks', description: 'Planned restarts & console commands', icon: 'clock' },
-        { key: 'software', title: 'Server software', description: 'Minecraft version, loader & modpack', icon: 'packages' },
-        { key: 'connection', title: 'Network', description: 'Server address & subdomain', icon: 'link' },
-        { key: 'performance', title: 'Performance', description: 'CPU, memory & storage limits', icon: 'cpu' },
-        { key: 'web', title: 'Website', description: 'Visibility & website presentation', icon: 'web' },
-        { key: 'activity', title: 'Activity log', description: 'Review recent server management actions', icon: 'activity' },
-        { key: 'advanced', title: 'Advanced', description: 'Runtime details & server management', icon: 'advanced' },
+        { key: 'settings', title: t('Game settings'), description: t('Gameplay, MOTD & server appearance'), icon: 'settings' },
+        { key: 'players', title: t('Player management'), description: t('Whitelist, operators & moderation'), icon: 'players' },
+        { key: 'plugins', title: t('Plugins'), description: t('Install and manage server plugins'), icon: 'plugins' },
+        { key: 'mods', title: t('Mods'), description: t('Install and manage server mods'), icon: 'mods' },
+        { key: 'files', title: t('Files'), description: t('Browse, upload & connect with SFTP'), icon: 'files' },
+        { key: 'backups', title: t('Backups'), description: t('Recovery points & automatic backups'), icon: 'backups' },
+        { key: 'schedules', title: t('Scheduled tasks'), description: t('Planned restarts & console commands'), icon: 'clock' },
+        { key: 'software', title: t('Server software'), description: t('Minecraft version, loader & modpack'), icon: 'packages' },
+        { key: 'connection', title: t('Network'), description: t('Server address & subdomain'), icon: 'link' },
+        { key: 'performance', title: t('Performance'), description: t('CPU, memory & storage limits'), icon: 'cpu' },
+        { key: 'web', title: t('Website'), description: t('Visibility & website presentation'), icon: 'web' },
+        { key: 'activity', title: t('Activity log'), description: t('Review recent server management actions'), icon: 'activity' },
+        { key: 'advanced', title: t('Advanced'), description: t('Runtime details & server management'), icon: 'advanced' },
       ],
       settings: {},
       settingsTab: 'general',
@@ -168,6 +176,7 @@
         this.restoreOverviewView();
         this.restoreOverviewPreferences();
         this.restoreHostMode();
+        this.applyScale();
         this.initTheme();
         this.initNotices();
         this.applyFavicon();
@@ -196,7 +205,7 @@
         const open = params.get('open');
         if (admin && admin.startsWith('/')) {
           const known = this.adminPages().flatMap((group) => group.items).find((item) => new URL(item.url, location.origin).pathname === admin);
-          this.openAdminPage(known || { key: 'link', label: 'Admin', url: admin });
+          this.openAdminPage(known || { key: 'link', label: t('Admin'), url: admin });
         } else if (open && this.server && this.widgets.some((widget) => widget.key === open)) {
           this.open(open);
         } else return;
@@ -265,13 +274,13 @@
        * proportion on smaller ones (a 1080p screen gets about 0.75). Phones keep their own layout.
        * Inside the host mode pane nothing extra is applied: the frame is scaled with the page around it.
        * Appearance → Element size replaces the automatic size with a fixed one, limited to what the window
-       * can show (at least a 1280 × 720 layout stays visible).
+       * can show (at least a 1280 × 720 layout stays visible). Host mode has its own element size.
        */
       uiScale: 1,
       applyScale() {
         if (typeof window === 'undefined' || !this.$root?.style) return;
         let scale = 1;
-        const chosen = Number(window.simplifyThemeConfig?.layout_scale) || 0;
+        const chosen = Number(window.simplifyThemeConfig?.[this.hostMode && !this.server ? 'layout_scale_host' : 'layout_scale']) || 0;
         // Inside the host mode pane the frame is already scaled with the page around it.
         if (!this.embedded && window.innerWidth > 900) {
           scale = chosen
@@ -371,18 +380,18 @@
           items.push({
             id: 'pending',
             tone: pending.error ? 'danger' : 'warn',
-            title: pending.error ? 'Changes need attention' : 'Changes are waiting for a restart',
-            text: pending.error || (pending.restart_at ? 'A restart is scheduled to apply your changes.' : 'Restart the server to apply your saved changes.'),
-            action: this.showWidget('restart') && !pending.restart_requested ? { label: 'Restart now', url: '#', run: () => this.restartChanges(0) } : null,
+            title: pending.error ? t('Changes need attention') : t('Changes are waiting for a restart'),
+            text: pending.error || (pending.restart_at ? t('A restart is scheduled to apply your changes.') : t('Restart the server to apply your saved changes.')),
+            action: this.showWidget('restart') && !pending.restart_requested ? { label: t('Restart now'), url: '#', run: () => this.restartChanges(0) } : null,
           });
         }
         const health = this.boot.host_health;
         if (!this.server && ['warning', 'critical'].includes(health?.state)) {
-          items.push({ id: 'health', tone: health.state === 'critical' ? 'danger' : 'warn', title: 'Host health: ' + (health.label || 'Attention needed'), text: (health.available ?? 0) + ' of ' + (health.hosts ?? 0) + ' hosts reporting.', action: null });
+          items.push({ id: 'health', tone: health.state === 'critical' ? 'danger' : 'warn', title: t('Host health: :state', { state: t(health.label || 'Attention needed') }), text: t(':available of :hosts hosts reporting.', { available: health.available ?? 0, hosts: health.hosts ?? 0 }), action: null });
         }
         const update = this.boot.update;
         if (update?.available) {
-          items.push({ id: 'update', tone: 'info', title: 'Simplify ' + update.version + ' is available', text: 'You are running ' + (update.current || 'an older version') + '. Update from the Plugins page.', action: update.url ? { label: 'Open plugins', url: update.url } : null });
+          items.push({ id: 'update', tone: 'info', title: t('Simplify :version is available', { version: update.version }), text: t('You are running :current. Update from the Plugins page.', { current: update.current || t('an older version') }), action: update.url ? { label: t('Open plugins'), url: update.url } : null });
         }
         for (const notice of this.boot.notices || []) items.push({ action: null, ...notice });
         for (const notice of this.panelNotices) items.push({ action: null, ...notice, pelican: true });
@@ -429,6 +438,7 @@
         try {
           localStorage.setItem(this.hostModeKey(), this.hostMode ? '1' : '0');
         } catch {}
+        this.applyScale();
       },
       hostPages() {
         const items = this.adminPages().flatMap((group) => group.items);
@@ -438,15 +448,15 @@
       /** Admin pages merged into a few colour-coded sections; pages from other plugins go to Extensions. */
       hostSections() {
         const plan = [
-          { key: 'servers', label: 'Servers', icon: 'host', color: '#5fb87a', pages: ['easycreator', 'gamecreator', 'eggresource', 'mountresource'] },
-          { key: 'nodes', label: 'Nodes', icon: 'monitor', color: '#5b9cf0', pages: ['noderesource', 'backuphostresource'] },
-          { key: 'people', label: 'People', icon: 'players', color: '#a78bfa', pages: ['userresource', 'roleresource'] },
-          { key: 'integrations', label: 'Integrations', icon: 'database', color: '#f0a35b', pages: ['databasehostresource', 'apikeyresource', 'webhookresource'] },
-          { key: 'plugins', label: 'Plugins', icon: 'plugins', color: '#f472b6', pages: ['pluginresource'] },
-          { key: 'panel', label: 'Panel', icon: 'gear', color: '#94a3b8', pages: ['settings', 'listlogs'] },
-          { key: 'legacy', label: 'Legacy', icon: 'legacy', color: '#a8a29e', pages: ['serverresource', 'legacyplugins', 'legacyusers', 'legacyroles'] },
-          { key: 'extensions', label: 'External', icon: 'plugins', color: '#2dd4bf', pages: [] },
-          { key: 'health', label: 'Health', icon: 'heart', color: '#f87171', pages: ['health'] },
+          { key: 'servers', label: t('Servers'), icon: 'host', color: '#5fb87a', pages: ['easycreator', 'gamecreator', 'eggresource', 'mountresource'] },
+          { key: 'nodes', label: t('Nodes'), icon: 'monitor', color: '#5b9cf0', pages: ['noderesource', 'backuphostresource'] },
+          { key: 'people', label: t('People'), icon: 'players', color: '#a78bfa', pages: ['userresource', 'roleresource'] },
+          { key: 'integrations', label: t('Integrations'), icon: 'database', color: '#f0a35b', pages: ['databasehostresource', 'apikeyresource', 'webhookresource'] },
+          { key: 'plugins', label: t('Plugins'), icon: 'plugins', color: '#f472b6', pages: ['pluginresource'] },
+          { key: 'panel', label: t('Panel'), icon: 'gear', color: '#94a3b8', pages: ['settings', 'listlogs'] },
+          { key: 'legacy', label: t('Legacy'), icon: 'legacy', color: '#a8a29e', pages: ['serverresource', 'legacyplugins', 'legacyusers', 'legacyroles'] },
+          { key: 'extensions', label: t('External'), icon: 'plugins', color: '#2dd4bf', pages: [] },
+          { key: 'health', label: t('Health'), icon: 'heart', color: '#f87171', pages: ['health'] },
         ];
         const items = [...this.adminPages().flatMap((group) => group.items), ...(this.boot.host_extras || [])];
         const known = new Set(plan.flatMap((section) => section.pages));
@@ -549,7 +559,7 @@
         this.notifyMenu = false;
         this.incomingShown = false;
         const known = this.hostSections().flatMap((section) => section.pages).find((item) => new URL(item.url, location.origin).pathname === admin);
-        this.openAdminPage(known || { key: 'link', label: action.label || 'Admin', url: admin });
+        this.openAdminPage(known || { key: 'link', label: action.label || t('Admin'), url: admin });
       },
       async markPanelNoticesRead(keys) {
         const ids = keys.filter(Boolean);
@@ -559,7 +569,7 @@
           const items = await wire.markPanelNotificationsRead(ids);
           if (Array.isArray(items)) this.panelNotices = items;
         } catch {
-          this.toast('Notifications could not be marked as read.', 'warn');
+          this.toast(t('Notifications could not be marked as read.'), 'warn');
         }
       },
       enhanceCopyright() {
@@ -573,7 +583,7 @@
           line.setAttribute('data-ps-copyright-line', '');
           const credit = document.createElement('span');
           credit.dataset.psAttribution = '';
-          credit.append(document.createTextNode(' - Enhanced by '));
+          credit.append(document.createTextNode(' - ' + t('Enhanced by') + ' '));
           const link = document.createElement('a');
           link.href = 'https://github.com/jerajerajerajera/PelicanSimplify';
           link.className = 'ps-project-link';
@@ -581,7 +591,7 @@
           link.target = '_blank';
           link.rel = 'noopener noreferrer';
           credit.append(link);
-          if (this.boot.build_version) credit.append(document.createTextNode(' · Build ' + this.boot.build_version));
+          if (this.boot.build_version) credit.append(document.createTextNode(' · ' + t('Build :version', { version: this.boot.build_version })));
           line.append(credit);
         }
       },
@@ -684,13 +694,17 @@
         this.overviewPowerBusy = s.uuid;
         try {
           await wire.overviewPower(s.uuid, action);
-          this.toast(POWER_LABELS[action] + ' sent to ' + (s.alias || s.name), 'ok');
+          this.toast(t(':action sent to :name', { action: POWER_LABELS[action], name: s.alias || s.name }), 'ok');
           await this.refreshOverview();
         } catch (error) {
-          this.toast(error?.message || 'The power action could not be sent.', 'danger');
+          this.toast(error?.message || t('The power action could not be sent.'), 'danger');
         } finally {
           this.overviewPowerBusy = null;
         }
+      },
+      /** Pelican's server state for display (the badge styles still use the raw state as class). */
+      statusLabel(state) {
+        return { running: t('Running'), starting: t('Starting'), stopping: t('Stopping'), offline: t('Offline'), installing: t('Installing'), install_failed: t('Installation failed'), suspended: t('Suspended'), restoring_backup: t('Restoring backup') }[state] || state;
       },
       /** Large and secondary card names, following the "Large name" preference. */
       cardNames(s) {
@@ -709,13 +723,13 @@
         if (available > 0 && title.scrollWidth > available) title.style.fontSize = Math.max(10, Math.floor((base * available) / title.scrollWidth)) + 'px';
       },
       softwareTooltip(s) {
-        const software = String(s.software || 'Server software').trim();
+        const software = String(s.software || t('Server software')).trim();
         const raw = String(s.reported_version || s.minecraft_version || '').trim();
         const version = s.game === 'minecraft' ? raw.match(MINECRAFT_VERSION)?.[1] || '' : raw;
-        return (s.status === 'running' ? 'Running ' : '') + software + (version ? ' · ' + version : '');
+        return (s.status === 'running' ? t('Running :software', { software }) : software) + (version ? ' · ' + version : '');
       },
       gameLabel(s) {
-        return s.game === 'minecraft' ? 'Minecraft' : String(s.game_label || 'Other game').trim() || 'Other game';
+        return s.game === 'minecraft' ? 'Minecraft' : String(s.game_label || t('Other game')).trim() || t('Other game');
       },
       gameKey(s) {
         return this.gameLabel(s).toLocaleLowerCase();
@@ -734,7 +748,7 @@
         const nodes = new Map();
         for (const s of this.boot.servers || []) {
           const id = Number(s.node_id);
-          if (!nodes.has(id)) nodes.set(id, { id, name: s.node_name || names.get(id) || 'Node ' + id });
+          if (!nodes.has(id)) nodes.set(id, { id, name: s.node_name || names.get(id) || t('Node :id', { id }) });
         }
         return [...nodes.values()].sort((a, b) => a.name.localeCompare(b.name));
       },
@@ -866,8 +880,8 @@
         return n >= 95 ? 'critical' : n >= 85 ? 'warning' : 'healthy';
       },
       hostMetricLabel(kind, h = this.boot.host_health) {
-        if (kind === 'network') return this.hostMetricState(kind, h) === 'healthy' ? 'Traffic reported; bandwidth capacity unknown' : 'Unavailable';
-        return { healthy: 'Healthy', warning: 'High load', critical: 'Critical load', unavailable: 'Unavailable' }[this.hostMetricState(kind, h)] || 'Unavailable';
+        if (kind === 'network') return this.hostMetricState(kind, h) === 'healthy' ? t('Traffic reported; bandwidth capacity unknown') : t('Unavailable');
+        return { healthy: t('Healthy'), warning: t('High load'), critical: t('Critical load'), unavailable: t('Unavailable') }[this.hostMetricState(kind, h)] || t('Unavailable');
       },
       hostFill(kind, h = this.boot.host_health) {
         if (kind === 'network') return (h?.network_rx_bytes ?? 0) + (h?.network_tx_bytes ?? 0) > 0 ? 100 : 0;
@@ -1007,7 +1021,7 @@
             return;
           }
           await this.refreshOverview();
-          this.toast('Server created. Installation has started.', 'ok');
+          this.toast(t('Server created. Installation has started.'), 'ok');
           return;
         }
         this.styleFrame(frame, this.createGame === 'minecraft' ? 'create' : 'native');
@@ -1032,10 +1046,10 @@
           frame.contentWindow.addEventListener('simplify-settings-saved', () => {
             if (this.modal !== 'panel-settings' || this.destroyed) return;
             this.settingsChanged = true;
-            this.toast('Settings saved', 'ok');
+            this.toast(t('Settings saved'), 'ok');
           });
         } catch {
-          this.toast('Settings could not be opened.', 'danger');
+          this.toast(t('Settings could not be opened.'), 'danger');
         }
       },
       openAccount() {
@@ -1048,7 +1062,7 @@
         this.openPopup('alias');
       },
       async saveAlias() {
-        const result = await this.run(() => wire.saveAlias(this.aliasDraft), 'Alias saved');
+        const result = await this.run(() => wire.saveAlias(this.aliasDraft), t('Alias saved'));
         if (result !== SKIPPED && result) Object.assign(this.server, result);
       },
 
@@ -1057,7 +1071,7 @@
         const match = String(this.server?.reported_version || '').match(MINECRAFT_VERSION);
         if (match) return match[1];
         const saved = String(this.server?.pack?.version || '').trim();
-        return /^(?:1\.[0-9]+(?:\.[0-9]+)?|2[6-9]\.[0-9]+(?:\.[0-9]+)?)$/.test(saved) ? saved : 'Not reported';
+        return /^(?:1\.[0-9]+(?:\.[0-9]+)?|2[6-9]\.[0-9]+(?:\.[0-9]+)?)$/.test(saved) ? saved : t('Not reported');
       },
       /** Read-only MOTD rendering for cards and the server header (the editor lives in motd.js). */
       motdPreview(value) {
@@ -1112,13 +1126,13 @@
           if (message) this.toast(message, 'ok');
           return result;
         } catch (e) {
-          this.toast(e?.message || 'The action could not be completed.', 'danger');
+          this.toast(e?.message || t('The action could not be completed.'), 'danger');
           return SKIPPED;
         } finally {
           this.busy = false;
         }
       },
-      async copy(text, message = 'Address copied') {
+      async copy(text, message = t('Address copied')) {
         try {
           await navigator.clipboard.writeText(text);
         } catch {
@@ -1153,9 +1167,9 @@
       },
       /* Resource presets: the same choices as in the server creator, plus your own value. */
       resourceGroups: [
-        { key: 'memory_gb', label: 'RAM', icon: 'ram', custom: 'Custom RAM in GB', min: 1, max: 128, presets: [[2, '2 GB', 'Small worlds'], [4, '4 GB', 'Everyday play'], [8, '8 GB', 'More headroom'], [12, '12 GB', 'Larger modpacks']] },
-        { key: 'cpu', label: 'CPU allocation', icon: 'cpu', custom: 'Custom CPU (%)', min: 1, max: 1600, presets: [[100, '100%', '1 CPU core'], [150, '150%', '1.5 CPU cores'], [200, '200%', '2 CPU cores'], [400, '400%', '4 CPU cores']] },
-        { key: 'disk_mb', label: 'Disk allocation', icon: 'disk', custom: 'Custom disk (MB)', min: 1024, max: 10485760, presets: [[5120, '5 GB', '5 GB storage'], [10240, '10 GB', '10 GB storage'], [20480, '20 GB', '20 GB storage'], [40960, '40 GB', '40 GB storage']] },
+        { key: 'memory_gb', label: 'RAM', icon: 'ram', custom: t('Custom RAM in GB'), min: 1, max: 128, presets: [[2, '2 GB', t('Small worlds')], [4, '4 GB', t('Everyday play')], [8, '8 GB', t('More headroom')], [12, '12 GB', t('Larger modpacks')]] },
+        { key: 'cpu', label: t('CPU allocation'), icon: 'cpu', custom: t('Custom CPU (%)'), min: 1, max: 1600, presets: [[100, '100%', t('1 CPU core')], [150, '150%', t('1.5 CPU cores')], [200, '200%', t('2 CPU cores')], [400, '400%', t('4 CPU cores')]] },
+        { key: 'disk_mb', label: t('Disk allocation'), icon: 'disk', custom: t('Custom disk (MB)'), min: 1024, max: 10485760, presets: [[5120, '5 GB', t('5 GB storage')], [10240, '10 GB', t('10 GB storage')], [20480, '20 GB', t('20 GB storage')], [40960, '40 GB', t('40 GB storage')]] },
       ],
       resourceCustom: {},
       resourceChoice(group) {
@@ -1200,29 +1214,29 @@
       },
       widgetTitle(widget) {
         if (!this.server?.minecraft) {
-          if (widget.key === 'settings') return 'Server settings';
-          if (widget.key === 'software') return 'Startup settings';
+          if (widget.key === 'settings') return t('Server settings');
+          if (widget.key === 'software') return t('Startup settings');
         }
         return widget.title;
       },
       widgetDescription(widget) {
         if (this.server?.minecraft) return widget.description;
         return {
-          settings: 'Server name & appearance',
-          software: (this.server?.software || 'Game') + ' startup variables',
-          advanced: 'Runtime details & ' + (this.server?.software || 'server') + ' management',
+          settings: t('Server name & appearance'),
+          software: t(':software startup variables', { software: this.server?.software || t('Game') }),
+          advanced: t('Runtime details & :software management', { software: this.server?.software || t('server') }),
         }[widget.key] || widget.description;
       },
       modalTitle() {
-        if (this.modal === 'alias') return 'Change server alias';
-        if (this.modal === 'background') return 'Server background';
-        if (this.modal === 'panel-settings') return this.settingsSection === 'banners' ? 'Server banners' : 'Simplify settings';
-        if (this.modal === 'create') return { other: 'Create other server', native: 'Create server' }[this.createGame] || 'Create Minecraft server';
-        if (this.modal === 'account') return 'Profile';
-        if (this.modal === 'admin-page') return this.adminPage?.label || 'Admin';
-        if (this.modal === 'external') return (this.externalPage?.label || 'External') + (this.externalPage?.plugin && this.externalPage.plugin !== this.externalPage.label ? ' · ' + this.externalPage.plugin : '');
+        if (this.modal === 'alias') return t('Change server alias');
+        if (this.modal === 'background') return t('Server background');
+        if (this.modal === 'panel-settings') return this.settingsSection === 'banners' ? t('Server banners') : t('Simplify settings');
+        if (this.modal === 'create') return { other: t('Create other server'), native: t('Create server') }[this.createGame] || t('Create Minecraft server');
+        if (this.modal === 'account') return t('Profile');
+        if (this.modal === 'admin-page') return this.adminPage?.label || t('Admin');
+        if (this.modal === 'external') return (this.externalPage?.label || t('External')) + (this.externalPage?.plugin && this.externalPage.plugin !== this.externalPage.label ? ' · ' + this.externalPage.plugin : '');
         const widget = this.widgets.find((w) => w.key === this.modal);
-        return (widget ? this.widgetTitle(widget) : null) || (this.modal === 'restart' ? 'Schedule restart' : 'Workspace');
+        return (widget ? this.widgetTitle(widget) : null) || (this.modal === 'restart' ? t('Schedule restart') : t('Workspace'));
       },
       /** Every popup has a fixed size: small for short forms, large for embedded or list workspaces. */
       modalSize() {
@@ -1235,17 +1249,17 @@
       },
       settingsTabs() {
         return [
-          { key: 'general', label: 'General', icon: 'edit' },
-          { key: 'gameplay', label: 'Gameplay', icon: 'settings' },
+          { key: 'general', label: t('General'), icon: 'edit' },
+          { key: 'gameplay', label: t('Gameplay'), icon: 'settings' },
           { key: 'motd', label: 'MOTD', icon: 'image' },
         ];
       },
       backupPolicyLabel() {
         const options = this.server?.backup_options || {};
-        if (options.enabled === false) return 'Paused for this server';
+        if (options.enabled === false) return t('Paused for this server');
         const minutes = Number(options.interval_minutes) || 360;
-        const every = minutes % 60 === 0 ? (minutes === 60 ? 'Every hour' : 'Every ' + minutes / 60 + ' hours') : 'Every ' + minutes + ' minutes';
-        return every + ' · ' + (options.retention || 2) + ' recovery points' + (options.only_when_used !== false ? ' · skipped while the server has not run' : '');
+        const every = minutes % 60 === 0 ? (minutes === 60 ? t('Every hour') : t('Every :count hours', { count: minutes / 60 })) : t('Every :count minutes', { count: minutes });
+        return every + ' · ' + t(':count recovery points', { count: options.retention || 2 }) + (options.only_when_used !== false ? ' · ' + t('skipped while the server has not run') : '');
       },
       /** Server workspaces open inside the page instead of as a popup. */
       docked() {
@@ -1301,7 +1315,7 @@
         const current = () => !this.destroyed && this.modalRequest === request && this.modal === key;
         const load = async (fn) => {
           const value = await fn();
-          if (!current()) throw new Error('Workspace closed');
+          if (!current()) throw new Error(t('Workspace closed'));
           return value;
         };
         try {
@@ -1313,7 +1327,7 @@
             this.packageResults = [];
             this.packageVersion = '';
             this.installed = await load(() => wire.installedPackages());
-            if (this.installed.context?.kind !== key) throw new Error('This server does not support ' + key + '.');
+            if (this.installed.context?.kind !== key) throw new Error(t('This server does not support :kind.', { kind: key }));
             this.packageVersion = this.installed.context?.version || '';
           }
           if (['advanced', 'software', 'connection'].includes(key) && (key !== 'software' || this.server?.minecraft)) {
@@ -1329,7 +1343,7 @@
           if (key === 'backups') this.backupSettings = { only_when_used: true, ...this.server?.backup_options };
         } catch (e) {
           if (current()) {
-            this.toast(e?.message || 'This section is unavailable.', 'danger');
+            this.toast(e?.message || t('This section is unavailable.'), 'danger');
             this.modal = null;
           }
         } finally {
@@ -1341,7 +1355,7 @@
       },
       async close() {
         if (this.busy || this.closingCreator) return;
-        if (this.fileEditorDirty && !(await this.ask({ title: 'Discard unsaved file changes?', message: 'Your edits in the file editor have not been saved.', confirmLabel: 'Discard changes', tone: 'danger' }))) return;
+        if (this.fileEditorDirty && !(await this.ask({ title: t('Discard unsaved file changes?'), message: t('Your edits in the file editor have not been saved.'), confirmLabel: t('Discard changes'), tone: 'danger' }))) return;
         this.fileEditorUrl = null;
         this.fileEditorDirty = false;
         this.sftpOpen = false;
@@ -1351,9 +1365,9 @@
           try {
             const save = this.$root?.querySelector('iframe[title="Create server"]')?.contentWindow?.sscSaveDraft;
             if (save) await save();
-            else if (!(await this.ask({ title: 'Leave the creator?', message: 'Unsaved changes may be lost.', confirmLabel: 'Leave' }))) return;
+            else if (!(await this.ask({ title: t('Leave the creator?'), message: t('Unsaved changes may be lost.'), confirmLabel: t('Leave') }))) return;
           } catch {
-            this.toast('Draft could not be saved. Please try again before closing.', 'danger');
+            this.toast(t('Draft could not be saved. Please try again before closing.'), 'danger');
             return;
           } finally {
             this.closingCreator = false;
@@ -1437,7 +1451,7 @@
                 socket.close();
               }
             }
-            if (event === 'install completed') this.toast('Installation completed. Refresh this dashboard to load the new software details.', 'ok');
+            if (event === 'install completed') this.toast(t('Installation completed. Refresh this dashboard to load the new software details.'), 'ok');
           };
           socket.onerror = () => (this.connected = false);
           socket.onclose = () => {
@@ -1485,7 +1499,7 @@
       metricLimit(key) {
         if (key === 'network') {
           const n = this.stats.network;
-          return 'Used ' + (n?.rx_bytes == null || n?.tx_bytes == null ? '—' : '↓ ' + this.trafficBytes(n.rx_bytes) + ' / ↑ ' + this.trafficBytes(n.tx_bytes)) + ' · since server start';
+          return t('Used :amount · since server start', { amount: n?.rx_bytes == null || n?.tx_bytes == null ? '—' : '↓ ' + this.trafficBytes(n.rx_bytes) + ' / ↑ ' + this.trafficBytes(n.tx_bytes) });
         }
         if (key === 'cpu') return `of ${this.server?.cpu || '∞'}% allocated`;
         return `of ${this.bytes(((key === 'ram' ? this.server?.memory : this.server?.disk) || 0) * 1048576)} allocated`;
@@ -1508,7 +1522,7 @@
           if (this.destroyed) return;
           const wasSettingUp = this.serverSetup() === 'installing';
           Object.assign(this.server, info);
-          if (wasSettingUp && !this.serverSetup()) this.toast('Your server is ready.', 'ok');
+          if (wasSettingUp && !this.serverSetup()) this.toast(t('Your server is ready.'), 'ok');
           this.renderLogs();
         } catch {
         } finally {
@@ -1520,12 +1534,12 @@
         const p = this.server?.permissions || {};
         if (this.eulaPrompted || !p['file.update'] || !p['control.start']) return;
         this.eulaPrompted = true;
-        if (!(await this.ask({ title: 'Accept the Minecraft EULA?', message: 'This server stopped because the Minecraft EULA has not been accepted yet. Read it at minecraft.net/eula. Accepting writes eula=true to eula.txt and starts the server.', confirmLabel: 'Accept and start' }))) return;
-        await this.run(() => wire.acceptEula(), 'EULA accepted, start sent');
+        if (!(await this.ask({ title: t('Accept the Minecraft EULA?'), message: t('This server stopped because the Minecraft EULA has not been accepted yet. Read it at minecraft.net/eula. Accepting writes eula=true to eula.txt and starts the server.'), confirmLabel: t('Accept and start') }))) return;
+        await this.run(() => wire.acceptEula(), t('EULA accepted, start sent'));
       },
       async power(action) {
-        if (action === 'kill' && !(await this.ask({ title: 'Force stop this server?', message: 'The server stops immediately. Unsaved game progress may be lost.', confirmLabel: 'Force stop', tone: 'danger' }))) return;
-        const result = await this.run(() => wire.power(action), action === 'restart' && this.server.pending ? 'Restart queued' : POWER_LABELS[action] + ' sent');
+        if (action === 'kill' && !(await this.ask({ title: t('Force stop this server?'), message: t('The server stops immediately. Unsaved game progress may be lost.'), confirmLabel: t('Force stop'), tone: 'danger' }))) return;
+        const result = await this.run(() => wire.power(action), action === 'restart' && this.server.pending ? t('Restart queued') : t(':action sent', { action: POWER_LABELS[action] }));
         if (result !== SKIPPED && ['restart', 'stop'].includes(action) && this.server.pending) Object.assign(this.server, await wire.refreshInfo());
       },
 
@@ -1537,15 +1551,15 @@
         this.openPopup('background');
       },
       async uploadBanner() {
-        const result = await this.run(() => wire.uploadServerBanner(), 'Banner uploaded');
+        const result = await this.run(() => wire.uploadServerBanner(), t('Banner uploaded'));
         if (result === SKIPPED || !result) return;
         this.uploadedBackgrounds = result.uploaded_backgrounds || [];
         this.backgroundDraft = result.background_id;
         Object.assign(this.server, result);
       },
       async deleteBanner(id) {
-        if (this.busy || !(await this.ask({ title: 'Remove this uploaded banner?', message: 'Servers using it return to their automatic background.', confirmLabel: 'Remove banner', tone: 'danger' }))) return;
-        const result = await this.run(() => wire.deleteServerBanner(id), 'Banner removed');
+        if (this.busy || !(await this.ask({ title: t('Remove this uploaded banner?'), message: t('Servers using it return to their automatic background.'), confirmLabel: t('Remove banner'), tone: 'danger' }))) return;
+        const result = await this.run(() => wire.deleteServerBanner(id), t('Banner removed'));
         if (result === SKIPPED || !result) return;
         this.uploadedBackgrounds = result.uploaded_backgrounds || [];
         this.backgroundDraft = result.background_id;
@@ -1553,7 +1567,7 @@
       },
       async saveBackground() {
         if (this.busy || !this.server?.permissions?.['settings.rename']) return;
-        const result = await this.run(() => wire.saveServerBackground(this.backgroundDraft), 'Server background saved');
+        const result = await this.run(() => wire.saveServerBackground(this.backgroundDraft), t('Server background saved'));
         if (result === SKIPPED || !result || !Object.hasOwn(result, 'background')) return;
         Object.assign(this.server, result);
       },
@@ -1573,7 +1587,7 @@
       },
       async saveServerColor(color) {
         if (!this.server?.permissions?.['settings.rename'] || this.busy) return false;
-        const saved = await this.run(() => wire.saveServerColor(color), 'Server color saved');
+        const saved = await this.run(() => wire.saveServerColor(color), t('Server color saved'));
         if (typeof saved !== 'string' || !/^#[0-9a-f]{6}$/i.test(saved)) return false;
         this.server.color = saved;
         try {
@@ -1592,21 +1606,21 @@
         try {
           Object.assign(this.server, await wire.refreshInfo());
         } catch {}
-        if (result?.changed === false) this.toast('No changes to save.', 'info');
-        else if (result?.pending) this.toast('Changes saved. Stop or restart to apply them.', 'ok');
-        else this.toast('Changes applied. They will load at the next start.', 'ok');
+        if (result?.changed === false) this.toast(t('No changes to save.'), 'info');
+        else if (result?.pending) this.toast(t('Changes saved. Stop or restart to apply them.'), 'ok');
+        else this.toast(t('Changes applied. They will load at the next start.'), 'ok');
       },
       async rename() {
         const name = this.name;
-        const result = await this.run(() => wire.rename(name), 'Server renamed');
+        const result = await this.run(() => wire.rename(name), t('Server renamed'));
         if (result !== SKIPPED) this.server.name = name;
       },
       async discard() {
-        const result = await this.run(() => wire.discard(), this.server?.pending?.file_only ? 'Restart reminder dismissed' : 'Pending changes discarded');
+        const result = await this.run(() => wire.discard(), this.server?.pending?.file_only ? t('Restart reminder dismissed') : t('Pending changes discarded'));
         if (result !== SKIPPED) this.server.pending = null;
       },
       async restartChanges(minutes) {
-        const result = await this.run(() => wire.restartChanges(Number(minutes)), minutes ? 'Restart scheduled' : 'Restart queued. Settings will be applied when the server is stopped.');
+        const result = await this.run(() => wire.restartChanges(Number(minutes)), minutes ? t('Restart scheduled') : t('Restart queued. Settings will be applied when the server is stopped.'));
         if (result === SKIPPED) return;
         if (this.modal === 'restart') this.modal = null;
         try {
@@ -1616,28 +1630,28 @@
       async saveListing(value) {
         const listing = this.server?.website_listing;
         if (!listing) return;
-        const result = await this.run(() => wire.saveListing(value), value ? 'Shown on the website' : 'Hidden from the website');
+        const result = await this.run(() => wire.saveListing(value), value ? t('Shown on the website') : t('Hidden from the website'));
         if (result !== SKIPPED) listing.visible = result === true;
       },
       async toggleWeb(s, value) {
-        const result = await this.run(() => wire.saveWebsite({ visible: value }, s.uuid), 'Website visibility updated');
+        const result = await this.run(() => wire.saveWebsite({ visible: value }, s.uuid), t('Website visibility updated'));
         s.visible = result === SKIPPED ? !value : value;
       },
       async saveWebsite() {
         const state = { ...this.website };
         delete state.display_name;
-        await this.run(() => wire.saveWebsite(state), 'Website settings saved');
+        await this.run(() => wire.saveWebsite(state), t('Website settings saved'));
       },
       async saveSubdomain() {
         if (!this.advanced?.subdomains) {
-          await this.run(() => wire.subdomain(this.requestedSubdomain), 'Subdomain request saved. DNS will be connected later.');
+          await this.run(() => wire.subdomain(this.requestedSubdomain), t('Subdomain request saved. DNS will be connected later.'));
           return;
         }
         const name = this.requestedSubdomain.trim().toLowerCase();
         const result = await this.run(() => wire.subdomain(name));
         if (result === SKIPPED) return;
         if (result?.error) return this.toast(result.error, 'danger');
-        this.toast(name ? 'Subdomain saved. Connecting…' : 'Subdomain removed', 'ok');
+        this.toast(name ? t('Subdomain saved. Connecting…') : t('Subdomain removed'), 'ok');
         // Cloudflare is called right after the response; one follow-up read shows the outcome.
         await new Promise((resolve) => setTimeout(resolve, 2500));
         await this.refreshConnection();
@@ -1654,24 +1668,24 @@
         const state = this.advanced?.subdomain || {};
         if (!state.name) return null;
         return {
-          active: { tone: 'is-ok', label: 'Connected' },
-          pending: { tone: 'is-info', label: 'Connecting…' },
-          removing: { tone: 'is-info', label: 'Removing…' },
-          error: { tone: 'is-danger', label: 'Not connected' },
+          active: { tone: 'is-ok', label: t('Connected') },
+          pending: { tone: 'is-info', label: t('Connecting…') },
+          removing: { tone: 'is-info', label: t('Removing…') },
+          error: { tone: 'is-danger', label: t('Not connected') },
         }[state.status] || null;
       },
 
       /* Players and packages ------------------------------------------------------------------- */
       async playerAction(action) {
         if (!/^[A-Za-z0-9_]{1,16}$/.test(this.playerName)) {
-          this.toast('Enter a valid Minecraft username.', 'warn');
+          this.toast(t('Enter a valid Minecraft username.'), 'warn');
           return;
         }
-        if (['OP', 'Ban', 'Kick'].includes(action) && !(await this.ask({ title: action + ' ' + this.playerName + '?', message: action === 'OP' ? 'Operators can run every server command.' : 'The player is removed from the server.', confirmLabel: action, tone: action === 'OP' ? 'primary' : 'danger' }))) return;
+        if (['OP', 'Ban', 'Kick'].includes(action) && !(await this.ask({ title: t(':action :player?', { action: action === 'OP' ? 'OP' : t(action), player: this.playerName }), message: action === 'OP' ? t('Operators can run every server command.') : t('The player is removed from the server.'), confirmLabel: action === 'OP' ? 'OP' : t(action), tone: action === 'OP' ? 'primary' : 'danger' }))) return;
         const prefixes = { Whitelist: 'whitelist add', Unwhitelist: 'whitelist remove', OP: 'op', DeOP: 'deop', Kick: 'kick', Ban: 'ban', Unban: 'pardon' };
         this.command = prefixes[action] + ' ' + this.playerName;
         this.sendCommand();
-        this.toast('Command sent. The console shows the result.', 'ok');
+        this.toast(t('Command sent. The console shows the result.'), 'ok');
         setTimeout(async () => {
           try {
             this.playerLists = await wire.players();
@@ -1685,12 +1699,12 @@
         this.packageVersion = result.context.version;
       },
       async installPackage(id) {
-        const result = await this.run(() => wire.installPackage(id, this.packageVersion), 'Package installed. Start the server to load it.');
+        const result = await this.run(() => wire.installPackage(id, this.packageVersion), t('Package installed. Start the server to load it.'));
         if (result !== SKIPPED) this.installed = await wire.installedPackages();
       },
       async removePackage(file) {
-        if (!(await this.ask({ title: 'Remove ' + file + '?', message: 'A copy is kept in the server package backup folder.', confirmLabel: 'Remove', tone: 'danger' }))) return;
-        const result = await this.run(() => wire.removePackage(file), 'Package removed');
+        if (!(await this.ask({ title: t('Remove :file?', { file }), message: t('A copy is kept in the server package backup folder.'), confirmLabel: t('Remove'), tone: 'danger' }))) return;
+        const result = await this.run(() => wire.removePackage(file), t('Package removed'));
         if (result !== SKIPPED) this.installed = await wire.installedPackages();
       },
       tracked(file) {
@@ -1709,15 +1723,15 @@
       },
       async changeSoftware() {
         if (this.softwareConfirm !== this.server.name) {
-          this.toast('Enter the exact server name.', 'warn');
+          this.toast(t('Enter the exact server name.'), 'warn');
           return;
         }
-        if (!(await this.ask({ title: 'Reinstall this server?', message: 'The selected software is installed. Existing files may change.', confirmLabel: 'Reinstall', tone: 'danger' }))) return;
-        await this.run(() => wire.changeSoftware(this.software, this.softwareConfirm), 'Software installation started');
+        if (!(await this.ask({ title: t('Reinstall this server?'), message: t('The selected software is installed. Existing files may change.'), confirmLabel: t('Reinstall'), tone: 'danger' }))) return;
+        await this.run(() => wire.changeSoftware(this.software, this.softwareConfirm), t('Software installation started'));
       },
       async deleteServer() {
         if (this.busy) return;
-        if (!(await this.ask({ title: 'Delete ' + this.server.name + '?', message: 'The server and all of its files are removed permanently.', confirmLabel: 'Delete server', tone: 'danger' }))) return;
+        if (!(await this.ask({ title: t('Delete :name?', { name: this.server.name }), message: t('The server and all of its files are removed permanently.'), confirmLabel: t('Delete server'), tone: 'danger' }))) return;
         this.stopServerTimers();
         const result = await this.run(() => wire.deleteServer(this.deleteConfirm));
         if (result === SKIPPED) {
@@ -1735,7 +1749,7 @@
 
       /* Backups ------------------------------------------------------------------------------------ */
       async saveBackups() {
-        const result = await this.run(() => wire.backupOptions(this.backupSettings), 'Backup policy saved');
+        const result = await this.run(() => wire.backupOptions(this.backupSettings), t('Backup policy saved'));
         if (result !== SKIPPED) this.server.backup_options = { ...this.backupSettings };
       },
       async downloadBackup(uuid) {
@@ -1743,16 +1757,16 @@
         if (url !== SKIPPED && url) location.href = this.safeLink(url);
       },
       async restoreBackup(uuid) {
-        const confirmation = await window.Simplify?.prompt?.({ title: 'Restore this backup?', message: 'Stop the server first. Current files are replaced by the backup.', requireText: this.server.name, confirmLabel: 'Restore backup', tone: 'danger' });
+        const confirmation = await window.Simplify?.prompt?.({ title: t('Restore this backup?'), message: t('Stop the server first. Current files are replaced by the backup.'), requireText: this.server.name, confirmLabel: t('Restore backup'), tone: 'danger' });
         if (confirmation === null || confirmation === undefined) return;
-        await this.run(() => wire.restoreBackup(uuid, confirmation), 'Backup restoration started.');
+        await this.run(() => wire.restoreBackup(uuid, confirmation), t('Backup restoration started.'));
       },
       bannerUploadChanged(event) {
         const file = event.target.files?.[0], limit = this.boot.banner_upload_bytes ?? 5242880;
         if (file && file.size > limit) {
           event.stopImmediatePropagation();
           event.target.value = '';
-          this.toast('This banner exceeds the panel upload limit (' + this.bytes(limit) + '). See System checks.', 'warn');
+          this.toast(t('This banner exceeds the panel upload limit (:limit). See System checks.', { limit: this.bytes(limit) }), 'warn');
         }
       },
       sftpLink() {
@@ -1776,7 +1790,7 @@
       },
       async openFileEditor(url) {
         if (this.busy) return;
-        if (this.fileEditorDirty && !(await this.ask({ title: 'Discard unsaved file changes?', message: 'Open the other file without saving.', confirmLabel: 'Discard changes', tone: 'danger' }))) return;
+        if (this.fileEditorDirty && !(await this.ask({ title: t('Discard unsaved file changes?'), message: t('Open the other file without saving.'), confirmLabel: t('Discard changes'), tone: 'danger' }))) return;
         url.searchParams.set('simplify_embed', '1');
         this.fileEditorDirty = false;
         this.fileEditorSaving = false;
@@ -1786,7 +1800,7 @@
         this.fileEditorUrl = url.href;
         wire.fileRevision(this.fileEditorPath)
           .then((hash) => this.fileEditorUrl === url.href && (this.fileEditorRevision = hash))
-          .catch(() => this.toast('The file revision could not be checked. Reopen the editor before saving.', 'warn'));
+          .catch(() => this.toast(t('The file revision could not be checked. Reopen the editor before saving.'), 'warn'));
       },
       filesFrameLoaded(frame) {
         this.styleFrame(frame, 'files');
@@ -1805,7 +1819,7 @@
           doc.addEventListener('click', click, true);
           doc._psFilesClick = click;
         } catch {
-          this.toast('The file workspace could not be opened.', 'danger');
+          this.toast(t('The file workspace could not be opened.'), 'danger');
         }
       },
       /** Clicks Pelican's (hidden) "Save and close", which runs the revision check above first. */
@@ -1815,11 +1829,11 @@
           const button = doc && [...doc.querySelectorAll('button[wire\\:click]')].find((b) => (b.getAttribute('wire:click') || '').includes('fm_save_and_close'));
           if (button) return button.click();
         } catch {}
-        this.toast('The editor is not ready yet.', 'warn');
+        this.toast(t('The editor is not ready yet.'), 'warn');
       },
       async closeFileEditor() {
         if (this.busy) return;
-        if (this.fileEditorDirty && !(await this.ask({ title: 'Discard unsaved file changes?', message: 'Your edits have not been saved.', confirmLabel: 'Discard changes', tone: 'danger' }))) return;
+        if (this.fileEditorDirty && !(await this.ask({ title: t('Discard unsaved file changes?'), message: t('Your edits have not been saved.'), confirmLabel: t('Discard changes'), tone: 'danger' }))) return;
         this.fileEditorUrl = null;
         this.fileEditorDirty = false;
       },
@@ -1831,20 +1845,20 @@
           if (!this.fileEditUrl(url)) {
             const target = new URL(url), base = new URL(this.server.files_url, location.origin);
             if (target.origin !== base.origin || (!target.pathname.startsWith(base.pathname.replace(/\/$/, '') + '/') && target.pathname !== base.pathname)) {
-              this.toast('The editor could not be opened.', 'danger');
+              this.toast(t('The editor could not be opened.'), 'danger');
               return;
             }
             this.fileEditorUrl = null;
             this.fileEditorDirty = false;
             if (this.fileEditorSaving) {
-              this.toast('File saved', 'ok');
+              this.toast(t('File saved'), 'ok');
               wire.fileChanged(this.fileEditorPath, this.fileEditorRevision)
                 .then((info) => Object.assign(this.server, info))
-                .catch(() => this.toast('File saved, but the restart reminder could not be recorded. Refresh the server page.', 'warn'));
+                .catch(() => this.toast(t('File saved, but the restart reminder could not be recorded. Refresh the server page.'), 'warn'));
               try {
                 this.$refs.filesFrame.contentWindow.location.reload();
               } catch {}
-            } else this.toast('The file could not be edited. See the file manager warning.', 'warn');
+            } else this.toast(t('The file could not be edited. See the file manager warning.'), 'warn');
             this.fileEditorSaving = false;
             return;
           }
@@ -1872,19 +1886,19 @@
             event.stopImmediatePropagation();
             if (this.fileEditorChecking) return;
             if (!this.fileEditorRevision) {
-              this.toast('Wait for the file revision check before saving.', 'warn');
+              this.toast(t('Wait for the file revision check before saving.'), 'warn');
               return;
             }
             this.fileEditorChecking = true;
             try {
               if ((await wire.fileRevision(this.fileEditorPath)) !== this.fileEditorRevision) {
-                this.toast('This file changed elsewhere. Reopen it before saving to avoid overwriting another change.', 'danger');
+                this.toast(t('This file changed elsewhere. Reopen it before saving to avoid overwriting another change.'), 'danger');
                 return;
               }
               button._psVerified = true;
               button.click();
             } catch {
-              this.toast('Could not verify the file. Your editor remains open.', 'danger');
+              this.toast(t('Could not verify the file. Your editor remains open.'), 'danger');
             } finally {
               this.fileEditorChecking = false;
             }
@@ -1900,7 +1914,7 @@
           }, true);
           doc.addEventListener('livewire:navigated', () => this.fileEditorLoaded(frame));
         } catch {
-          this.toast('The file editor could not be opened.', 'danger');
+          this.toast(t('The file editor could not be opened.'), 'danger');
         }
       },
       /** Marks links back to the overview inside native pages so the popup can hide them. */
@@ -1927,7 +1941,7 @@
           if (['native', 'files', 'editor', 'account'].includes(kind) && frame.contentDocument) this.cleanNativeFrame(frame.contentDocument);
           window.SimplifyTheme?.frame(frame, kind, this.currentAccentHex());
         } catch {
-          this.toast('The workspace could not be embedded.', 'danger');
+          this.toast(t('The workspace could not be embedded.'), 'danger');
         }
       },
     };

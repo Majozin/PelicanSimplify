@@ -249,13 +249,15 @@ class SimplifySettings extends Page implements HasForms
                     ColorPicker::make('appearance.accent_color')->view('pelican-simplify::filament.admin.accent-picker')->label(__('Panel accent color'))->hex()->required()->rules(['regex:/^#[0-9a-fA-F]{6}$/'])->helperText(__('Used throughout the shared interface and by every server when separate colors are off.'))->columnSpanFull(),
                     Toggle::make('appearance.individual_colors')->label(__('Use separate server colors'))->helperText(__('On assigns a color to every server without one. Off makes all servers use the panel accent; saved colors are retained.'))->columnSpanFull(),
                 ]),
-                Section::make(__('Interface size'))->columns(2)->description(__('Applies to everyone on this panel when a page loads after saving.'))->schema([
+                Section::make(__('Interface size'))->columns(3)->description(__('Applies to everyone on this panel when a page loads after saving.'))->schema([
                     Select::make('appearance.interface_scale')->label(__('Text size'))->selectablePlaceholder(false)->required()
                         ->helperText(__('Larger text in Simplify and in Pelican\'s own pages.'))
                         ->options(array_combine(\Simplify\Panel\Services\InterfaceScale::OPTIONS, array_map(fn (int $percent): string => $percent === 100 ? __('100% (standard)') : $percent.'%', \Simplify\Panel\Services\InterfaceScale::OPTIONS))),
-                    Select::make('appearance.layout_scale')->label(__('Element size'))->selectablePlaceholder(false)->required()
-                        ->helperText(__('Cards, buttons, menus and spacing of the Simplify dashboard and host mode. Automatic shrinks everything on screens below 1440p. A fixed size is reduced on windows too small to show it.'))
+                    ...array_map(fn (string $key, string $label, string $help) => Select::make('appearance.'.$key)->label($label)->selectablePlaceholder(false)->required()->helperText($help)
                         ->options(array_combine(\Simplify\Panel\Services\InterfaceScale::LAYOUT_OPTIONS, array_map(fn (int $percent): string => match ($percent) { 0 => __('Automatic (follows the window)'), 100 => __('100% (no reduction)'), default => $percent.'%' }, \Simplify\Panel\Services\InterfaceScale::LAYOUT_OPTIONS))),
+                        ['layout_scale', 'layout_scale_host'],
+                        [__('Element size'), __('Element size (host mode)')],
+                        [__('Cards, buttons, menus and spacing of the overview and server pages. Automatic shrinks everything on screens below 1440p. A fixed size is reduced on windows too small to show it.'), __('The same for host mode, which shows more columns and Pelican\'s own pages inside.')]),
                 ]),
                 Section::make(__('Panel name & logo'))->description(__('How your panel name looks in the top-left corner. The default is your name with the accent color fading in toward the right.'))->columns(2)->schema([
                     \Filament\Schemas\Components\View::make('pelican-simplify::filament.admin.brand-editor')->columnSpanFull(),

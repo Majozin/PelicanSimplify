@@ -16,6 +16,10 @@ foreach([...$files,...new RecursiveIteratorIterator(new RecursiveDirectoryIterat
     if(str_ends_with($path,'.php')){
         preg_match_all("/(?<![\w$])(?<!->)(?<!::)(?:__|trans_choice)\(\s*'((?:[^'\\\\]|\\\\.)*)'/",file_get_contents($path),$m);
         foreach($m[1] as $key)$keys[$unescape($key,"'")]=basename($path);
+        if(str_ends_with($path,'.blade.php')){
+            preg_match_all("/(?<![\w.$])t\(\s*'((?:[^'\\\\]|\\\\.)*)'/",file_get_contents($path),$m);
+            foreach($m[1] as $key)$keys[$unescape($key,"'")]=basename($path);
+        }
     }elseif(str_ends_with($path,'.js')){
         preg_match_all("/(?<![\w.$])t\(\s*'((?:[^'\\\\]|\\\\.)*)'/",file_get_contents($path),$m);
         foreach($m[1] as $key)$keys[$unescape($key,"'")]=basename($path);
@@ -35,6 +39,12 @@ preg_match_all("/self::featureSection\('([^']+)', '[^']+'(?:, '((?:[^'\\\\]|\\\\
 foreach([...$m[1],...$m[2]] as $text)if($text!=='')$dynamic[]=$unescape($text,"'");
 preg_match("/match \(true\) \{(.*?)\};/s",$settings,$block);preg_match_all("/=> '([^']+)'/",$block[1],$m);array_push($dynamic,...$m[1]);
 array_push($dynamic,'Website','Server banners','PelicanSimplify settings');
+// HostHealth labels (cached for every viewer, translated in the dashboard).
+preg_match_all("/'label'=>(?:\\\$warning\\?)?'([^']+)'(?::'([^']+)')?/",file_get_contents($root.'/src/Services/HostHealth.php'),$m);
+foreach([...$m[1],...$m[2]] as $text)if($text!=='')$dynamic[]=$text;
+// AdminPages group names (translated when the menu is built).
+preg_match("/const GROUPS = \[([^\]]+)\]/",file_get_contents($root.'/src/Services/AdminPages.php'),$block);
+preg_match_all("/'([^']+)'/",$block[1],$m);array_push($dynamic,...$m[1]);
 // ServerAppearance::choices() colour names.
 preg_match("/\\\$names=\[([^\]]+)\]/",file_get_contents($root.'/src/Services/ServerAppearance.php'),$block);
 preg_match_all("/'([^']+)'/",$block[1],$m);array_push($dynamic,...$m[1]);
