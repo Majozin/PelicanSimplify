@@ -1,5 +1,10 @@
 # Changes
 
+## 0.4.2-beta.7-ptbr.5 (fork Majozin/PelicanSimplify, beta channel)
+- Interface size settings line up: the three fields have short labels ("Text", "Elements (simple mode)", "Elements (host mode)") so none wraps and pushes its dropdown down, and the automatic option is called "Automatic (window)" so it fits on one line, also in Customize.
+- Fixed: the dashboard and host mode stayed in English for people with Portuguese (or any other language) in their profile. The upstream plugin forced English on the dashboard and on pages embedded in host mode; both now follow the profile language like the rest of Pelican. Two checks that depended on English text were made language independent first (saving the creator draft when its window closes, and reloading after a plugin update notice).
+- Text size in Customize (simple and host mode): each person can pick their own text size on each device, for the whole panel including Pelican's own pages and pages open in host mode. "Panel default" keeps the Appearance setting. It applies at once and to other open tabs.
+
 ## 0.4.2-beta.7-ptbr.4 (fork Majozin/PelicanSimplify, beta channel)
 - Portuguese (Brazil) now covers the whole plugin: dashboard and host mode, server creators (Minecraft, modpacks and other games), MOTD editor, People, Plugins, the Steam profile tab and the messages and notifications of the services. Notifications are written in the language of each recipient's profile. Player commands, Wings events and saved wizard step names stay in English internally and are only translated on screen.
 - Element size is set separately for host mode (Appearance → "Default element size (host mode)"), because host mode needs more room than the simple dashboard.

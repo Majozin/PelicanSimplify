@@ -170,6 +170,8 @@
         if (this.started) return;
         this.started = true;
         this.restoreScalePreferences();
+        this.textScale = window.Simplify?.textScale?.get() || 'panel';
+        window.addEventListener?.('simplify-text-scale', (event) => { this.textScale = event.detail; });
         this.applyScale();
         this.widgets = this.widgets.filter((w) => {
           const feature = { performance: 'resources', plugins: 'packages', mods: 'packages', web: 'web' }[w.key] || w.key;
@@ -281,6 +283,14 @@
       uiScale: 1,
       /** Element size chosen in Customize, per mode, for this user on this device ('panel' = the panel default). */
       scalePreferences: { simple: 'panel', host: 'panel' },
+      /** Text size chosen in Customize (core.js, one value for the whole panel on this device). */
+      textScale: 'panel',
+      textScaleOptions() {
+        return [['panel', t('Panel default')], ...(window.Simplify?.textScale?.options() || []).map((value) => [value, value === '100' ? t('100% (standard)') : value + '%'])];
+      },
+      setTextScale(value) {
+        window.Simplify?.textScale?.set(value);
+      },
       scaleKey() {
         return 'pelicanSimplify.uiScale.' + encodeURIComponent(this.boot.user || 'default');
       },
@@ -297,7 +307,7 @@
         return this.scalePreferences[this.scaleMode()];
       },
       scaleOptions() {
-        return [['panel', t('Panel default')], ['0', t('Automatic (follows the window)')], ['100', t('100% (no reduction)')], ...['110', '125', '150', '175', '200'].map((value) => [value, value + '%'])];
+        return [['panel', t('Panel default')], ['0', t('Automatic (window)')], ['100', t('100% (no reduction)')], ...['110', '125', '150', '175', '200'].map((value) => [value, value + '%'])];
       },
       setScalePreference(value) {
         if (!this.scaleOptions().some((option) => option[0] === value)) return;
@@ -543,7 +553,9 @@
           const fresh = items.filter((n) => !this.seenNoticeKeys.has(n.key));
           fresh.forEach((n) => this.seenNoticeKeys.add(n.key));
           // A finished plugin update needs a fresh page load; it happens once the notice has been shown.
-          if (fresh.some((n) => /^Plugin (updated|installed|uninstalled)$/.test(n.title || ''))) this.reloadAfterNotice = true;
+          // Titles arrive in the recipient's language: the same as this page, or English when written before a language change.
+          const finished = ['Plugin updated', 'Plugin installed', 'Plugin uninstalled'].flatMap((title) => [title, t(title)]);
+          if (fresh.some((n) => finished.includes(n.title || ''))) this.reloadAfterNotice = true;
           this.incomingQueue.push(...fresh.reverse());
           this.showIncomingNotice();
         } catch {}
@@ -1394,7 +1406,7 @@
         if (creating) {
           this.closingCreator = true;
           try {
-            const save = this.$root?.querySelector('iframe[title="Create server"]')?.contentWindow?.sscSaveDraft;
+            const save = this.$root?.querySelector('iframe.ps-create-frame')?.contentWindow?.sscSaveDraft;
             if (save) await save();
             else if (!(await this.ask({ title: t('Leave the creator?'), message: t('Unsaved changes may be lost.'), confirmLabel: t('Leave') }))) return;
           } catch {

@@ -165,6 +165,13 @@
                                     <template x-for="option in scaleOptions()" :key="option[0]"><option :value="option[0]" :selected="scalePreference()===option[0]" x-text="option[1]"></option></template>
                                 </select>
                             </div>
+                            {{-- Text size for this device, the same in both modes and in Pelican's own pages (core.js). --}}
+                            <div class="ps-customize-row ps-scale-row">
+                                <div><strong>{{ __('Text size') }}</strong><small>{{ __('For the whole panel, also Pelican\'s own pages.') }}</small></div>
+                                <select class="ps-input ps-scale-select ps-text-scale-select" aria-label="{{ __('Text size') }}" x-on:change="setTextScale($event.target.value)">
+                                    <template x-for="option in textScaleOptions()" :key="option[0]"><option :value="option[0]" :selected="textScale===option[0]" x-text="option[1]"></option></template>
+                                </select>
+                            </div>
                             <template x-if="!server && !hostMode">
                                 <div class="ps-customize">
                                     <div class="ps-customize-row" x-show="!overviewCompact">
@@ -380,7 +387,7 @@
                                         </div>
                                         <div class="ps-card-title">
                                             <div class="ps-card-title-row" x-data="{observer:null,width:0,init(){this.observer=new ResizeObserver(()=>{const w=this.$el.clientWidth;if(w!==this.width){this.width=w;this.fitCardTitle(this.$el,cardNames(s).large)}});this.observer.observe(this.$el)},destroy(){this.observer?.disconnect()}}"
-                                                 x-effect="const name=cardNames(s).large; $nextTick(()=>fitCardTitle($el,name))">
+                                                 x-effect="const name=cardNames(s).large; textScale; $nextTick(()=>fitCardTitle($el,name))">
                                                 <h3 x-text="cardNames(s).large"></h3>
                                                 <small class="ps-card-real-name" :class="{'no-alias': !cardNames(s).small}" x-text="cardNames(s).small ? '('+cardNames(s).small+')' : ' '"></small>
                                             </div>
@@ -713,7 +720,7 @@
                 <div x-show="loading" class="ps-modal-loading" role="status"><span class="ps-spinner"></span><span>{{ __('Loading your workspace…') }}</span></div>
 
                 <template x-if="modal==='create'">
-                    <iframe :data-ps-frame="createGame==='minecraft' ? 'create' : 'native'" :data-ps-accent="currentAccentHex()" :src="createFrameUrl()" title="{{ __('Create server') }}" x-on:load="createFrameLoaded($el)"></iframe>
+                    <iframe class="ps-create-frame" :data-ps-frame="createGame==='minecraft' ? 'create' : 'native'" :data-ps-accent="currentAccentHex()" :src="createFrameUrl()" title="{{ __('Create server') }}" x-on:load="createFrameLoaded($el)"></iframe>
                 </template>
                 <template x-if="modal==='panel-settings'">
                     <iframe data-ps-frame="settings" :data-ps-accent="currentAccentHex()" :src="panelSettingsUrl()" title="{{ __('Simplify settings') }}" x-on:load="panelSettingsLoaded($el)"></iframe>

@@ -3,6 +3,7 @@
     $config = [
         ...\Simplify\Panel\Services\FeatureSettings::all(),
         ...\Simplify\Panel\Services\AppearanceSettings::all(),
+        'user' => user()?->username,
         'legacy_page' => !$ownPage || (request()->routeIs('*.pages.pelican-simplify-settings') && !request()->boolean('simplify_embed')),
     ];
 @endphp

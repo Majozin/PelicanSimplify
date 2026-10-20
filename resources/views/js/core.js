@@ -15,6 +15,40 @@
     for (const [key, value] of Object.entries(replace)) out = out.split(':' + key).join(String(value));
     return out;
   };
+  // Text size chosen in Customize for this user on this device. Nothing stored ('panel') keeps the panel's
+  // Appearance setting (<style id="simplify-scale">); applied before paint, and in embedded pages via 'storage'.
+  const TEXT_SCALES = ['100', '110', '125', '150'];
+  const textScaleKey = () => 'pelicanSimplify.textScale.' + encodeURIComponent(window.simplifyThemeConfig?.user || 'default');
+  const textScale = () => {
+    try {
+      const saved = localStorage.getItem(textScaleKey());
+      return TEXT_SCALES.includes(saved) ? saved : 'panel';
+    } catch {
+      return 'panel';
+    }
+  };
+  const applyTextScale = () => {
+    const value = textScale();
+    if (value === 'panel') {
+      root.style.removeProperty('--ps-scale');
+      root.style.removeProperty('font-size');
+    } else {
+      root.style.setProperty('--ps-scale', String(Number(value) / 100));
+      root.style.fontSize = value + '%';
+    }
+    window.dispatchEvent(new CustomEvent('simplify-text-scale', { detail: value }));
+  };
+  const setTextScale = (value) => {
+    try {
+      if (TEXT_SCALES.includes(value)) localStorage.setItem(textScaleKey(), value);
+      else localStorage.removeItem(textScaleKey());
+    } catch {}
+    applyTextScale();
+  };
+  applyTextScale();
+  window.addEventListener('storage', (event) => {
+    if (event.key === null || event.key === textScaleKey()) applyTextScale();
+  });
   const KEY = 'pelicanSimplify.theme';
   const CHOICES = ['light', 'dark', 'system'];
   const media = matchMedia('(prefers-color-scheme: dark)');
@@ -320,6 +354,7 @@
     history: () => ui.history.slice(),
     hideTooltip: hideTip,
     t,
+    textScale: { get: textScale, set: setTextScale, options: () => TEXT_SCALES.slice() },
   };
 
   // Embedded pages hand Filament's flash notifications ("File saved", errors) to the dashboard toast.

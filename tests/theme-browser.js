@@ -233,6 +233,35 @@ const { start } = require('./browser-harness');
     await sized.close();
     console.log('PASS element size per mode from Customize, zoomed popups inside the window');
 
+    // 14. Text size: chosen in Customize, one value for both modes and the whole panel, applied before paint and synced to other pages.
+    // Two tabs of the same browser (shared storage): the second stands for Pelican's own pages.
+    const textContext = await browser.newContext({ viewport: { width: 1440, height: 900 } });
+    const [texts, other] = await Promise.all([textContext.newPage(), textContext.newPage()]);
+    for (const tab of [texts, other]) {
+      tab.on('pageerror', (e) => errors.push('text size: ' + e.message));
+      await tab.goto(base + '/?mode=overview&theme=dark');
+      await tab.waitForFunction(() => window.Alpine && document.querySelector('.ps-text-scale-select'));
+    }
+    const textScale = (page) => page.evaluate(() => [document.documentElement.style.getPropertyValue('--ps-scale'), document.documentElement.style.fontSize]);
+    assert.deepEqual(await textScale(texts), ['', ''], 'panel default leaves the Appearance setting alone');
+    await texts.click('[aria-controls="ps-overview-appearance-menu"]');
+    await texts.selectOption('.ps-text-scale-select', '125');
+    assert.deepEqual(await textScale(texts), ['1.25', '125%']);
+    assert.equal(await texts.evaluate(() => localStorage.getItem('pelicanSimplify.textScale.jera')), '125');
+    await other.waitForFunction(() => document.documentElement.style.fontSize === '125%');
+    await data(texts, (d) => d.setHostMode(true));
+    assert.equal(await texts.$eval('.ps-text-scale-select', (s) => s.value), '125', 'host mode shows the same text size');
+    await texts.reload();
+    assert.deepEqual(await textScale(texts), ['1.25', '125%'], 'kept after reloading');
+    await texts.waitForFunction(() => window.Alpine && document.querySelector('.ps-text-scale-select'));
+    await texts.click('[aria-controls="ps-overview-appearance-menu"]');
+    await texts.selectOption('.ps-text-scale-select', 'panel');
+    assert.deepEqual(await textScale(texts), ['', '']);
+    assert.equal(await texts.evaluate(() => localStorage.getItem('pelicanSimplify.textScale.jera')), null);
+    await other.waitForFunction(() => document.documentElement.style.fontSize === '');
+    await textContext.close();
+    console.log('PASS text size from Customize, the same in both modes, kept per device and synced');
+
     assert.deepEqual(errors, []);
   } finally {
     await browser.close();

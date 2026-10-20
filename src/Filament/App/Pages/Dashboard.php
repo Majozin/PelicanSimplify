@@ -33,7 +33,6 @@ final class Dashboard extends Page
     #[Locked] public ?string $serverUuid=null;
     public $iconUpload=null;
     public $bannerUpload=null;
-    public function boot(): void { app()->setLocale('en'); }
     public function mount(): void
     {
         $uuid=request()->query('server');

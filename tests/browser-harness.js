@@ -70,7 +70,7 @@ function sharedAssets(themeConfig) {
   const v = '?v=h';
   return `<link id="simplify-core-css" rel="stylesheet" href="/assets/core.css${v}"><script>window.simplifyThemeConfig=${JSON.stringify(themeConfig)};${locale ? 'window.simplifyI18n=' + JSON.stringify(translations) + ';' : ''}</script><script src="/assets/core.js${v}"></script>`;
 }
-const themeConfig = (extra = {}) => ({ global_theme: true, legacy_theme: true, console_dark: true, accent_color: '', individual_colors: true, legacy_page: false, ...extra });
+const themeConfig = (extra = {}) => ({ global_theme: true, legacy_theme: true, console_dark: true, accent_color: '', individual_colors: true, legacy_page: false, user: 'jera', ...extra });
 
 function dashboardPage(q) {
   const mode = q.get('mode') || 'overview';
