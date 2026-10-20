@@ -487,6 +487,8 @@ class CreateMinecraftServer extends Page implements HasForms
                             TextInput::make('name')
                                 ->label('Server name')
                                 ->required()->maxLength(255)
+                                ->live(onBlur: true, condition: fn () => \Simplify\Panel\Services\Subdomains::active())
+                                ->afterStateUpdated(fn ($state, $old, Set $set, Get $get) => $this->suggestSubdomain((string) $state, (string) $old, $set, $get))
                                 ->placeholder(fn()=>$this->nameExample)
                                 ->helperText('This name is used by the server and dashboard.')
                                 ->suffixAction(
@@ -494,10 +496,21 @@ class CreateMinecraftServer extends Page implements HasForms
                                         ->tooltip('Generate a random server name')
                                         ->extraAttributes(['x-on:click' => 'refreshCount++'])
                                         ->icon('tabler-dice-5')
-                                        ->action(function (Set $set): void {
-                                            $set('name', (new RandomWordService())->word());
+                                        ->action(function (Set $set, Get $get): void {
+                                            $old = (string) $get('name');
+                                            $set('name', $name = (new RandomWordService())->word());
+                                            $this->suggestSubdomain($name, $old, $set, $get);
                                         })
                                 ),
+                            TextInput::make('requested_subdomain')->label('Subdomain (optional)')
+                                ->visible(fn () => \Simplify\Panel\Services\Subdomains::active())
+                                ->suffix(fn () => '.'.\Simplify\Panel\Services\Subdomains::settings()['domain'])
+                                ->maxLength(63)->placeholder(fn () => strtolower(preg_replace('/[^a-z0-9-]+/i', '', (string) $this->nameExample)) ?: 'oak')
+                                ->dehydrateStateUsing(fn ($state) => strtolower(trim((string) $state)))
+                                ->rules([fn (): \Closure => function (string $attribute, $value, \Closure $fail): void {
+                                    if ($error = \Simplify\Panel\Services\Subdomains::check(strtolower(trim((string) $value)))) $fail($error);
+                                }])
+                                ->helperText('Players join with this address. It follows the server name until you change it; leave empty to use the port address.'),
                             View::make('pelican-simplify::filament.admin.server-colors'),
                             Hidden::make('server_color')->nullable()->rule('regex:/^#[0-9a-fA-F]{6}$/'),
                             // Steam banner and icon for other games, when the store has a match (looked up once, cached).
@@ -701,6 +714,14 @@ class CreateMinecraftServer extends Page implements HasForms
         return $options + ['custom' => 'Custom'];
     }
 
+    /** The subdomain follows the server name until someone types their own. */
+    private function suggestSubdomain(string $name, string $old, Set $set, Get $get): void
+    {
+        if (!\Simplify\Panel\Services\Subdomains::active()) return;
+        $current = (string) $get('requested_subdomain');
+        if ($current === '' || $current === \Simplify\Panel\Services\Subdomains::suggest($old)) $set('requested_subdomain', \Simplify\Panel\Services\Subdomains::suggest($name));
+    }
+
     public function availableServerColors(): array
     {
         return \Simplify\Panel\Services\ServerAppearance::choices();
@@ -733,8 +754,14 @@ class CreateMinecraftServer extends Page implements HasForms
             }
             if (!CreatorAccess::admin() || CreatorAccess::nodes()->count() === 1) {
                 $state['allocation_id'] = Allocation::query()->where('node_id', $state['node_id'] ?? 0)->whereNull('server_id')->orderBy('id')->value('id');
+                // A subdomain needs a forwarded port; fall back to any free port when the range is full.
+                if (\Simplify\Panel\Services\Subdomains::active() && trim((string) ($state['requested_subdomain'] ?? '')) !== '') {
+                    $state['allocation_id'] = \Simplify\Panel\Services\Subdomains::allocationFor((int) ($state['node_id'] ?? 0)) ?? $state['allocation_id'];
+                }
                 $this->data['allocation_id'] = $state['allocation_id'];
             }
+            $subdomain = \Simplify\Panel\Services\Subdomains::active() ? strtolower(trim((string) ($state['requested_subdomain'] ?? ''))) : '';
+            if ($error = \Simplify\Panel\Services\Subdomains::check($subdomain)) throw ValidationException::withMessages(['data.requested_subdomain' => $error]);
             if (($state['game'] ?? 'minecraft') === 'other') {
                 $state['properties_enabled'] = false;
                 $state['server_icon'] = null;
@@ -761,6 +788,10 @@ class CreateMinecraftServer extends Page implements HasForms
                 \Simplify\Panel\Services\Extensions::webAdapter()?->saveCreated($server,$state);
             } catch(Throwable $exception) {
                 report($exception);Notification::make()->title('Server created; metadata could not be saved')->body('Do not submit the server again.')->warning()->send();
+            }
+            if ($subdomain !== '') {
+                try { \Simplify\Panel\Services\Subdomains::request($server, $subdomain); }
+                catch (Throwable $exception) { report($exception);Notification::make()->title('Server created; the subdomain could not be saved')->body('Choose it again in the server\'s Network section.')->warning()->send(); }
             }
             if (($state['game'] ?? '') === 'other' && !empty($state['steam_art']) && ($art = $this->steamArt())) {
                 // Downloaded after the response, so creating the server is not slowed down by Steam.
