@@ -1,7 +1,3 @@
-@font-face { font-family: "Monocraft"; src: url("monocraft-regular.woff2") format("woff2"); font-weight: 400; font-style: normal; font-display: swap; }
-@font-face { font-family: "Monocraft"; src: url("monocraft-bold.woff2") format("woff2"); font-weight: 700; font-style: normal; font-display: swap; }
-@font-face { font-family: "Monocraft"; src: url("monocraft-italic.woff2") format("woff2"); font-weight: 400; font-style: italic; font-display: swap; }
-@font-face { font-family: "Monocraft"; src: url("monocraft-bold-italic.woff2") format("woff2"); font-weight: 700; font-style: italic; font-display: swap; }
 /* Simplify dashboard layout. Colours, sizes and controls come from tokens.css and components.css;
    this file only places things. Per-server colours arrive as --ps-accent on the card or page root. */
 
@@ -620,13 +616,6 @@ button.ps-statusbar-item:hover { color: var(--ps-ink); }
 .ps-tabs > button[aria-pressed="true"] { color: var(--ps-ink); background: color-mix(in srgb, var(--ps-accent) 14%, var(--ps-surface)); box-shadow: inset 3px 0 0 var(--ps-accent); }
 .ps-tabs > button:focus-visible { outline: 2px solid var(--ps-accent); outline-offset: 1px; }
 .ps-tab-panels { min-width: 0; }
-.ps-motd-editor textarea { margin-bottom: 8px; }
-.ps-motd-tools { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; margin: 4px 0 8px; }
-.ps-motd-colors { display: flex; flex-wrap: wrap; gap: 6px; }
-.ps-motd-colors .ps-swatch { width: 24px; height: 24px; border-radius: 6px; }
-.ps-motd-styles { display: flex; flex-wrap: wrap; gap: 5px; }
-.ps-motd-editor .ps-motd-preview { min-height: calc(3em + 26px); max-height: calc(3em + 26px); }
-.ps-motd-placeholder { opacity: .6; }
 @media (max-width: 760px) {
   .ps-settings-workspace.has-tabs { grid-template-columns: minmax(0, 1fr); gap: 16px; }
   .ps-tabs { position: static; flex-direction: row; overflow-x: auto; }
@@ -1025,3 +1014,16 @@ span.ps-card-background.ps-banner-color { width: 100%; opacity: .5; filter: none
 .ps-host-pane-actions { top: 12px; right: 14px; }
 .ps-widget-group { margin: 10px 8px 2px; color: var(--ps-muted); font-size: 11px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; }
 @media (max-width: 960px) { .ps-widget-group { display: none; } }
+
+/* Resource presets on the Performance page: the same cards as the creator's resource step. */
+.ps-resource-group { margin-bottom: 16px; }
+.ps-resource-group > .ps-field { margin-bottom: 8px; }
+.ps-choice-cards { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 10px; margin-bottom: 10px; }
+.ps-choice { display: grid; grid-template-columns: 32px minmax(0, 1fr); align-content: center; align-items: center; gap: 5px 9px; min-width: 0; min-height: 78px; padding: 12px; border: 1px solid var(--ps-line); border-radius: var(--ps-radius-lg); background: var(--ps-surface); color: var(--ps-ink); font: inherit; text-align: left; cursor: pointer; transition: border-color var(--ps-fast), background-color var(--ps-fast); }
+.ps-choice:hover { border-color: var(--ps-accent); }
+.ps-choice:focus-visible { outline: 2px solid var(--ps-accent); outline-offset: 3px; }
+.ps-choice[aria-checked="true"] { border-color: var(--ps-accent); background: color-mix(in srgb, var(--ps-accent) 9%, var(--ps-surface)); box-shadow: 0 0 0 1px var(--ps-accent); }
+.ps-choice svg { width: 32px; height: 32px; padding: 5px; border-radius: var(--ps-radius-sm); background: var(--ps-raised); color: var(--ps-accent); }
+.ps-choice-title { min-width: 0; font-size: 14px; font-weight: 650; }
+.ps-choice-description { grid-column: 1 / -1; color: var(--ps-muted); font-size: 11px; line-height: 1.4; }
+@media (max-width: 700px) { .ps-choice-cards { grid-template-columns: repeat(2, minmax(0, 1fr)); } }

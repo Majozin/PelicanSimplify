@@ -169,6 +169,54 @@ const { start } = require('./browser-harness');
     await listing.close();
     console.log('PASS website listing switch next to the server color');
 
+    // 11. MOTD editor: the lines are edited in place, and the toolbar writes clean codes into the settings.
+    const motd = await open('/?mode=server&theme=dark');
+    await data(motd, (d) => d.open('settings'));
+    await motd.waitForFunction(() => Alpine.$data(document.querySelector('.ps')).settings?.motd !== undefined);
+    await data(motd, (d) => { d.settingsTab = 'motd'; });
+    const line = motd.locator('[aria-label="MOTD line 1"]');
+    await line.waitFor({ state: 'visible' });
+    assert.equal(await line.inputValue(), 'Welcome to Survival');
+    await line.evaluate((el) => { el.focus(); el.setSelectionRange(0, 7); });
+    await motd.click('.ps-motd [aria-label="Colour: Red"]');
+    await motd.click('.ps-motd [aria-label="Bold"]');
+    assert.equal(await data(motd, (d) => d.settings.motd), '§c§lWelcome §ato §lSurvival');
+    assert.equal(await motd.locator('.ps-motd [aria-label="Bold"]').getAttribute('aria-pressed'), 'true');
+    await line.press('End');
+    await line.type('!');
+    assert.equal(await data(motd, (d) => d.settings.motd), '§c§lWelcome §ato §lSurvival!');
+    // The coloured mirror lines up with the transparent input, bold included.
+    const aligned = await motd.evaluate(async () => {
+      await document.fonts.ready;
+      const input = document.querySelector('[aria-label="MOTD line 1"]'), mirror = input.previousElementSibling;
+      const spans = [...mirror.children].filter((e) => e.tagName === 'SPAN').reduce((sum, e) => sum + e.getBoundingClientRect().width, 0);
+      const probe = Object.assign(document.createElement('span'), { textContent: input.value });
+      probe.style.cssText = 'position:absolute;visibility:hidden;white-space:pre;font:' + getComputedStyle(input).font;
+      mirror.parentElement.append(probe);
+      const width = probe.getBoundingClientRect().width;
+      probe.remove();
+      return Math.abs(spans - width) <= 1;
+    });
+    assert.ok(aligned, 'mirror and input have the same text width');
+    if (process.env.SCREENSHOT_DIR) await motd.locator('.ps-motd-editor').screenshot({ path: process.env.SCREENSHOT_DIR + '/motd-editor.png' });
+    await motd.close();
+    console.log('PASS MOTD editor with in-place colours, clean codes and an aligned preview');
+
+    // 12. Performance: the creator's resource presets, with a custom value, are saved as limits.
+    const performance = await open('/?mode=server&theme=light');
+    await performance.evaluate(() => { window.__saved = null; window.__wire.saveResourceLimits = async (limits) => { window.__saved = limits; return { pending: true, changed: true }; }; });
+    await data(performance, (d) => d.open('performance'));
+    await performance.click('[role=radiogroup][aria-label=RAM] >> text=8 GB');
+    assert.equal(await performance.locator('[role=radiogroup][aria-label="CPU allocation"] [aria-checked=true]').innerText().then((t) => t.split('\n')[0]), '200%');
+    await performance.click('[role=radiogroup][aria-label="Disk allocation"] >> text=Custom');
+    await performance.fill('label:has-text("Custom disk") input', '30000');
+    await performance.click('text=Save limits');
+    await performance.waitForFunction(() => window.__saved);
+    assert.deepEqual(await performance.evaluate(() => window.__saved), { memory_gb: 8, cpu: 200, disk_mb: 30000 });
+    if (process.env.SCREENSHOT_DIR) await performance.screenshot({ path: process.env.SCREENSHOT_DIR + '/performance.png' });
+    await performance.close();
+    console.log('PASS performance presets like the creator, with custom values');
+
     assert.deepEqual(errors, []);
   } finally {
     await browser.close();
