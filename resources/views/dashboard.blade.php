@@ -150,15 +150,22 @@
                     </div>
 
                     {{-- Personal appearance preferences. --}}
-                    <div class="ps-overview-appearance" x-show="!server && !hostMode" x-on:click.outside="appearanceMenu=false" x-on:keydown.escape.stop="appearanceMenu=false; $refs.overviewAppearance.focus()">
-                        <button type="button" x-ref="overviewAppearance" class="ps-btn is-icon is-subtle" data-tip="{{ __('Customize overview') }}" aria-label="{{ __('Customize overview') }}" aria-controls="ps-overview-appearance-menu" :aria-expanded="appearanceMenu"
+                    <div class="ps-overview-appearance" x-show="!server" x-on:click.outside="appearanceMenu=false" x-on:keydown.escape.stop="appearanceMenu=false; $refs.overviewAppearance.focus()">
+                        <button type="button" x-ref="overviewAppearance" class="ps-btn is-icon is-subtle" :data-tip="hostMode ? t('Customize host mode') : t('Customize overview')" :aria-label="hostMode ? t('Customize host mode') : t('Customize overview')" aria-controls="ps-overview-appearance-menu" :aria-expanded="appearanceMenu"
                                 x-on:click="appearanceMenu=!appearanceMenu; accountMenu=false; notifyMenu=false">
-                            <svg aria-hidden="true"><use href="#ps-wand"/></svg><span class="ps-mobile-label">{{ __('Customize overview') }}</span>
+                            <svg aria-hidden="true"><use href="#ps-wand"/></svg><span class="ps-mobile-label" x-text="hostMode ? t('Customize host mode') : t('Customize overview')"></span>
                         </button>
                         <div id="ps-overview-appearance-menu" class="ps-dropdown is-end ps-overview-appearance-menu" x-show="appearanceMenu" x-cloak x-transition.opacity>
-                            <strong class="ps-dropdown-title">{{ __('Customize overview') }}</strong>
+                            <strong class="ps-dropdown-title" x-text="hostMode ? t('Customize host mode') : t('Customize overview')"></strong>
                             <p class="ps-dropdown-hint">{{ __('Only for you, on this device.') }}</p>
-                            <template x-if="!server">
+                            {{-- Element size for this device and mode; applies at once (dashboard.js applyScale). --}}
+                            <div class="ps-customize-row ps-scale-row">
+                                <div><strong x-text="hostMode ? t('Element size (host mode)') : t('Element size')"></strong><small>{{ __('Panel default follows Simplify settings → Appearance.') }}</small></div>
+                                <select class="ps-input ps-scale-select" :aria-label="hostMode ? t('Element size (host mode)') : t('Element size')" x-on:change="setScalePreference($event.target.value)">
+                                    <template x-for="option in scaleOptions()" :key="option[0]"><option :value="option[0]" :selected="scalePreference()===option[0]" x-text="option[1]"></option></template>
+                                </select>
+                            </div>
+                            <template x-if="!server && !hostMode">
                                 <div class="ps-customize">
                                     <div class="ps-customize-row" x-show="!overviewCompact">
                                         <div><strong>{{ __('Layout') }}</strong><small>{{ __('Cards in a grid, or one row per server') }}</small></div>
@@ -763,7 +770,7 @@
                         <p class="ps-help" x-show="!uploadedBackgrounds.length">{{ __('No uploaded banners yet.') }}</p>
                         <label class="ps-field">{{ __('Upload a banner') }}<input type="file" accept="image/png,image/jpeg,image/webp" wire:model="bannerUpload" x-on:change.capture="bannerUploadChanged($event)" x-on:livewire-upload-error="toast(t('Upload failed. Check PHP, Livewire and NGINX upload limits in System checks.'), 'danger')"></label>
                         @error('bannerUpload')<p class="ps-alert is-danger">{{ $message }}</p>@enderror
-                        <p class="ps-help">JPG, PNG or WebP · up to {{ \Simplify\Panel\Services\UploadLimits::label(\Simplify\Panel\Services\UploadLimits::bannerBytes()) }} (PHP/Livewire; your proxy may be lower). Wide images work best.</p>
+                        <p class="ps-help">{{ __('JPG, PNG or WebP · up to :size (PHP/Livewire; your proxy may be lower). Wide images work best.', ['size' => \Simplify\Panel\Services\UploadLimits::label(\Simplify\Panel\Services\UploadLimits::bannerBytes())]) }}</p>
                         <button type="button" class="ps-btn" x-on:click="uploadBanner()" :disabled="busy" wire:loading.attr="disabled" wire:target="bannerUpload,uploadServerBanner"><svg aria-hidden="true"><use href="#ps-download"/></svg>{{ __('Upload and use banner') }}</button>
                     </div>
                 </template>
@@ -980,7 +987,7 @@
                     <button type="button" class="ps-btn ps-address" x-on:click="copy(server.address)"><span x-text="server?.address || t('No address assigned')"></span><svg aria-hidden="true"><use href="#ps-copy"/></svg></button>
                     @if(\Simplify\Panel\Services\Subdomains::active())
                         <h3 class="ps-section-title">{{ __('Subdomain') }}</h3>
-                        <p class="ps-help">Players can join with this name instead of the port address. The DNS records are created automatically; leave it empty to remove the subdomain.</p>
+                        <p class="ps-help">{{ __('Players can join with this name instead of the port address. The DNS records are created automatically; leave it empty to remove the subdomain.') }}</p>
                         <label class="ps-field">{{ __('Name') }}
                             <span class="ps-input-row"><input x-model="requestedSubdomain" maxlength="63" placeholder="oak" x-on:keydown.enter.prevent="saveSubdomain()"><span class="ps-input-suffix" x-text="'.' + (advanced.subdomain?.domain || '')"></span><button type="button" class="ps-btn" x-on:click="saveSubdomain()" :disabled="busy || !server?.owner">{{ __('Save') }}</button></span>
                         </label>

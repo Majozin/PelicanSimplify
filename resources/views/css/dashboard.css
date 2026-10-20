@@ -993,6 +993,7 @@ span.ps-card-background.ps-banner-color { width: 100%; opacity: .5; filter: none
 .ps-customize { display: grid; gap: 2px; }
 .ps-customize-row, .ps-customize-switch { display: flex; align-items: center; justify-content: space-between; gap: 14px; width: 100%; padding: 10px 0; border: 0; border-top: 1px solid var(--ps-line); background: none; color: var(--ps-ink); text-align: left; }
 .ps-customize-row > div:first-child, .ps-customize-switch > span:first-child { display: grid; gap: 2px; min-width: 0; }
+.ps-scale-select { flex: 0 0 190px; width: 190px; }
 .ps-customize strong { font-size: 13px; font-weight: 650; }
 .ps-customize small { color: var(--ps-muted); font-size: 11.5px; line-height: 1.35; }
 .ps-customize .ps-segmented { flex: none; padding: 3px; border-radius: 10px; }

@@ -256,8 +256,8 @@ class SimplifySettings extends Page implements HasForms
                     ...array_map(fn (string $key, string $label, string $help) => Select::make('appearance.'.$key)->label($label)->selectablePlaceholder(false)->required()->helperText($help)
                         ->options(array_combine(\Simplify\Panel\Services\InterfaceScale::LAYOUT_OPTIONS, array_map(fn (int $percent): string => match ($percent) { 0 => __('Automatic (follows the window)'), 100 => __('100% (no reduction)'), default => $percent.'%' }, \Simplify\Panel\Services\InterfaceScale::LAYOUT_OPTIONS))),
                         ['layout_scale', 'layout_scale_host'],
-                        [__('Element size'), __('Element size (host mode)')],
-                        [__('Cards, buttons, menus and spacing of the overview and server pages. Automatic shrinks everything on screens below 1440p. A fixed size is reduced on windows too small to show it.'), __('The same for host mode, which shows more columns and Pelican\'s own pages inside.')]),
+                        [__('Default element size'), __('Default element size (host mode)')],
+                        [__('Cards, buttons, menus and spacing of the overview and server pages. Automatic shrinks everything on screens below 1440p. A fixed size is reduced on windows too small to show it. Each person can choose their own size per device in Customize overview.'), __('The same for host mode, which shows more columns and Pelican\'s own pages inside. Each admin can choose their own size per device in Customize host mode.')]),
                 ]),
                 Section::make(__('Panel name & logo'))->description(__('How your panel name looks in the top-left corner. The default is your name with the accent color fading in toward the right.'))->columns(2)->schema([
                     \Filament\Schemas\Components\View::make('pelican-simplify::filament.admin.brand-editor')->columnSpanFull(),
@@ -265,7 +265,7 @@ class SimplifySettings extends Page implements HasForms
                         ->helperText(fn()=>AppearanceSettings::all()['brand']['logo']?null:__('Upload a logo above to use one.'))
                         ->disableOptionWhen(fn(string $value)=>$value==='logo'&&!AppearanceSettings::all()['brand']['logo']),
                     TextInput::make('appearance.brand.text')->label(__('Text'))->maxLength(40)->placeholder(fn()=>(string)config('app.name','Pelican'))->helperText(__('Empty uses the panel name.')),
-                    Select::make('appearance.brand.font')->label(__('Font'))->options(array_map(fn($font)=>$font[0],\Simplify\Panel\Services\BrandSettings::FONTS))->selectablePlaceholder(false)->required(),
+                    Select::make('appearance.brand.font')->label(__('Font'))->options(array_map(fn($font)=>__($font[0]),\Simplify\Panel\Services\BrandSettings::FONTS))->selectablePlaceholder(false)->required(),
                     Select::make('appearance.brand.weight')->label(__('Weight'))->options([400=>__('Regular'),500=>__('Medium'),600=>__('Semibold'),700=>__('Bold'),800=>__('Extra bold'),900=>__('Black')])->selectablePlaceholder(false)->required(),
                     Select::make('appearance.brand.color_style')->label(__('Color'))->options(['gradient'=>__('Fade between two colors'),'solid'=>__('One color')])->selectablePlaceholder(false)->required()->live(),
                     TextInput::make('appearance.brand.spacing')->label(__('Letter spacing'))->integer()->minValue(-5)->maxValue(30)->suffix('/100 em')->required(),

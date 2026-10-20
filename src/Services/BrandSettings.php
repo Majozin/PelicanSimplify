@@ -76,10 +76,10 @@ final class BrandSettings
         $info = strlen($bytes) <= self::LOGO_MAX_KB * 1024 ? @getimagesizefromstring($bytes) : false;
         $ext = $info ? array_search($info['mime'] ?? '', self::LOGO_TYPES, true) : false;
         if (!$ext || $info[0] < 1 || $info[1] < 1 || $info[0] > 4000 || $info[1] > 4000) {
-            throw ValidationException::withMessages(['logoUpload' => 'Use a PNG, JPEG or WebP image up to '.self::LOGO_MAX_KB.' KB.']);
+            throw ValidationException::withMessages(['logoUpload' => __('Use a PNG, JPEG or WebP image up to :size KB.', ['size' => self::LOGO_MAX_KB])]);
         }
         $name = 'logo-'.bin2hex(random_bytes(8)).'.'.$ext;
-        if (!Storage::disk('local')->put(self::LOGO_DIR.$name, $bytes)) throw new \RuntimeException('Could not save the logo.');
+        if (!Storage::disk('local')->put(self::LOGO_DIR.$name, $bytes)) throw new \RuntimeException(__('Could not save the logo.'));
         return $name;
     }
 

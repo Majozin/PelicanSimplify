@@ -62,7 +62,7 @@ final class GameCatalog
         $names = $present->pluck('name')->map(fn ($name) => mb_strtolower((string) $name))->flip();
         foreach (self::index() as $game) {
             if (isset($uuids[$game['uuid'] ?? '']) || isset($names[mb_strtolower($game['name'])])) continue;
-            $cards[] = ['key' => 'index:'.$game['id'], 'name' => $game['name'], 'description' => $game['description'] ?: $game['category'].' game server', 'installed' => false, 'popular' => $rank($game['name'])];
+            $cards[] = ['key' => 'index:'.$game['id'], 'name' => $game['name'], 'description' => $game['description'] ?: __(':category game server', ['category' => $game['category']]), 'installed' => false, 'popular' => $rank($game['name'])];
         }
         return $cards;
     }
@@ -76,17 +76,17 @@ final class GameCatalog
         $game = collect(self::index())->firstWhere('id', substr($key, 6));
         if (!$game) return null;
         if (!self::canInstall()) {
-            throw ValidationException::withMessages(['data.game_key' => 'This game is not on the panel yet. Ask an administrator to install it, or to allow your role to install new games.']);
+            throw ValidationException::withMessages(['data.game_key' => __('This game is not on the panel yet. Ask an administrator to install it, or to allow your role to install new games.')]);
         }
         try {
             return Cache::lock('simplify.game-install.'.$game['id'], 120)->block(15, fn (): Egg => self::install($game));
         } catch (LockTimeoutException) {
-            throw ValidationException::withMessages(['data.game_key' => 'This game is being installed by someone else. Wait a moment and continue again.']);
+            throw ValidationException::withMessages(['data.game_key' => __('This game is being installed by someone else. Wait a moment and continue again.')]);
         } catch (ValidationException $exception) {
             throw $exception;
         } catch (Throwable $exception) {
             report($exception);
-            throw ValidationException::withMessages(['data.game_key' => 'Could not install this game: '.$exception->getMessage()]);
+            throw ValidationException::withMessages(['data.game_key' => __('Could not install this game: :reason', ['reason' => $exception->getMessage()])]);
         }
     }
 
@@ -95,9 +95,9 @@ final class GameCatalog
         // UUID only: an unrelated egg that happens to share the name must never be approved for self-service.
         $egg = filled($game['uuid'] ?? null) ? Egg::query()->where('uuid', $game['uuid'])->first() : null;
         if (!$egg) {
-            if (!str_starts_with((string) $game['url'], 'https://raw.githubusercontent.com/pelican-eggs/')) throw new \RuntimeException('Unknown egg source.');
+            if (!str_starts_with((string) $game['url'], 'https://raw.githubusercontent.com/pelican-eggs/')) throw new \RuntimeException(__('Unknown egg source.'));
             $content = Http::timeout(20)->connectTimeout(5)->get($game['url'])->throw()->body();
-            if (!hash_equals((string) $game['sha256'], hash('sha256', $content))) throw new \RuntimeException('The download does not match the egg index checksum.');
+            if (!hash_equals((string) $game['sha256'], hash('sha256', $content))) throw new \RuntimeException(__('The download does not match the egg index checksum.'));
             $egg = app(EggImporterService::class)->fromContent($content, EggFormat::JSON, new Egg());
             self::notifyAdmins($egg);
         }
@@ -120,9 +120,12 @@ final class GameCatalog
     {
         try {
             $by = user();
-            $notification = \Filament\Notifications\Notification::make()->info()->title('Game installed: '.$egg->name)
-                ->body(($by?->username ?? 'Someone').' installed this egg from the Pelican egg index for the server creator. It is now available for self-service.');
-            foreach (\App\Models\User::query()->get()->filter(fn ($user) => $user->isRootAdmin() && $user->id !== $by?->id) as $user) $user->notifyNow($notification->toDatabase());
+            // Stored already rendered, so each admin gets it in the language of their profile.
+            foreach (\App\Models\User::query()->get()->filter(fn ($user) => $user->isRootAdmin() && $user->id !== $by?->id) as $user) {
+                $locale = (string) ($user->language ?? config('app.locale', 'en'));
+                $user->notifyNow(\Filament\Notifications\Notification::make()->info()->title(__('Game installed: :name', ['name' => $egg->name], $locale))
+                    ->body(__(':user installed this egg from the Pelican egg index for the server creator. It is now available for self-service.', ['user' => $by?->username ?? __('Someone', [], $locale)], $locale))->toDatabase());
+            }
         } catch (Throwable $exception) {
             report($exception);
         }

@@ -10,16 +10,19 @@ final class DependencyCheck
     public static function inspect(string $panel, string $plugin, bool $runtime = true, bool $allowLegacy = false): array
     {
         $checks = [];
-        $add = static function (string $name, bool $ok, string $fix) use (&$checks): void {
-            $checks[] = ['name' => $name, 'ok' => $ok, 'fix' => $ok ? '' : $fix];
+        // English texts for the shell preflight (no translator there); 'text' keeps the translation keys and
+        // their :arguments for the settings page.
+        $add = static function (string $name, bool $ok, string $fix, array $args = []) use (&$checks): void {
+            $fill = static fn (string $text): string => strtr($text, array_combine(array_map(static fn ($key): string => ':'.$key, array_keys($args)), array_map('strval', $args)) ?: []);
+            $checks[] = ['name' => $fill($name), 'ok' => $ok, 'fix' => $ok ? '' : $fill($fix), 'text' => ['name' => [$name, $args], 'fix' => [$ok ? '' : $fix, $args]]];
         };
         $add('PHP 8.3 or newer', version_compare(PHP_VERSION, '8.3', '>='), 'Upgrade PHP for both the web server and queue worker to PHP 8.3 or newer.');
         foreach (['intl', 'json', 'mbstring', 'pdo', 'zip', 'openssl', 'fileinfo', 'ctype', 'tokenizer', 'xml', 'dom', 'curl', 'session'] as $extension) {
-            $add('PHP extension: '.$extension, extension_loaded($extension), 'Enable the '.$extension.' extension in the PHP runtime used by the panel and queue worker, then restart those services.');
+            $add('PHP extension: :extension', extension_loaded($extension), 'Enable the :extension extension in the PHP runtime used by the panel and queue worker, then restart those services.', ['extension' => $extension]);
         }
         $add('Pelican application and Composer dependencies', is_readable($panel.'/artisan') && is_readable($panel.'/vendor/autoload.php'), 'Complete the Pelican installation and install its Composer dependencies.');
         foreach ([\Filament\Schemas\Schema::class, \Filament\Actions\Action::class, \Livewire\Livewire::class, \Symfony\Component\Process\Process::class] as $class) {
-            $add('Composer: '.$class, class_exists($class), 'Install the Composer dependencies matching your Pelican release.');
+            $add('Composer: :class', class_exists($class), 'Install the Composer dependencies matching your Pelican release.', ['class' => $class]);
         }
         $icons = class_exists(\Composer\InstalledVersions::class) && \Composer\InstalledVersions::isInstalled('secondnetwork/blade-tabler-icons');
         $add('Tabler icon components', $icons, 'Restore the blade-tabler-icons Composer dependency and clear the Blade view cache.');
@@ -28,11 +31,11 @@ final class DependencyCheck
         $add('Node.js 22.12+ / 24+', self::nodeSupported($node), 'Install Node.js 22.12 or newer (or Node.js 24+). Make node available on the web server and queue worker PATH.');
         $add('Yarn', preg_match('/^\d+\.\d+/', $yarn) === 1, 'Install Yarn or enable it through Corepack. Make yarn available on the web server and queue worker PATH.');
         foreach (['storage', 'bootstrap/cache'] as $directory) {
-            $add('Writable '.$directory, self::writeProbe($panel.'/'.$directory), 'Grant the panel and queue worker read/write access to '.$directory.'.');
+            $add('Writable :directory', self::writeProbe($panel.'/'.$directory), 'Grant the panel and queue worker read/write access to :directory.', ['directory' => $directory]);
         }
         foreach (array_merge(...array_values(BuildInfo::BUNDLES)) as $file) {
             $path = $plugin.'/resources/views/'.$file;
-            $add('Plugin asset: '.$file, is_readable($path) && filesize($path) > 0, 'Reimport the complete PelicanSimplify package; this CSS/JavaScript file is missing, empty or unreadable.');
+            $add('Plugin asset: :file', is_readable($path) && filesize($path) > 0, 'Reimport the complete PelicanSimplify package; this CSS/JavaScript file is missing, empty or unreadable.', ['file' => $file]);
         }
         $legacyManifest = $panel.'/plugins/simple-server-creator/plugin.json';
         $legacy = is_readable($legacyManifest) ? json_decode((string) file_get_contents($legacyManifest), true) : [];
@@ -48,7 +51,7 @@ final class DependencyCheck
             }
         }
         $errors = self::assetErrors($manifest, $panel.'/public/build', $required);
-        $add('Built Pelican CSS and JavaScript', $errors === [], 'Rebuild the panel assets with yarn install and yarn build in your Pelican folder. '.implode(' ', $errors));
+        $add('Built Pelican CSS and JavaScript', $errors === [], 'Rebuild the panel assets with yarn install and yarn build in your Pelican folder. :errors', ['errors' => implode(' ', $errors)]);
         if ($runtime) {
             $add('Supported Pelican release', in_array(ltrim((string) config('app.version'), 'v'), ['1.0.0-beta38', '1.0.0-rc.1'], true), 'Use Pelican 1.0.0-beta38 or 1.0.0-rc.1; other releases have not been validated for this plugin.');
             try { \Illuminate\Support\Facades\DB::connection()->getPdo(); $database = true; } catch (\Throwable) { $database = false; }

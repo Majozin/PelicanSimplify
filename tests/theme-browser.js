@@ -217,6 +217,22 @@ const { start } = require('./browser-harness');
     await performance.close();
     console.log('PASS performance presets like the creator, with custom values');
 
+    // 13. Element size: chosen in Customize per mode, applied at once, kept per device; popups fit the window when zoomed in.
+    const sized = await open('/?mode=overview&theme=dark', { width: 1920, height: 950 });
+    await sized.click('[aria-controls="ps-overview-appearance-menu"]');
+    await sized.selectOption('.ps-scale-select', '150');
+    assert.equal(await sized.evaluate(() => document.querySelector('.ps').style.zoom), '1.32', '150% is limited to what a 950 px window can show');
+    await data(sized, (d) => { d.appearanceMenu = false; d.openPopup('panel-settings'); });
+    await sized.waitForTimeout(300);
+    assert.ok(await sized.evaluate(() => [...document.querySelectorAll('.ps-modal')].find((m) => m.offsetParent).getBoundingClientRect().bottom <= innerHeight), 'zoomed popup stays inside the window');
+    await data(sized, (d) => { d.modal = null; d.setHostMode(true); });
+    assert.equal(await sized.evaluate(() => document.querySelector('.ps').style.zoom), '0.79', 'host mode keeps its own (automatic) size');
+    await sized.reload();
+    await sized.waitForFunction(() => window.Alpine && document.querySelector('.ps')?.style);
+    assert.deepEqual(await sized.evaluate(() => JSON.parse(localStorage.getItem('pelicanSimplify.uiScale.jera'))), { simple: '150', host: 'panel' });
+    await sized.close();
+    console.log('PASS element size per mode from Customize, zoomed popups inside the window');
+
     assert.deepEqual(errors, []);
   } finally {
     await browser.close();

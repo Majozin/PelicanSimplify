@@ -30,13 +30,22 @@ final class UploadLimits
     }
     public static function bannerBytes(): int { return self::current()['banner_bytes']; }
     public static function label(int $bytes): string { return rtrim(rtrim(number_format($bytes/1048576,2,'.',''),'0'),'.').' MB'; }
+    /**
+     * Shared with the shell preflight (no Laravel translator there): English texts, plus 'text' with the
+     * translation key and arguments for each field, translated where the checks are shown.
+     */
     public static function checks(): array
     {
-        $limits=self::current();$runtime=PHP_SAPI==='cli'?'CLI PHP (verify PHP-FPM separately)':'Web PHP';
+        $limits=self::current();$cli=PHP_SAPI==='cli';
+        $size=self::label($limits['banner_bytes']);
+        $detail=($cli?'CLI PHP (verify PHP-FPM separately)':'Web PHP').': upload_max_filesize=:upload; post_max_size=:post. Banner uploads are capped at the lower PHP/Livewire limit (maximum 5 MB).';
+        $args=['upload'=>$limits['upload'],'post'=>$limits['post']];
+        $fix=$limits['banner_bytes']>=5*1048576?'':'To allow 5 MB banners, set PHP-FPM upload_max_filesize = 10M and post_max_size = 12M, check any Livewire max rule, then reload PHP-FPM.';
         return [
-            ['name'=>'Upload capacity · '.self::label($limits['banner_bytes']).' for banners','ok'=>$limits['banner_bytes']>=5*1048576,'blocking'=>false,
-             'detail'=>$runtime.': upload_max_filesize='.$limits['upload'].'; post_max_size='.$limits['post'].'. Banner uploads are capped at the lower PHP/Livewire limit (maximum 5 MB).',
-             'fix'=>$limits['banner_bytes']>=5*1048576?'':'To allow 5 MB banners, set PHP-FPM upload_max_filesize = 10M and post_max_size = 12M, check any Livewire max rule, then reload PHP-FPM.'],
+            ['name'=>'Upload capacity · '.$size.' for banners','ok'=>$limits['banner_bytes']>=5*1048576,'blocking'=>false,
+             'detail'=>strtr($detail,[':upload'=>$limits['upload'],':post'=>$limits['post']]),
+             'fix'=>$fix,
+             'text'=>['name'=>['Upload capacity · :size for banners',['size'=>$size]],'detail'=>[$detail,$args],'fix'=>[$fix,[]]]],
             ['name'=>'NGINX / proxy upload limit · not verified','ok'=>false,'blocking'=>false,
              'detail'=>'A proxy may reject uploads before PHP receives them (HTTP 413), even when the checks above pass.',
              'fix'=>'In the NGINX server block serving this panel, set client_max_body_size 12m; check for lower location overrides and upstream proxy limits. Run sudo nginx -t, then sudo systemctl reload nginx. Verify with a real upload. No server configuration is changed automatically.'],

@@ -349,7 +349,7 @@ final class Dashboard extends Page
     #[Renderless]
     public function packSearch(string $query): array {abort_unless(Access::feature('software'),404); $this->server();return \Simplify\Panel\Services\ModpackCatalog::results($query); }
     #[Renderless]
-    public function packVersions(string $key): array {abort_unless(Access::feature('software'),404); $this->server();return \Simplify\Panel\Services\ModpackCatalog::versions($key); }
+    public function packVersions(string $key): array {abort_unless(Access::feature('software'),404); $this->server();return array_map(fn ($label) => __($label), \Simplify\Panel\Services\ModpackCatalog::versions($key)); }
     #[Renderless]
     public function changeSoftware(array $state,string $confirmation): void {abort_unless(Access::feature('software'),404); \Simplify\Panel\Services\Software::change($this->server(),$state,$confirmation); }
 }

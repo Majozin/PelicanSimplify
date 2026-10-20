@@ -99,7 +99,7 @@ final class PluginUpdater
     {
         $id = $plugin->id;
         $lock = Cache::lock('simplify.plugin-update.'.$id, 1200);
-        if (!$lock->get()) return ['ok' => false, 'message' => $plugin->name.' is already being updated.'];
+        if (!$lock->get()) return self::result(false, ':name is already being updated.', ['name' => $plugin->name]);
         $directory = plugin_path($id);
         $backup = storage_path('app/simplify/plugin-backups/'.$id);
         $from = $plugin->version;
@@ -108,7 +108,7 @@ final class PluginUpdater
             // Version, download and checksum come from one fresh read, so a stale CDN copy cannot mix versions.
             $entry = self::entry($plugin, true);
             $url = $entry['download_url'] ?? null;
-            if (!is_string($url) || !str_starts_with($url, 'https://')) throw new \RuntimeException('No download is published for this panel version.');
+            if (!is_string($url) || !str_starts_with($url, 'https://')) throw new \RuntimeException(__('No download is published for this panel version.'));
             $sha = $entry['sha256'] ?? null;
             $expected = is_string($sha) && preg_match('/^[a-f0-9]{64}$/', $sha) ? $sha : null;
             $manifest = File::json($directory.'/plugin.json');
@@ -117,7 +117,7 @@ final class PluginUpdater
 
             File::deleteDirectory($backup);
             File::ensureDirectoryExists(dirname($backup));
-            if (!File::copyDirectory($directory, $backup)) throw new \RuntimeException('Could not back up the current version.');
+            if (!File::copyDirectory($directory, $backup)) throw new \RuntimeException(__('Could not back up the current version.'));
 
             try {
                 self::download($plugin, $url, $expected);
@@ -131,16 +131,16 @@ final class PluginUpdater
                 if (!$install->successful()) throw new \RuntimeException(self::output($install) ?: 'The new version could not be installed.');
                 // A second fresh process proves the panel still boots with the new code.
                 $boot = Process::path(base_path())->timeout(120)->run([self::php(), 'artisan', 'list', '--raw']);
-                if (!$boot->successful()) throw new \RuntimeException('The panel does not start with the new version: '.self::output($boot));
-                $result = ['ok' => true, 'message' => $plugin->name.' updated from '.$from.' to '.$to.'.'];
+                if (!$boot->successful()) throw new \RuntimeException(__('The panel does not start with the new version: :output', ['output' => self::output($boot)]));
+                $result = self::result(true, ':name updated from :from to :to.', ['name' => $plugin->name, 'from' => $from, 'to' => $to]);
             } catch (\Throwable $exception) {
                 self::restore($directory, $backup);
                 report($exception);
-                $result = ['ok' => false, 'message' => $plugin->name.' could not be updated, version '.$from.' was restored: '.$exception->getMessage()];
+                $result = self::result(false, ':name could not be updated, version :from was restored: :reason', ['name' => $plugin->name, 'from' => $from, 'reason' => $exception->getMessage()]);
             }
         } catch (\Throwable $exception) {
             report($exception);
-            $result = ['ok' => false, 'message' => $plugin->name.' could not be updated: '.$exception->getMessage()];
+            $result = self::result(false, ':name could not be updated: :reason', ['name' => $plugin->name, 'reason' => $exception->getMessage()]);
         } finally {
             $lock->release();
             try {
@@ -162,7 +162,7 @@ final class PluginUpdater
             return;
         }
         $body = Http::timeout(60)->connectTimeout(5)->throw()->get($url)->body();
-        if (!hash_equals($expected, hash('sha256', $body))) throw new \RuntimeException('The download does not match the published checksum.');
+        if (!hash_equals($expected, hash('sha256', $body))) throw new \RuntimeException(__('The download does not match the published checksum.'));
         $temporary = tempnam(sys_get_temp_dir(), 'simplify-plugin-').'.zip';
         try {
             file_put_contents($temporary, $body);
@@ -195,11 +195,15 @@ final class PluginUpdater
         $latest = self::latestVersion($plugin);
         if (!$latest || !\Illuminate\Support\Facades\Cache::add('simplify.plugin-announced.'.$plugin->id.'.'.$latest, true, now()->addDays(60))) return;
         try {
-            $notification = \Filament\Notifications\Notification::make()->info()
-                ->title($plugin->name.' '.$latest.' is available')
-                ->body($installing ? 'Installing it now with a backup and automatic rollback. You get another notification when it is done.' : 'You are running '.$plugin->version.'. Install it from the Plugins page.')
-                ->actions([\Filament\Actions\Action::make('open')->label('Open plugins')->url(\Simplify\Panel\Filament\Admin\Pages\ManagePlugins::getUrl(panel: 'admin'))]);
-            foreach (\App\Models\User::query()->get()->filter(fn ($user) => $user->isRootAdmin()) as $user) $user->notifyNow($notification->toDatabase());
+            // Stored already rendered, so each admin gets it in the language of their profile.
+            foreach (\App\Models\User::query()->get()->filter(fn ($user) => $user->isRootAdmin()) as $user) {
+                $locale = self::locale($user);
+                $user->notifyNow(\Filament\Notifications\Notification::make()->info()
+                    ->title(__(':name :version is available', ['name' => $plugin->name, 'version' => $latest], $locale))
+                    ->body($installing ? __('Installing it now with a backup and automatic rollback. You get another notification when it is done.', [], $locale) : __('You are running :version. Install it from the Plugins page.', ['version' => $plugin->version], $locale))
+                    ->actions([\Filament\Actions\Action::make('open')->label(__('Open plugins', [], $locale))->url(\Simplify\Panel\Filament\Admin\Pages\ManagePlugins::getUrl(panel: 'admin'))])
+                    ->toDatabase());
+            }
         } catch (\Throwable $exception) {
             report($exception);
         }
@@ -224,7 +228,6 @@ final class PluginUpdater
     /** Installs or uninstalls a plugin in a fresh process and always reports the outcome as a notification. */
     public static function change(Plugin $plugin, string $action, ?int $userId = null): array
     {
-        $label = $action === 'install' ? 'installed' : 'uninstalled';
         try {
             if ($action === 'install') {
                 $run = Process::path(base_path())->timeout(1100)->run([self::php(), 'artisan', 'simplify:plugin-install', $plugin->id, '--enable']);
@@ -233,13 +236,13 @@ final class PluginUpdater
                 app(\App\Services\Helpers\PluginService::class)->uninstallPlugin($plugin);
             }
             $boot = Process::path(base_path())->timeout(120)->run([self::php(), 'artisan', 'list', '--raw']);
-            if (!$boot->successful()) throw new \RuntimeException('The panel does not start with this plugin: '.(self::output($boot) ?: 'unknown error'));
-            $result = ['ok' => true, 'message' => $plugin->name.' was '.$label.'. Reload the panel to see the change.'];
+            if (!$boot->successful()) throw new \RuntimeException(__('The panel does not start with this plugin: :output', ['output' => self::output($boot) ?: __('unknown error')]));
+            $result = self::result(true, $action === 'install' ? ':name was installed. Reload the panel to see the change.' : ':name was uninstalled. Reload the panel to see the change.', ['name' => $plugin->name]);
         } catch (\Throwable $exception) {
             report($exception);
             // Pelican enables a plugin before its code is known to load; a broken one would stop the whole panel.
             if ($action === 'install') self::quarantine($plugin->id, $exception->getMessage());
-            $result = ['ok' => false, 'message' => $plugin->name.' could not be '.$label.': '.$exception->getMessage()];
+            $result = self::result(false, $action === 'install' ? ':name could not be installed: :reason' : ':name could not be uninstalled: :reason', ['name' => $plugin->name, 'reason' => $exception->getMessage()]);
         }
         \Illuminate\Support\Facades\Cache::forget('simplify.plugin-queued.'.$plugin->id);
         self::notify($result, $userId, $action === 'install' ? ['Plugin installed', 'Plugin install failed'] : ['Plugin uninstalled', 'Plugin uninstall failed']);
@@ -265,18 +268,37 @@ final class PluginUpdater
     {
         \Illuminate\Support\Facades\Cache::forget('simplify.plugin-queued.'.$pluginId);
         \Illuminate\Support\Facades\Cache::forget('simplify.plugin-update-queued.'.$pluginId);
-        self::notify(['ok' => false, 'message' => 'The '.$action.' of '.$pluginId.' stopped: '.$exception->getMessage()], $userId, ['', 'Plugin '.$action.' failed']);
+        $text = ['install' => 'The installation of :plugin stopped: :reason', 'uninstall' => 'The removal of :plugin stopped: :reason'][$action] ?? 'The update of :plugin stopped: :reason';
+        $title = ['install' => 'Plugin install failed', 'uninstall' => 'Plugin uninstall failed'][$action] ?? 'Plugin update failed';
+        self::notify(self::result(false, $text, ['plugin' => $pluginId, 'reason' => $exception->getMessage()]), $userId, ['', $title]);
+    }
+
+    /** Outcome with its message in the current language and the key to render it again for each recipient. */
+    private static function result(bool $ok, string $key, array $args = []): array
+    {
+        return ['ok' => $ok, 'message' => __($key, $args), 'text' => [$key, $args]];
+    }
+
+    /** The language of a user's profile, as Pelican's LanguageMiddleware uses it. */
+    private static function locale(\App\Models\User $user): string
+    {
+        return (string) ($user->language ?? config('app.locale', 'en'));
     }
 
     private static function notify(array $result, ?int $userId, array $titles = ['Plugin updated', 'Plugin update failed']): void
     {
         try {
             $users = $userId ? \App\Models\User::query()->whereKey($userId)->get() : \App\Models\User::query()->get()->filter(fn ($user) => $user->isRootAdmin());
-            $notification = \Filament\Notifications\Notification::make()->title($result['ok'] ? $titles[0] : $titles[1])->body($result['message']);
-            $result['ok'] ? $notification->success() : $notification->danger();
-            if (FeatureSettings::enabled('plugin_manager')) $notification->actions([\Filament\Actions\Action::make('open')->label('Open plugins')->url(\Simplify\Panel\Filament\Admin\Pages\ManagePlugins::getUrl(panel: 'admin'))]);
-            // Delivered right away: the result must arrive even when the queue worker is busy or down.
-            foreach ($users as $user) $user->notifyNow($notification->toDatabase());
+            // Delivered right away: the result must arrive even when the queue worker is busy or down. Stored
+            // already rendered, so each recipient gets it in the language of their profile.
+            foreach ($users as $user) {
+                $locale = self::locale($user);
+                $notification = \Filament\Notifications\Notification::make()->title(__($result['ok'] ? $titles[0] : $titles[1], [], $locale))
+                    ->body(isset($result['text']) ? __($result['text'][0], $result['text'][1], $locale) : $result['message']);
+                $result['ok'] ? $notification->success() : $notification->danger();
+                if (FeatureSettings::enabled('plugin_manager')) $notification->actions([\Filament\Actions\Action::make('open')->label(__('Open plugins', [], $locale))->url(\Simplify\Panel\Filament\Admin\Pages\ManagePlugins::getUrl(panel: 'admin'))]);
+                $user->notifyNow($notification->toDatabase());
+            }
         } catch (\Throwable $exception) {
             report($exception);
         }

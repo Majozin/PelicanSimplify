@@ -55,8 +55,8 @@ final class Packages
     public static function search(Server $s,string $q,string $version): array
     {
         Access::permission($s,SubuserPermission::FileRead);$ctx=self::context($s);
-        abort_unless($ctx['loader'],422,'This server software does not support installable mods or plugins.');
-        $version=$ctx['version']?:$version;abort_unless(preg_match('/^[0-9a-zA-Z._-]{1,40}$/',$version),422,'Enter the exact Minecraft version first.');
+        abort_unless($ctx['loader'],422,__('This server software does not support installable mods or plugins.'));
+        $version=$ctx['version']?:$version;abort_unless(preg_match('/^[0-9a-zA-Z._-]{1,40}$/',$version),422,__('Enter the exact Minecraft version first.'));
         $types=$ctx['directory']==='/plugins'?['project_type:plugin','project_type:mod']:['project_type:mod'];
         $loaders=in_array($ctx['loader'],['paper','purpur'],true)?['paper','spigot','bukkit']:($ctx['loader']==='spigot'?['spigot','bukkit']:[$ctx['loader']]);
         $result=self::json('search',['query'=>mb_substr($q,0,80),'limit'=>12,'facets'=>json_encode([$types,array_map(fn($l)=>'categories:'.$l,$loaders),['versions:'.$version]])]);
@@ -80,15 +80,15 @@ final class Packages
         $loaders=in_array($ctx['loader'],['paper','purpur'],true)?['paper','spigot','bukkit']:($ctx['loader']==='spigot'?['spigot','bukkit']:[$ctx['loader']]);
         $releases=self::json('project/'.rawurlencode($project).'/version',['loaders'=>json_encode($loaders),'game_versions'=>json_encode([$version])]);
         $release=null;foreach($releases as $r) if(($r['version_type']??'')==='release' && array_intersect($loaders,$r['loaders']??[]) && in_array($version,$r['game_versions']??[])){$release=$r;break;}
-        abort_unless($release,422,'No compatible stable release was found.');
+        abort_unless($release,422,__('No compatible stable release was found.'));
         $file=null;foreach($release['files']??[] as $f) if(($f['primary']??false) && str_ends_with(strtolower($f['filename']??''),'.jar')){$file=$f;break;}
-        abort_unless($file && preg_match('/^[a-zA-Z0-9._+ -]+\.jar$/',$file['filename']) && parse_url($file['url'],PHP_URL_SCHEME)==='https' && parse_url($file['url'],PHP_URL_HOST)==='cdn.modrinth.com',422,'Unsupported package download.');
+        abort_unless($file && preg_match('/^[a-zA-Z0-9._+ -]+\.jar$/',$file['filename']) && parse_url($file['url'],PHP_URL_SCHEME)==='https' && parse_url($file['url'],PHP_URL_HOST)==='cdn.modrinth.com',422,__('Unsupported package download.'));
         $path='simplify/packages/'.$s->uuid.'.json';$raw=Storage::disk('local')->get($path);$tracked=$raw?json_decode($raw,true,512,JSON_THROW_ON_ERROR):[];
         $files=app(DaemonFileRepository::class)->setServer($s);
         // Dependencies are shown in the UI; refuse automatic install until required
         // dependencies are already tracked or are included by this package.
         foreach($release['dependencies']??[] as $dep) if(($dep['dependency_type']??'')==='required' && !empty($dep['project_id'])) {
-            abort_unless(isset($tracked[$dep['project_id']]),422,'Install required dependency '.$dep['project_id'].' first.');
+            abort_unless(isset($tracked[$dep['project_id']]),422,__('Install required dependency :dependency first.', ['dependency' => $dep['project_id']]));
         }
         if (isset($tracked[$project]) && $tracked[$project]['filename']!==$file['filename']) {
             Access::permission($s,SubuserPermission::FileDelete);

@@ -18,6 +18,8 @@ use Simplify\Panel\Services\RoleAccess;
 final class ManagePeople extends Page
 {
     protected static ?string $title = 'People & roles';
+    public function getTitle(): string|\Illuminate\Contracts\Support\Htmlable { return __(static::$title); }
+    public static function getNavigationLabel(): string { return __(static::$title); }
     protected static ?string $slug = 'simplify-people';
     protected string $view = 'pelican-simplify::admin-people';
     protected static bool $shouldRegisterNavigation = false;
@@ -78,11 +80,11 @@ final class ManagePeople extends Page
     private function userFields(): array
     {
         return [
-            TextInput::make('username')->label('Username')->required()->maxLength(255)->regex('/^[A-Za-z0-9_.-]+$/'),
-            TextInput::make('email')->label('Email')->email()->required()->maxLength(255),
-            CheckboxList::make('roles')->label('Roles')->columns(2)
+            TextInput::make('username')->label(__('Username'))->required()->maxLength(255)->regex('/^[A-Za-z0-9_.-]+$/'),
+            TextInput::make('email')->label(__('Email'))->email()->required()->maxLength(255),
+            CheckboxList::make('roles')->label(__('Roles'))->columns(2)
                 ->options(fn () => Role::query()->orderBy('name')->pluck('name', 'id')->all())
-                ->helperText('Root Admin gives full access to everything. Other roles add their admin and Simplify permissions.'),
+                ->helperText(__('Root Admin gives full access to everything. Other roles add their admin and Simplify permissions.')),
         ];
     }
 
@@ -93,47 +95,47 @@ final class ManagePeople extends Page
             $run();
             Notification::make()->title($done)->success()->send();
         } catch (ValidationException $exception) {
-            Notification::make()->title('Not saved')->body(collect($exception->errors())->flatten()->first())->danger()->send();
+            Notification::make()->title(__('Not saved'))->body(collect($exception->errors())->flatten()->first())->danger()->send();
             throw $exception;
         }
     }
 
     public function addPersonAction(): Action
     {
-        return Action::make('addPerson')->label('Add person')->icon('tabler-user-plus')->modalHeading('Add a person')
-            ->modalDescription('They get an email with a link to choose their own password. You never see or set it.')
-            ->schema($this->userFields())->modalSubmitActionLabel('Add and send invite')
+        return Action::make('addPerson')->label(__('Add person'))->icon('tabler-user-plus')->modalHeading(__('Add a person'))
+            ->modalDescription(__('They get an email with a link to choose their own password. You never see or set it.'))
+            ->schema($this->userFields())->modalSubmitActionLabel(__('Add and send invite'))
             ->action(fn (array $data) => $this->guarded(fn () => PeopleManager::createUser($data), 'Person added; invite sent'));
     }
 
     public function editPersonAction(): Action
     {
-        return Action::make('editPerson')->modalHeading('Edit person')->modalSubmitActionLabel('Save')->schema($this->userFields())
+        return Action::make('editPerson')->modalHeading(__('Edit person'))->modalSubmitActionLabel(__('Save'))->schema($this->userFields())
             ->fillForm(function (array $arguments): array {
                 $user = User::query()->findOrFail((int) ($arguments['user'] ?? 0));
                 return ['username' => $user->username, 'email' => $user->email, 'roles' => $user->roles()->pluck('id')->all()];
             })
-            ->action(fn (array $data, array $arguments) => $this->guarded(fn () => PeopleManager::updateUser(User::query()->findOrFail((int) $arguments['user']), $data), 'Person saved'));
+            ->action(fn (array $data, array $arguments) => $this->guarded(fn () => PeopleManager::updateUser(User::query()->findOrFail((int) $arguments['user']), $data), __('Person saved')));
     }
 
     public function resetPasswordAction(): Action
     {
-        return Action::make('resetPassword')->requiresConfirmation()->modalHeading('Send a password reset link?')
-            ->modalDescription('They get an email with a link to choose a new password. Their current password keeps working until they do.')
-            ->modalSubmitActionLabel('Send link')
+        return Action::make('resetPassword')->requiresConfirmation()->modalHeading(__('Send a password reset link?'))
+            ->modalDescription(__('They get an email with a link to choose a new password. Their current password keeps working until they do.'))
+            ->modalSubmitActionLabel(__('Send link'))
             ->action(function (array $arguments): void {
                 $status = PeopleManager::sendPasswordReset(User::query()->findOrFail((int) $arguments['user']));
                 $sent = $status === \Illuminate\Support\Facades\Password::RESET_LINK_SENT;
-                Notification::make()->title($sent ? 'Reset link sent' : 'Could not send the link')->body($sent ? null : __($status))->{$sent ? 'success' : 'warning'}()->send();
+                Notification::make()->title($sent ? __('Reset link sent') : __('Could not send the link'))->body($sent ? null : __($status))->{$sent ? 'success' : 'warning'}()->send();
             });
     }
 
     public function deletePersonAction(): Action
     {
-        return Action::make('deletePerson')->requiresConfirmation()->color('danger')->modalHeading('Delete this person?')
-            ->modalDescription('Their account and sign-in are removed. Servers must be moved or deleted first. This cannot be undone.')
-            ->modalSubmitActionLabel('Delete')
-            ->action(fn (array $arguments) => $this->guarded(fn () => PeopleManager::deleteUser(User::query()->findOrFail((int) $arguments['user'])), 'Person deleted'));
+        return Action::make('deletePerson')->requiresConfirmation()->color('danger')->modalHeading(__('Delete this person?'))
+            ->modalDescription(__('Their account and sign-in are removed. Servers must be moved or deleted first. This cannot be undone.'))
+            ->modalSubmitActionLabel(__('Delete'))
+            ->action(fn (array $arguments) => $this->guarded(fn () => PeopleManager::deleteUser(User::query()->findOrFail((int) $arguments['user'])), __('Person deleted')));
     }
 
     private function roleFields(): array
@@ -142,16 +144,16 @@ final class ManagePeople extends Page
         foreach (PeopleManager::permissionGroups() as $model => $options) {
             $groups[] = CheckboxList::make('permissions_'.$model)->label(ucfirst(trim(preg_replace('/(?<!^)[A-Z]/', ' $0', $model) ?? $model)))->options($options)->columns(3)->bulkToggleable();
         }
-        $limits = array_map(fn (string $key, array $limit) => TextInput::make('simplify.'.$key)->label(str_replace(['Max ', ' mb'], ['Max ', ' (MB)'], ucfirst(str_replace('_', ' ', $key))))->integer()->minValue($limit[1])->maxValue($limit[2])->required(), array_keys(RoleAccess::LIMITS), RoleAccess::LIMITS);
+        $limits = array_map(fn (string $key, array $limit) => TextInput::make('simplify.'.$key)->label(['max_servers' => __('Max servers'), 'max_memory_mb' => __('Max memory (MB)'), 'max_disk_mb' => __('Max disk (MB)'), 'max_cpu' => __('Max CPU (%)'), 'max_backups' => __('Max backups')][$key] ?? $key)->integer()->minValue($limit[1])->maxValue($limit[2])->required(), array_keys(RoleAccess::LIMITS), RoleAccess::LIMITS);
         return [
-            TextInput::make('name')->label('Role name')->required()->maxLength(64),
-            Section::make('Simplify permissions')->description('What members can do on their servers in Simplify, on top of Everyone. Limits replace Everyone\'s limits.')->schema([
+            TextInput::make('name')->label(__('Role name'))->required()->maxLength(64),
+            Section::make(__('Simplify permissions'))->description(__('What members can do on their servers in Simplify, on top of Everyone. Limits replace Everyone\'s limits.'))->schema([
                 CheckboxList::make('simplify.abilities')->hiddenLabel()->columns(2)
-                    ->options(array_map(fn (array $ability) => $ability[0], RoleAccess::ABILITIES))
-                    ->descriptions(array_map(fn (array $ability) => $ability[1], RoleAccess::ABILITIES)),
+                    ->options(array_map(fn (array $ability) => __($ability[0]), RoleAccess::ABILITIES))
+                    ->descriptions(array_map(fn (array $ability) => __($ability[1]), RoleAccess::ABILITIES)),
                 \Filament\Schemas\Components\Grid::make(3)->schema($limits),
             ]),
-            Section::make('Admin panel access')->description('Which parts of the admin panel members can open and change. Leave everything off for a role that only adds Simplify permissions.')
+            Section::make(__('Admin panel access'))->description(__('Which parts of the admin panel members can open and change. Leave everything off for a role that only adds Simplify permissions.'))
                 ->collapsible()->collapsed()->schema($groups),
         ];
     }
@@ -165,15 +167,15 @@ final class ManagePeople extends Page
 
     public function addRoleAction(): Action
     {
-        return Action::make('addRole')->label('Add role')->icon('tabler-shield-plus')->modalHeading('Add a role')->modalSubmitActionLabel('Add role')->slideOver()
+        return Action::make('addRole')->label(__('Add role'))->icon('tabler-shield-plus')->modalHeading(__('Add a role'))->modalSubmitActionLabel(__('Add role'))->slideOver()
             ->schema($this->roleFields())
             ->fillForm(fn (): array => ['simplify' => ['abilities' => [], ...RoleAccess::limitDefaults()]])
-            ->action(fn (array $data) => $this->guarded(fn () => PeopleManager::saveRole(null, ...$this->roleData($data)), 'Role added'));
+            ->action(fn (array $data) => $this->guarded(fn () => PeopleManager::saveRole(null, ...$this->roleData($data)), __('Role added')));
     }
 
     public function editRoleAction(): Action
     {
-        return Action::make('editRole')->modalHeading('Edit role')->modalSubmitActionLabel('Save role')->slideOver()->schema($this->roleFields())
+        return Action::make('editRole')->modalHeading(__('Edit role'))->modalSubmitActionLabel(__('Save role'))->slideOver()->schema($this->roleFields())
             ->fillForm(function (array $arguments): array {
                 $role = Role::query()->findOrFail((int) ($arguments['role'] ?? 0));
                 abort_if($role->isRootAdmin(), 403);
@@ -182,15 +184,15 @@ final class ManagePeople extends Page
                 foreach (PeopleManager::permissionGroups() as $model => $options) $data['permissions_'.$model] = array_values(array_intersect(array_keys($options), $owned));
                 return $data;
             })
-            ->action(fn (array $data, array $arguments) => $this->guarded(fn () => PeopleManager::saveRole(Role::query()->findOrFail((int) $arguments['role']), ...$this->roleData($data)), 'Role saved'));
+            ->action(fn (array $data, array $arguments) => $this->guarded(fn () => PeopleManager::saveRole(Role::query()->findOrFail((int) $arguments['role']), ...$this->roleData($data)), __('Role saved')));
     }
 
     public function deleteRoleAction(): Action
     {
-        return Action::make('deleteRole')->requiresConfirmation()->color('danger')->modalHeading('Delete this role?')
-            ->modalDescription('Members keep their account but lose this role\'s permissions. This cannot be undone.')
-            ->modalSubmitActionLabel('Delete role')
-            ->action(fn (array $arguments) => $this->guarded(fn () => PeopleManager::deleteRole(Role::query()->findOrFail((int) $arguments['role'])), 'Role deleted'));
+        return Action::make('deleteRole')->requiresConfirmation()->color('danger')->modalHeading(__('Delete this role?'))
+            ->modalDescription(__('Members keep their account but lose this role\'s permissions. This cannot be undone.'))
+            ->modalSubmitActionLabel(__('Delete role'))
+            ->action(fn (array $arguments) => $this->guarded(fn () => PeopleManager::deleteRole(Role::query()->findOrFail((int) $arguments['role'])), __('Role deleted')));
     }
 
     protected function getHeaderActions(): array

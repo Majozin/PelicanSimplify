@@ -46,7 +46,7 @@ final class CreationDefaults
         $next = [];
         foreach (self::defaults() as $type => $profile) foreach ($profile as $key => $_) $next[$type][$key] = (int) $input[$type][$key];
         Cache::lock('simplify.creation-defaults', 10)->block(3, function()use($next):void {
-            if (!Storage::disk('local')->put(self::FILE, json_encode($next, JSON_THROW_ON_ERROR))) throw new \RuntimeException('Could not save server creation defaults.');
+            if (!Storage::disk('local')->put(self::FILE, json_encode($next, JSON_THROW_ON_ERROR))) throw new \RuntimeException(__('Could not save server creation defaults.'));
         });
     }
 }

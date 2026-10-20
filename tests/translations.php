@@ -17,11 +17,11 @@ foreach([...$files,...new RecursiveIteratorIterator(new RecursiveDirectoryIterat
         preg_match_all("/(?<![\w$])(?<!->)(?<!::)(?:__|trans_choice)\(\s*'((?:[^'\\\\]|\\\\.)*)'/",file_get_contents($path),$m);
         foreach($m[1] as $key)$keys[$unescape($key,"'")]=basename($path);
         if(str_ends_with($path,'.blade.php')){
-            preg_match_all("/(?<![\w.$])t\(\s*'((?:[^'\\\\]|\\\\.)*)'/",file_get_contents($path),$m);
+            preg_match_all("/(?:(?<![\w.$])|(?<=Simplify\.))t\(\s*'((?:[^'\\\\]|\\\\.)*)'/",file_get_contents($path),$m);
             foreach($m[1] as $key)$keys[$unescape($key,"'")]=basename($path);
         }
     }elseif(str_ends_with($path,'.js')){
-        preg_match_all("/(?<![\w.$])t\(\s*'((?:[^'\\\\]|\\\\.)*)'/",file_get_contents($path),$m);
+        preg_match_all("/(?:(?<![\w.$])|(?<=Simplify\.))t\(\s*'((?:[^'\\\\]|\\\\.)*)'/",file_get_contents($path),$m);
         foreach($m[1] as $key)$keys[$unescape($key,"'")]=basename($path);
     }
 }
@@ -45,6 +45,33 @@ foreach([...$m[1],...$m[2]] as $text)if($text!=='')$dynamic[]=$text;
 // AdminPages group names (translated when the menu is built).
 preg_match("/const GROUPS = \[([^\]]+)\]/",file_get_contents($root.'/src/Services/AdminPages.php'),$block);
 preg_match_all("/'([^']+)'/",$block[1],$m);array_push($dynamic,...$m[1]);
+// Creator review rows (keys of \$rows in overview.blade.php, translated when shown).
+preg_match_all("/^\\s*'([^']+)'\\s*=>|\\\$rows\\['([^']+)'\\]/m",file_get_contents($root.'/resources/views/filament/admin/overview.blade.php'),$m);
+foreach([...$m[1],...$m[2]] as $text)if($text!==''&&$text!=='RAM'&&$text!=='MOTD')$dynamic[]=$text;
+// PluginUpdater outcomes and titles (rendered per recipient from their keys).
+foreach(explode("\n",file_get_contents($root.'/src/Services/PluginUpdater.php')) as $line){
+    if(!preg_match('/self::(?:result|notify)\(|\$(?:text|title|titles) = \[|array \$titles = \[/',$line))continue;
+    preg_match_all("/'((?:[^'\\\\]|\\\\.)*)'/",$line,$m);
+    foreach($m[1] as $text)if(preg_match('/^(?:[A-Z:]).* /',$text))$dynamic[]=$unescape($text,"'");
+}
+// System checks: DependencyCheck and UploadLimits keep translation keys next to their English text.
+foreach(explode("\n",file_get_contents($root.'/src/Services/DependencyCheck.php')) as $line){
+    if(!str_contains($line,'$add('))continue;
+    preg_match_all("/'((?:[^'\\\\]|\\\\.)*)'/",$line,$m);
+    foreach($m[1] as $text)if(preg_match('/^[A-Z]/',$text))$dynamic[]=$unescape($text,"'");
+}
+require_once $root.'/src/Services/UploadLimits.php';
+foreach(\Simplify\Panel\Services\UploadLimits::checks() as $check){
+    foreach(['name','detail','fix'] as $field){
+        $text=$check['text'][$field][0]??$check[$field]??'';
+        if($text!=='')$dynamic[]=$text;
+    }
+}
+$dynamic[]='Web PHP: upload_max_filesize=:upload; post_max_size=:post. Banner uploads are capped at the lower PHP/Livewire limit (maximum 5 MB).';
+$dynamic[]='To allow 5 MB banners, set PHP-FPM upload_max_filesize = 10M and post_max_size = 12M, check any Livewire max rule, then reload PHP-FPM.';
+// Font names of the panel name editor.
+require_once $root.'/src/Services/BrandSettings.php';
+foreach(\Simplify\Panel\Services\BrandSettings::FONTS as [$label])$dynamic[]=$label;
 // ServerAppearance::choices() colour names.
 preg_match("/\\\$names=\[([^\]]+)\]/",file_get_contents($root.'/src/Services/ServerAppearance.php'),$block);
 preg_match_all("/'([^']+)'/",$block[1],$m);array_push($dynamic,...$m[1]);

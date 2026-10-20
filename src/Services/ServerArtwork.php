@@ -100,7 +100,7 @@ final class ServerArtwork
         $id = strtolower($id);
         abort_unless($id === 'auto' || $id === 'none' || self::isColor($id) || isset(self::BACKGROUNDS[$id]) || ServerBanners::belongsTo($id,$server), 422);
         if (!Storage::disk('local')->put('simplify/backgrounds/'.$server->uuid.'.json', json_encode(['background_id' => $id], JSON_THROW_ON_ERROR))) {
-            throw new \RuntimeException('Could not save server background.');
+            throw new \RuntimeException(__('Could not save server background.'));
         }
         return ['background_id' => $id, 'background' => self::background($server, [])];
     }

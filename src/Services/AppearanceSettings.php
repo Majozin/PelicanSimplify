@@ -27,7 +27,7 @@ final class AppearanceSettings
         $next=['accent_color'=>strtolower($data['accent_color']),'individual_colors'=>(bool)$data['individual_colors'],'interface_scale'=>isset($data['interface_scale'])?(int)$data['interface_scale']:self::all()['interface_scale'],'layout_scale'=>isset($data['layout_scale'])?(int)$data['layout_scale']:self::all()['layout_scale'],'layout_scale_host'=>isset($data['layout_scale_host'])?(int)$data['layout_scale_host']:self::all()['layout_scale_host'],'brand'=>BrandSettings::normalize([...$brand,'logo'=>$current],$current)];
         Cache::lock('simplify.appearance',10)->block(3,function()use($next):void{
             if ($next['individual_colors']) ServerAppearance::assignMissingColors();
-            if(!Storage::disk('local')->put(self::FILE,json_encode($next,JSON_THROW_ON_ERROR)))throw new \RuntimeException('Could not save appearance settings.');
+            if(!Storage::disk('local')->put(self::FILE,json_encode($next,JSON_THROW_ON_ERROR)))throw new \RuntimeException(__('Could not save appearance settings.'));
             app(self::class)->loaded=$next;
         });
     }
@@ -39,7 +39,7 @@ final class AppearanceSettings
             $all=self::all();
             $old=$all['brand']['logo'];
             $all['brand']=BrandSettings::normalize([...$all['brand'],'mode'=>$name?'logo':'text'],$name??'');
-            if(!Storage::disk('local')->put(self::FILE,json_encode($all,JSON_THROW_ON_ERROR)))throw new \RuntimeException('Could not save appearance settings.');
+            if(!Storage::disk('local')->put(self::FILE,json_encode($all,JSON_THROW_ON_ERROR)))throw new \RuntimeException(__('Could not save appearance settings.'));
             app(self::class)->loaded=$all;
             if($old!==$name)BrandSettings::deleteLogoFile($old);
         });

@@ -61,10 +61,10 @@ final class EggInstaller
         }
         $file = self::file($state);
         if (!$file) {
-            throw ValidationException::withMessages(['data.egg_id' => 'Choose a supported server type and modpack first.']);
+            throw ValidationException::withMessages(['data.egg_id' => __('Choose a supported server type and modpack first.')]);
         }
         if (!CreatorAccess::canImportEggs()) {
-            throw ValidationException::withMessages(['data.egg_id' => 'The matching egg is not installed yet. Ask an administrator to import it, or to allow users to install missing eggs in Simplify settings.']);
+            throw ValidationException::withMessages(['data.egg_id' => __('The matching egg is not installed yet. Ask an administrator to import it, or to allow users to install missing eggs in Simplify settings.')]);
         }
         try {
             // Recheck under a shared cache lock so simultaneous wizards reuse one import.
@@ -77,11 +77,11 @@ final class EggInstaller
                 $entry = $manifest[$file] ?? null;
                 $content = file_get_contents($root . '/' . $file);
                 if (!$entry || $content === false || !hash_equals($entry['sha256'], hash('sha256', $content))) {
-                    throw new \RuntimeException('The bundled egg definition failed its integrity check.');
+                    throw new \RuntimeException(__('The bundled egg definition failed its integrity check.'));
                 }
                 $definition = json_decode($content, true, 512, JSON_THROW_ON_ERROR);
                 if (($definition['name'] ?? '') !== $entry['name']) {
-                    throw new \RuntimeException('The bundled egg name does not match the manifest.');
+                    throw new \RuntimeException(__('The bundled egg name does not match the manifest.'));
                 }
                 // Native import can update a same-UUID egg even if its name was changed.
                 // A fresh UUID and explicit new model ensure existing definitions are never updated.
@@ -90,17 +90,17 @@ final class EggInstaller
                     json_encode($definition, JSON_THROW_ON_ERROR), EggFormat::JSON, new Egg()
                 );
                 if ($egg->name !== $entry['name']) {
-                    throw new \RuntimeException('The imported egg did not match the expected definition.');
+                    throw new \RuntimeException(__('The imported egg did not match the expected definition.'));
                 }
                 return $egg;
             });
         } catch (LockTimeoutException) {
-            throw ValidationException::withMessages(['data.egg_id' => 'This egg is being imported by another request. Wait a moment and continue again.']);
+            throw ValidationException::withMessages(['data.egg_id' => __('This egg is being imported by another request. Wait a moment and continue again.')]);
         } catch (ValidationException $exception) {
             throw $exception;
         } catch (Throwable $exception) {
             report($exception);
-            throw ValidationException::withMessages(['data.egg_id' => 'Could not import the required egg. Check the Pelican logs or import it manually under Admin → Eggs. No server has been created.']);
+            throw ValidationException::withMessages(['data.egg_id' => __('Could not import the required egg. Check the Pelican logs or import it manually under Admin → Eggs. No server has been created.')]);
         }
     }
 }

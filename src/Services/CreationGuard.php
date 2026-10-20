@@ -18,24 +18,24 @@ final class CreationGuard
     {
         return self::withResourceLock(function () use ($service, $payload, $state): Server {
             if (DB::transactionLevel() !== 0) {
-                throw new \RuntimeException('Server creation must start outside a database transaction.');
+                throw new \RuntimeException(__('Server creation must start outside a database transaction.'));
             }
             $payload = DB::transaction(function () use ($payload, $state): array {
             User::query()->whereKey(user()->id)->lockForUpdate()->firstOrFail();
             CreatorAccess::assertState($state);
             if (!CreatorAccess::nodes()->whereKey($payload['node_id'])->exists()) {
-                throw ValidationException::withMessages(['data.node_id' => 'You do not have access to this node.']);
+                throw ValidationException::withMessages(['data.node_id' => __('You do not have access to this node.')]);
             }
             $node = Node::query()->whereKey($payload['node_id'])->lockForUpdate()->firstOrFail();
             if (!$node->isViable((int) $payload['memory'], (int) $payload['disk'], (int) $payload['cpu'])) {
-                throw ValidationException::withMessages(['data.ram_gb' => 'The hosting machine has no room for these resources. Choose a smaller server.']);
+                throw ValidationException::withMessages(['data.ram_gb' => __('The hosting machine has no room for these resources. Choose a smaller server.')]);
             }
             if (!CreatorAccess::admin() || CreatorAccess::nodes()->count() === 1) {
                 $payload['allocation_id'] = Allocation::query()->where('node_id', $node->id)->whereNull('server_id')->orderBy('id')->lockForUpdate()->value('id');
             }
             $allocation = Allocation::query()->whereKey($payload['allocation_id'])->lockForUpdate()->first();
             if (!$allocation || $allocation->server_id !== null || (int) $allocation->node_id !== (int) $payload['node_id']) {
-                throw ValidationException::withMessages(['data.allocation_id' => 'This port is no longer available.']);
+                throw ValidationException::withMessages(['data.allocation_id' => __('This port is no longer available.')]);
             }
             if (!CreatorAccess::admin()) {
                 $servers = Server::query()->where('owner_id', user()->id)->get(['memory', 'disk']);
@@ -55,11 +55,11 @@ final class CreationGuard
         // keep SSC creation and resource edits serialized through native commit.
         $handle = @fopen(storage_path('app/ssc-resource.lock'), 'c');
         if ($handle === false) {
-            throw new \RuntimeException('Could not open the SSC resource lock. Check storage permissions.');
+            throw new \RuntimeException(__('Could not open the SSC resource lock. Check storage permissions.'));
         }
         try {
             if (!flock($handle, LOCK_EX | LOCK_NB)) {
-                throw ValidationException::withMessages(['data.ram_gb' => 'Another resource change is in progress. Please try again shortly.']);
+                throw ValidationException::withMessages(['data.ram_gb' => __('Another resource change is in progress. Please try again shortly.')]);
             }
             return $callback();
         } finally {

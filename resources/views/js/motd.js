@@ -3,13 +3,23 @@
    model, so they are always minimal: no duplicate colours, and a reset only where formatting has to end.
    Minecraft semantics: a colour code clears bold/italic/…, so formats are written after the colour. */
 (() => {
-  const COLORS = [
-    ['0', 'Black', '#000000'], ['1', 'Dark blue', '#0000aa'], ['2', 'Dark green', '#00aa00'], ['3', 'Dark aqua', '#00aaaa'],
-    ['4', 'Dark red', '#aa0000'], ['5', 'Dark purple', '#aa00aa'], ['6', 'Gold', '#ffaa00'], ['7', 'Gray', '#aaaaaa'],
-    ['8', 'Dark gray', '#555555'], ['9', 'Blue', '#5555ff'], ['a', 'Green', '#55ff55'], ['b', 'Aqua', '#55ffff'],
-    ['c', 'Red', '#ff5555'], ['d', 'Light purple', '#ff55ff'], ['e', 'Yellow', '#ffff55'], ['f', 'White', '#ffffff'],
+  /** Text in the panel language (core.js); the English text is the key and the fallback. */
+  const t = (text, replace = {}) => {
+    if (typeof window !== 'undefined' && window.Simplify?.t) return window.Simplify.t(text, replace);
+    let out = text;
+    for (const [key, value] of Object.entries(replace || {})) out = out.split(':' + key).join(String(value));
+    return out;
+  };
+  const colorTable = () => [
+    ['0', t('Black'), '#000000'], ['1', t('Dark blue'), '#0000aa'], ['2', t('Dark green'), '#00aa00'], ['3', t('Dark aqua'), '#00aaaa'],
+    ['4', t('Dark red'), '#aa0000'], ['5', t('Dark purple'), '#aa00aa'], ['6', t('Gold'), '#ffaa00'], ['7', t('Gray'), '#aaaaaa'],
+    ['8', t('Dark gray'), '#555555'], ['9', t('Blue'), '#5555ff'], ['a', t('Green'), '#55ff55'], ['b', t('Aqua'), '#55ffff'],
+    ['c', t('Red'), '#ff5555'], ['d', t('Light purple'), '#ff55ff'], ['e', t('Yellow'), '#ffff55'], ['f', t('White'), '#ffffff'],
   ];
-  const FORMATS = [['l', 'Bold'], ['o', 'Italic'], ['n', 'Underline'], ['m', 'Strikethrough'], ['k', 'Obfuscated']];
+  const formatTable = () => [['l', t('Bold')], ['o', t('Italic')], ['n', t('Underline')], ['m', t('Strikethrough')], ['k', t('Obfuscated')]];
+  // Colour and format names are translated when they are read, so core.js may load after this file.
+  const COLORS = colorTable();
+  const FORMATS = formatTable();
   const FLAGS = FORMATS.map(([code]) => code);
   const HEX = Object.fromEntries(COLORS.map(([code, , hex]) => [code, hex]));
   const DEFAULT_COLOR = '#aaaaaa';
@@ -91,16 +101,16 @@
   /** Text without codes, for search and short labels. */
   const strip = (value) => parse(value).map((line) => line.chars.join('')).join('\n');
 
-  window.psMotd = { COLORS, FORMATS, MAX, parse, serialize, runs, strip, plain, same };
+  window.psMotd = { get COLORS() { return colorTable(); }, get FORMATS() { return formatTable(); }, MAX, parse, serialize, runs, strip, plain, same };
 
   /* Alpine component. Bind with x-modelable="value" + x-model, or pass { value: $wire.entangle(...) }. */
   window.psMotdEditor = function (options = {}) {
     return {
       value: options.value ?? '',
-      name: () => String(options.name?.() || 'Minecraft Server'),
+      name: () => String(options.name?.() || t('Minecraft Server')),
       icon: () => String(options.icon?.() || ''),
-      colors: COLORS,
-      formats: FORMATS,
+      colors: colorTable(),
+      formats: formatTable(),
       lines: [],
       written: null,
       selection: { line: 0, start: 0, end: 0 },
@@ -128,7 +138,7 @@
 
       load(value) {
         const lines = parse(value);
-        this.notice = lines.length > LINES ? 'Minecraft shows two lines. The extra lines are joined to line 2 when you edit.' : '';
+        this.notice = lines.length > LINES ? t('Minecraft shows two lines. The extra lines are joined to line 2 when you edit.') : '';
         while (lines.length > LINES) {
           const extra = lines.pop(), last = lines[lines.length - 1];
           if (extra.chars.length) {
@@ -156,7 +166,7 @@
       commit(lines) {
         const value = serialize(lines[1]?.chars.length ? lines : lines.slice(0, 1));
         if (chars(value).length > MAX) {
-          this.notice = 'The MOTD can contain at most ' + MAX + ' characters, including colour codes.';
+          this.notice = t('The MOTD can contain at most :max characters, including colour codes.', { max: MAX });
           return false;
         }
         this.notice = '';
@@ -286,7 +296,7 @@
       editCodes(event) {
         const value = String(event.target.value).replace(/&(?=[0-9a-fk-or])/gi, '§');
         if (chars(value).length > MAX) {
-          this.notice = 'The MOTD can contain at most ' + MAX + ' characters, including colour codes.';
+          this.notice = t('The MOTD can contain at most :max characters, including colour codes.', { max: MAX });
           event.target.value = this.written;
           return;
         }

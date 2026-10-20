@@ -7,6 +7,8 @@
                 <div class="ps-check-loading" wire:loading.flex wire:target="refreshRequirements,beginSetup"><x-tabler-loader-2 class="ps-check-spinner" /><span>{{ __('Checking your panel…') }}</span></div>
                 <div wire:loading.remove wire:target="refreshRequirements,beginSetup" aria-live="polite">
                     @if($requirements)
+                        {{-- Checks carry English text (shared with the shell preflight) and their translation keys. --}}
+                        @php($text = fn (array $check, string $field): string => isset($check['text'][$field][0]) && $check['text'][$field][0] !== '' ? __($check['text'][$field][0], $check['text'][$field][1] ?? []) : (($check[$field] ?? '') === '' ? '' : __($check[$field])))
                         @php($passed = count(array_filter($requirements, fn($check) => $check['ok'])))
                         <div class="ps-check-summary {{ $this->requirementsReady() ? 'is-ready' : 'is-blocked' }}">
                             @if($this->requirementsReady())<x-tabler-circle-check />@else<x-tabler-alert-circle />@endif
@@ -17,9 +19,9 @@
                                 @php($failed = array_filter($checks, fn($check) => !$check['ok']))
                                 <article class="ps-check-card {{ $failed ? (array_filter($failed, fn($check) => $check['blocking'] ?? true) ? 'is-blocked' : 'is-warning') : 'is-ready' }}">
                                     <div class="ps-check-card-heading">@if($failed)<x-tabler-alert-circle />@else<x-tabler-circle-check />@endif<h3>{{ __($group) }}</h3><span>{{ count($checks) - count($failed) }}/{{ count($checks) }}</span></div>
-                                    @foreach($failed as $check)<div class="ps-check-fix"><strong>{{ $check['name'] }}</strong><p>{{ $check['fix'] }}</p>@if(!empty($check['detail']))<p>{{ $check['detail'] }}</p>@endif</div>@endforeach
-                                    @foreach($checks as $check)@if($check['ok'] && !empty($check['detail']))<p class="ps-help">{{ $check['detail'] }}</p>@endif@endforeach
-                                    <details><summary>{{ __('View checks') }}</summary><ul>@foreach($checks as $check)<li><span class="ps-check-dot {{ $check['ok'] ? 'is-ready' : 'is-blocked' }}"></span><span>{{ $check['name'] }}</span><small>{{ $check['ok'] ? __('Ready') : (($check['blocking'] ?? true) ? __('Needs attention') : __('Warning · optional')) }}</small></li>@endforeach</ul></details>
+                                    @foreach($failed as $check)<div class="ps-check-fix"><strong>{{ $text($check, 'name') }}</strong><p>{{ $text($check, 'fix') }}</p>@if(!empty($check['detail']))<p>{{ $text($check, 'detail') }}</p>@endif</div>@endforeach
+                                    @foreach($checks as $check)@if($check['ok'] && !empty($check['detail']))<p class="ps-help">{{ $text($check, 'detail') }}</p>@endif@endforeach
+                                    <details><summary>{{ __('View checks') }}</summary><ul>@foreach($checks as $check)<li><span class="ps-check-dot {{ $check['ok'] ? 'is-ready' : 'is-blocked' }}"></span><span>{{ $text($check, 'name') }}</span><small>{{ $check['ok'] ? __('Ready') : (($check['blocking'] ?? true) ? __('Needs attention') : __('Warning · optional')) }}</small></li>@endforeach</ul></details>
                                 </article>
                             @endforeach
                         </div>

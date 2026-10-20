@@ -13,7 +13,8 @@
   const MINECRAFT_VERSION = /(?:^|[^0-9])((?:1\.[0-9]+(?:\.[0-9]+)?|2[6-9]\.[0-9]+(?:\.[0-9]+)?))(?![0-9])/;
   const OVERVIEW_DEFAULTS = { showMotd: false, largeIcon: 'server', largeName: 'alias', groupByNode: 'auto', showCpu: true, showRam: true, showQuickActions: true, minecraftAlwaysGreen: true };
   const OVERVIEW_SWITCHES = ['showMotd', 'showCpu', 'showRam', 'showQuickActions', 'minecraftAlwaysGreen'];
-  const POWER_LABELS = { start: t('Start'), stop: t('Stop'), restart: t('Restart'), kill: t('Force stop') };
+  // A function: the labels are translated when used, so core.js may load after this file.
+  const powerLabels = () => ({ start: t('Start'), stop: t('Stop'), restart: t('Restart'), kill: t('Force stop') });
   const accentInk = (color) => {
     if (window.SimplifyTheme?.accentInk) return window.SimplifyTheme.accentInk(color);
     const [r, g, b] = color.slice(1).match(/../g).map((v) => {
@@ -168,6 +169,7 @@
       async init() {
         if (this.started) return;
         this.started = true;
+        this.restoreScalePreferences();
         this.applyScale();
         this.widgets = this.widgets.filter((w) => {
           const feature = { performance: 'resources', plugins: 'packages', mods: 'packages', web: 'web' }[w.key] || w.key;
@@ -277,10 +279,39 @@
        * can show (at least a 1280 × 720 layout stays visible). Host mode has its own element size.
        */
       uiScale: 1,
+      /** Element size chosen in Customize, per mode, for this user on this device ('panel' = the panel default). */
+      scalePreferences: { simple: 'panel', host: 'panel' },
+      scaleKey() {
+        return 'pelicanSimplify.uiScale.' + encodeURIComponent(this.boot.user || 'default');
+      },
+      restoreScalePreferences() {
+        try {
+          const saved = JSON.parse(localStorage.getItem(this.scaleKey()) || '{}') || {};
+          for (const mode of ['simple', 'host']) if (this.scaleOptions().some((option) => option[0] === String(saved[mode]))) this.scalePreferences[mode] = String(saved[mode]);
+        } catch {}
+      },
+      scaleMode() {
+        return this.hostMode && !this.server ? 'host' : 'simple';
+      },
+      scalePreference() {
+        return this.scalePreferences[this.scaleMode()];
+      },
+      scaleOptions() {
+        return [['panel', t('Panel default')], ['0', t('Automatic (follows the window)')], ['100', t('100% (no reduction)')], ...['110', '125', '150', '175', '200'].map((value) => [value, value + '%'])];
+      },
+      setScalePreference(value) {
+        if (!this.scaleOptions().some((option) => option[0] === value)) return;
+        this.scalePreferences[this.scaleMode()] = value;
+        try {
+          localStorage.setItem(this.scaleKey(), JSON.stringify(this.scalePreferences));
+        } catch {}
+        this.applyScale();
+      },
       applyScale() {
         if (typeof window === 'undefined' || !this.$root?.style) return;
         let scale = 1;
-        const chosen = Number(window.simplifyThemeConfig?.[this.hostMode && !this.server ? 'layout_scale_host' : 'layout_scale']) || 0;
+        const personal = this.scalePreferences?.[this.scaleMode()] ?? 'panel';
+        const chosen = personal === 'panel' ? Number(window.simplifyThemeConfig?.[this.scaleMode() === 'host' ? 'layout_scale_host' : 'layout_scale']) || 0 : Number(personal) || 0;
         // Inside the host mode pane the frame is already scaled with the page around it.
         if (!this.embedded && window.innerWidth > 900) {
           scale = chosen
@@ -674,7 +705,7 @@
         }
       },
       powerActionLabel(action) {
-        return POWER_LABELS[action] || '';
+        return powerLabels()[action] || '';
       },
       canOverviewPower(s, action) {
         const permission = { start: 'control.start', stop: 'control.stop', kill: 'control.stop', restart: 'control.restart' }[action];
@@ -694,7 +725,7 @@
         this.overviewPowerBusy = s.uuid;
         try {
           await wire.overviewPower(s.uuid, action);
-          this.toast(t(':action sent to :name', { action: POWER_LABELS[action], name: s.alias || s.name }), 'ok');
+          this.toast(t(':action sent to :name', { action: powerLabels()[action], name: s.alias || s.name }), 'ok');
           await this.refreshOverview();
         } catch (error) {
           this.toast(error?.message || t('The power action could not be sent.'), 'danger');
@@ -1539,7 +1570,7 @@
       },
       async power(action) {
         if (action === 'kill' && !(await this.ask({ title: t('Force stop this server?'), message: t('The server stops immediately. Unsaved game progress may be lost.'), confirmLabel: t('Force stop'), tone: 'danger' }))) return;
-        const result = await this.run(() => wire.power(action), action === 'restart' && this.server.pending ? t('Restart queued') : t(':action sent', { action: POWER_LABELS[action] }));
+        const result = await this.run(() => wire.power(action), action === 'restart' && this.server.pending ? t('Restart queued') : t(':action sent', { action: powerLabels()[action] }));
         if (result !== SKIPPED && ['restart', 'stop'].includes(action) && this.server.pending) Object.assign(this.server, await wire.refreshInfo());
       },
 

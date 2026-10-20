@@ -1,5 +1,11 @@
 # Changes
 
+## 0.4.2-beta.7-ptbr.4 (fork Majozin/PelicanSimplify, beta channel)
+- Portuguese (Brazil) now covers the whole plugin: dashboard and host mode, server creators (Minecraft, modpacks and other games), MOTD editor, People, Plugins, the Steam profile tab and the messages and notifications of the services. Notifications are written in the language of each recipient's profile. Player commands, Wings events and saved wizard step names stay in English internally and are only translated on screen.
+- Element size is set separately for host mode (Appearance → "Default element size (host mode)"), because host mode needs more room than the simple dashboard.
+- Each person can choose their own element size per device in Customize, separately for the simple dashboard and for host mode ("Panel default" follows the admin setting). Host mode now has its own Customize menu for this. The choice applies at once, without a save bar, so it also works on small windows at a large zoom.
+- Fixed: with a large element size on a small window, popups (Customize, confirmations) were taller than the window and their buttons could not be reached. They now always fit the window.
+
 ## 0.4.2-beta.7-ptbr.3 (fork Majozin/PelicanSimplify, beta channel)
 - The host mode / simple mode switch sits in the top bar next to "Legacy panel" instead of inside the profile menu, so switching takes one click. It shows for admins on the overview and in host mode (not on a server page, as before); on phones it is in the navigation menu as "Host mode" / "Simple mode".
 
