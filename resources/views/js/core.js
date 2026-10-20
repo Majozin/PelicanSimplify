@@ -425,10 +425,11 @@
     });
     // Changed means: the values differ from the last saved state. Switching tabs, focusing or clicking
     // around never counts, and putting a value back hides the bar again.
-    const controls = () => [...scope.querySelectorAll('input, select, textarea, [role="switch"]')].filter((el) =>
+    // Pelican makes every Filament select a JavaScript select (no <select> element): its button stands in.
+    const controls = () => [...scope.querySelectorAll('input, select, textarea, [role="switch"], .fi-select-input-btn')].filter((el) =>
       !el.closest('.ps-savebar, .fi-modal, [role="dialog"], [role="tablist"]')
       && (!within || el.closest(within))
-      && !el.matches('input[type="search"], input[type="file"], .fi-sc-tabs > input')
+      && !el.matches('input[type="search"], input[type="file"], .fi-sc-tabs > input, .fi-select-input-search-ctn input')
       && !(el.type === 'hidden' && !el.name));
     // Each control gets a stable key, so controls that render later (lazy parts of a page) are new,
     // not changed. Values are compared per key against the last saved state.
@@ -440,7 +441,14 @@
       const anchor = wrapper?.querySelector('[id]')?.id || wrapper?.querySelector('label')?.textContent?.trim();
       return anchor ? 'field:' + anchor + option : 'index:' + index;
     };
-    const valueOf = (el) => (el.getAttribute('role') === 'switch' ? el.getAttribute('aria-checked')
+    const selectValue = (el) => {
+      const component = el.closest('[x-data]');
+      let state;
+      try { state = component && window.Alpine?.$data ? window.Alpine.$data(component).state : undefined; } catch {}
+      return state === undefined ? el.querySelector('.fi-select-input-value-ctn')?.textContent.trim() || '' : JSON.stringify(state);
+    };
+    const valueOf = (el) => (el.matches('.fi-select-input-btn') ? selectValue(el)
+      : el.getAttribute('role') === 'switch' ? el.getAttribute('aria-checked')
       : ['checkbox', 'radio'].includes(el.type) ? String(el.checked) : el.value);
     const snapshot = () => new Map(controls().map((el, index) => [keyOf(el, index), valueOf(el)]));
     let baseline = null;
@@ -459,7 +467,8 @@
       if (event.target.closest?.('.ps-savebar, .fi-modal, [role="dialog"]') || (within && !event.target.closest?.(within))) return;
       setTimeout(check, 30);
     };
-    ['input', 'change', 'click'].forEach((type) => scope.addEventListener(type, later, true));
+    // keyup: a JavaScript select also changes from the keyboard (arrows and Enter), without input events.
+    ['input', 'change', 'click', 'keyup'].forEach((type) => scope.addEventListener(type, later, true));
     // Values that settle after the page loads (switches, pickers) must not count: while nothing is
     // changed, the state just before each press or key is the saved state.
     const settle = (event) => {

@@ -264,13 +264,20 @@
        * Interface size follows the window: designed for a 1440p screen (scale 1) and scaled down in
        * proportion on smaller ones (a 1080p screen gets about 0.75). Phones keep their own layout.
        * Inside the host mode pane nothing extra is applied: the frame is scaled with the page around it.
+       * Appearance → Element size replaces the automatic size with a fixed one, limited to what the window
+       * can show (at least a 1280 × 720 layout stays visible).
        */
       uiScale: 1,
       applyScale() {
         if (typeof window === 'undefined' || !this.$root?.style) return;
         let scale = 1;
+        const chosen = Number(window.simplifyThemeConfig?.layout_scale) || 0;
         // Inside the host mode pane the frame is already scaled with the page around it.
-        if (!this.embedded && window.innerWidth > 900) scale = Math.min(1, Math.max(0.75, Math.min(window.innerWidth / 2300, window.innerHeight / 1200)));
+        if (!this.embedded && window.innerWidth > 900) {
+          scale = chosen
+            ? Math.max(1, Math.min(chosen / 100, window.innerWidth / 1280, window.innerHeight / 720))
+            : Math.min(1, Math.max(0.75, Math.min(window.innerWidth / 2300, window.innerHeight / 1200)));
+        }
         scale = Math.round(scale * 100) / 100;
         this.uiScale = scale;
         this.$root.style.zoom = scale === 1 ? '' : String(scale);

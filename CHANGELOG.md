@@ -1,5 +1,9 @@
 # Changes
 
+## 0.4.2-beta.7-ptbr.2 (fork Majozin/PelicanSimplify, beta channel)
+- New Appearance setting "Element size" for the Simplify dashboard and host mode: Automatic (the previous behaviour, which shrinks everything below 1440p: about 79% on a 1080p screen), 100% (no reduction), 110, 125, 150, 175 or 200%. A fixed size is limited to what the window can show (at least a 1280 × 720 layout), so smaller screens never get a horizontal scrollbar or a cut-off overview.
+- Fixed: the save bar of the settings page did not appear after changing a dropdown. Pelican turns every Filament select into a JavaScript select without a `<select>` element, which the save bar did not see; it now reads those selects too (also from the keyboard). This affected every dropdown on the page, including the original ones (font, weight, colour, hosting machines, approved games).
+
 ## 0.4.2-beta.7-ptbr.1 (fork Majozin/PelicanSimplify, beta channel)
 - Portuguese (Brazil): Simplify follows the language set in each user's Pelican profile. This release translates the Simplify settings page (all tabs and the setup wizard pages), the system checks, the banner library, the save bar and confirmation dialogs. Other pages follow in later releases; untranslated text stays in English. Translations live in `lang/pt_BR.json`, keyed by the English text, and `tests/translations.php` fails when a translatable text has no translation.
 - New Appearance setting "Interface size" (100, 110, 125 or 150%) makes text larger for everyone, in Simplify and in Pelican's own pages. Simplify's text sizes are scaled when its CSS is served; layouts that fill the window keep fitting.

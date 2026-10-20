@@ -4,12 +4,15 @@ namespace Simplify\Panel\Services;
 /**
  * Interface size (Appearance → Interface size). Text sizes in Simplify's CSS are fixed in px, so the
  * served bundles multiply every px value of font-size, font, line-height and the --ps-text tokens by
- * var(--ps-scale). Pelican's own pages are rem-based and scale with the root font size. CSS zoom is
- * not used: it stretches the 100dvh layouts beyond the window.
+ * var(--ps-scale). Pelican's own pages are rem-based and scale with the root font size. Text does not
+ * use CSS zoom on the page, which stretches the 100dvh layouts beyond the window. Element size
+ * (layout_scale) sets the dashboard's own zoom instead, which compensates for that (dashboard.js applyScale).
  */
 final class InterfaceScale
 {
     public const OPTIONS = [100, 110, 125, 150];
+    /** Element size of the Simplify dashboard (dashboard.js applyScale): 0 keeps the automatic size. */
+    public const LAYOUT_OPTIONS = [0, 100, 110, 125, 150, 175, 200];
 
     public static function percent(): int
     {
