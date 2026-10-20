@@ -18,6 +18,7 @@ assert beta['download_url'].endswith(f"dist/pelican-simplify-v{manifest['version
 published = root / 'dist' / f"pelican-simplify-v{manifest['version']}.zip"
 assert published.is_file(), 'the published archive for this version is committed'
 assert beta['sha256'] == hashlib.sha256(published.read_bytes()).hexdigest()
+assert (root / 'dist/pelican-simplify-beta-latest.zip').read_bytes() == published.read_bytes(), 'beta-latest.zip is the newest build'
 if stable:
     assert channels['update.json'] == channels['update-beta.json'], 'a stable release is on both channels'
     assert (root / 'dist/pelican-simplify-latest.zip').read_bytes() == published.read_bytes(), 'latest.zip is the stable release'

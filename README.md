@@ -33,6 +33,8 @@ Simplify is a large change to how your panel looks and works. Please read this f
 
 1. In Pelican, go to **Admin → Plugins → Import from URL**.
 2. Paste the link to the [latest stable plugin ZIP](https://github.com/jerajerajerajera/PelicanSimplify/releases/download/v0.4.0/pelican-simplify-v0.4.0.zip) and click **Install**. All versions are on the [Releases page](https://github.com/jerajerajerajera/PelicanSimplify/releases).
+
+   **Beta channel:** the newest beta is always at `https://raw.githubusercontent.com/jerajerajerajera/PelicanSimplify/main/dist/pelican-simplify-beta-latest.zip`. Betas get new features first (for example Pelican 1.0.0-rc.1 support) but are less tested.
 3. Follow the setup checks. Anything missing is shown with how to fix it.
 
 **Requirements:** Node.js 22.12+ or 24+, Yarn, and a running queue worker and scheduler.

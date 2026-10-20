@@ -5,6 +5,7 @@ Writes dist/pelican-simplify-v<version>.zip and publishes it on an update channe
 - a stable version (no "-beta" etc.) goes to update.json and update-beta.json, and becomes
   dist/pelican-simplify-latest.zip (the download the README links to);
 - a pre-release (0.4.1-beta.2) goes to update-beta.json only.
+Every build also becomes dist/pelican-simplify-beta-latest.zip (the newest build on the beta channel).
 Archives no longer referenced by either channel are removed. SHA256SUMS is refreshed.
 Usage: build-package.py [output-dir]   (default: dist; SOURCE_DATE_EPOCH fixes the timestamps)
 """
@@ -60,6 +61,8 @@ def publish(archive: Path) -> None:
     channels = ['update.json', 'update-beta.json'] if stable else ['update-beta.json']
     for name in channels:
         (root / name).write_text(json.dumps({panel: entry for panel in SUPPORTED_PANELS}, indent=2) + '\n')
+    # Every build is on the beta channel: this fixed name always points at the newest one.
+    shutil.copyfile(archive, archive.parent / 'pelican-simplify-beta-latest.zip')
     if stable:
         shutil.copyfile(archive, archive.parent / 'pelican-simplify-latest.zip')
         # The README install link points at this release's zip on GitHub Releases (counted downloads).
