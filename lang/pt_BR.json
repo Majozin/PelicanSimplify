@@ -1318,6 +1318,7 @@
   "Warning · optional": "Aviso · opcional",
   "Web PHP: upload_max_filesize=:upload; post_max_size=:post. Banner uploads are capped at the lower PHP/Livewire limit (maximum 5 MB).": "PHP web: upload_max_filesize=:upload; post_max_size=:post. Os envios de banner são limitados pelo menor limite do PHP/Livewire (máximo 5 MB).",
   "Website": "Site",
+  "Website display": "Exibição no site",
   "Website settings saved": "Configurações do site salvas",
   "Website visibility updated": "Visibilidade no site atualizada",
   "Weight": "Peso",

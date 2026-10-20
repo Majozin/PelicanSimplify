@@ -17,7 +17,7 @@
         </div>
         <nav class="ssc-progress" wire:ignore aria-label="{{ __('Server creation progress') }}">
             @foreach($this->wizardStepLabels() as $index=>$label)
-                <button type="button" :class="{'is-current':step==={{ $index+1 }},'is-complete':furthestStep>{{ $index+1 }}}" :disabled="{{ $index+1 }}>furthestStep || switching || uploading" :aria-current="step==={{ $index+1 }}?'step':null" x-on:click="goToStep({{ $index+1 }})"><span>{{ $index+1 }}</span>{{ $label }}</button>
+                <button type="button" :class="{'is-current':step==={{ $index+1 }},'is-complete':furthestStep>{{ $index+1 }}}" :disabled="{{ $index+1 }}>furthestStep || switching || uploading" :aria-current="step==={{ $index+1 }}?'step':null" x-on:click="goToStep({{ $index+1 }})"><span>{{ $index+1 }}</span>{{ __($label) }}</button>
                 @unless($loop->last)<span class="ssc-step-arrow" aria-hidden="true">&gt;</span>@endunless
             @endforeach
         </nav>

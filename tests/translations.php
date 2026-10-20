@@ -72,6 +72,9 @@ $dynamic[]='To allow 5 MB banners, set PHP-FPM upload_max_filesize = 10M and pos
 // Font names of the panel name editor.
 require_once $root.'/src/Services/BrandSettings.php';
 foreach(\Simplify\Panel\Services\BrandSettings::FONTS as [$label])$dynamic[]=$label;
+// Creator step names stay English in drafts and are translated in the progress bar (create-server.blade.php).
+preg_match("/function wizardStepLabels\(\): array\s*\{(.*?)\n    \}/s",file_get_contents($root.'/src/Filament/Admin/Pages/CreateMinecraftServer.php'),$block);
+preg_match_all("/'([A-Z][^']+)'/",$block[1],$m);array_push($dynamic,...$m[1]);
 // ServerAppearance::choices() colour names.
 preg_match("/\\\$names=\[([^\]]+)\]/",file_get_contents($root.'/src/Services/ServerAppearance.php'),$block);
 preg_match_all("/'([^']+)'/",$block[1],$m);array_push($dynamic,...$m[1]);
